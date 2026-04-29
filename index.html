@@ -11,14 +11,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>IMDG TOTAL ENGINE <span>v3.0 (Supabase Linked)</span></h1>
+            <h1>DG 격리여부 확인 <span>v2.0 (SKR/HAL)</span></h1>
             <p class="subtitle">DG 데이터 통합 관리 및 자동 격리 분석 시스템</p>
         </header>
 
         <div class="search-area">
             <div class="search-wrap">
-                <input type="text" id="searchInput" placeholder="UN 번호를 여러 개 입력하세요 (예: 3256 3259 3286 3317)">
-                <button class="btn" id="addBtn">데이터 조회 및 분석</button>
+                <input type="text" id="searchInput" placeholder="UN NUMBER를 입력하세요 (예 : 1993 3082)">
+                <button class="btn" id="addBtn">UNNO. 조회</button>
                 <button class="btn secondary" id="clearBtn">초기화</button>
             </div>
             <div id="errorMsg"></div>
@@ -29,6 +29,7 @@
         <div id="segPanel"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
 </html>

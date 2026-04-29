@@ -1,16 +1,14 @@
 // --- [1. Supabase 초기화] ---
-const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // 실제 Supabase URL로 변경
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // 실제 Anon Key로 변경
+const SUPABASE_URL = 'https://atqcxiipzhghwoprqljp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0cWN4aWlwemhnaHdvcHJxbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MzgzNDIsImV4cCI6MjA5MzAxNDM0Mn0.F4nACbzg_91_vpHnJMUy42a-uv9og4iOw3buxKPbONU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- [2. 격리 상수 데이터] ---
 const DB_CONST = {
-    // SGG 데이터
     sgg: {
         "SGG1": "acids", "SGG18": "alkalis", "SGG8": "hypochlorites", 
         "SGG10": "liquid halogenated hydrocarbons", "SGG7": "heavy metals", "SGG6": "cyanides"
     },
-    // SGCODE 규정 정의
     sgcode: {
         "SG2": { "type": "CLASS", "target": "1.2G", "desc": "Segregation as for class 1.2G" },
         "SG3": { "type": "CLASS", "target": "1.3G", "desc": "Segregation as for class 1.3G" },
@@ -22,7 +20,6 @@ const DB_CONST = {
         "SG36": { "type": "SGG", "target": "SGG18", "reqSeg": 2, "desc": "Stow 'separated from' SGG18 (alkalis)" },
         "SG49": { "type": "SGG", "target": "SGG6", "reqSeg": 2, "desc": "Stow 'separated from' SGG6 (cyanides)" }
     },
-    // 격리 테이블 매트릭스
     segTable: {
         "1.1 1.2 1.5": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":4,"4.2":4,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":4,"9":"X"},
         "1.3 1.6": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":3,"4.2":3,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":2,"9":"X"},
@@ -46,7 +43,6 @@ const DB_CONST = {
 
 let entries = [];
 
-// --- [3. 헬퍼 함수] ---
 function normalizeClass(cls) {
     if (!cls) return null;
     const s = String(cls).trim();
@@ -59,10 +55,9 @@ function normalizeClass(cls) {
 // --- [4. 격리 엔진 v2.3] ---
 function calcPairSeg(a, b) {
     let maxLevel = 0; let reasons = [];
-    const clsA = normalizeClass(a.class);
-    const clsB = normalizeClass(b.class);
+    const clsA = normalizeClass(a.Class); // 수정: a.Class
+    const clsB = normalizeClass(b.Class); // 수정: b.Class
 
-    // [A] 기본 테이블 조회
     if (clsA && clsB && DB_CONST.segTable[clsA]) {
         const val = DB_CONST.segTable[clsA][clsB];
         if (val === '*') return { level: '*', reason: "Class 1 특별 규정 적용" };
@@ -70,17 +65,15 @@ function calcPairSeg(a, b) {
         if (tableLevel > maxLevel) { maxLevel = tableLevel; if (tableLevel > 0) reasons.push(`기본 클래스 격리 (Level ${tableLevel})`); }
     }
 
-    // [B] SG CODE 분석 (SG2~SG6 포함)
     function evaluateSG(source, target) {
         if (!source.sg_codes) return;
         const codes = source.sg_codes.split(/\s+/).filter(Boolean);
         codes.forEach(code => {
             const sg = DB_CONST.sgcode[code];
             if (!sg) return;
-            // "Segregation as for Class X" (SG2~SG6) 처리
             if (sg.type === 'CLASS' && (sg.reqSeg === null || sg.reqSeg === undefined)) {
                 const pseudoClass = normalizeClass(sg.target);
-                const targetClass = normalizeClass(target.class);
+                const targetClass = normalizeClass(target.Class); // 수정: target.Class
                 if (pseudoClass && targetClass && DB_CONST.segTable[pseudoClass]) {
                     const val = DB_CONST.segTable[pseudoClass][targetClass];
                     const tableLevel = (val === 'X' || val === undefined) ? 0 : parseInt(val);
@@ -88,7 +81,7 @@ function calcPairSeg(a, b) {
                 }
             } else {
                 let isMatch = false;
-                if (sg.type === 'CLASS' && normalizeClass(target.class) === normalizeClass(sg.target)) isMatch = true;
+                if (sg.type === 'CLASS' && normalizeClass(target.Class) === normalizeClass(sg.target)) isMatch = true; // 수정: target.Class
                 if (sg.type === 'SGG' && target.sgg === sg.target) isMatch = true;
                 if (isMatch && sg.reqSeg > maxLevel) { maxLevel = sg.reqSeg; reasons.push(`${code}: ${sg.desc}`); }
             }
@@ -104,15 +97,32 @@ async function addEntries() {
     const rawValues = input.value.split(/[\s,]+/).filter(v => v.trim() !== "");
     if (rawValues.length === 0) return;
 
-    // Supabase 데이터 호출
-    const { data, error } = await _supabase
-        .from('dangerous_goods')
-        .select('*')
-        .in('unno', rawValues.map(v => parseInt(v)));
+    const formattedValues = rawValues.map(v => {
+        const clean = v.trim();
+        return isNaN(clean) ? clean : clean.padStart(4, '0');
+    });
 
-    if (error) { alert("DB 호출 오류!"); return; }
-    data.forEach(item => { if (!entries.some(e => e.unno === item.unno)) entries.push(item); });
-    render(); input.value = '';
+    const { data, error } = await _supabase
+        .from('DG_TABLE')
+        .select('*')
+        .in('UNNO', formattedValues); // 수정: DB 컬럼 'UNNO'
+
+    if (error) { 
+        console.error("상세 에러:", error);
+        alert("DB 호출 오류가 발생했습니다. 콘솔을 확인하세요."); 
+        return; 
+    }
+
+    if (data.length === 0) {
+        alert("조회된 데이터가 없습니다. UN 번호를 확인해 주세요.");
+    }
+
+    data.forEach(item => { 
+        if (!entries.some(e => e.UNNO === item.UNNO)) entries.push(item); // 수정: e.UNNO
+    });
+    
+    render(); 
+    input.value = '';
 }
 
 function render() {
@@ -121,12 +131,10 @@ function render() {
 
     list.innerHTML = entries.map(e => `
         <div class="result-card">
-            <div class="unno-badge">${e.unno}</div>
-            <div class="card-fields">
-                <div class="field"><span class="field-label">CLASS</span><span class="field-value">${e.class}</span></div>
-                <div class="field"><span class="field-label">SGG</span><span class="field-value tag">${e.sgg || '—'}</span></div>
+            <div class="UNNO-badge">${e.UNNO}</div> <div class="card-fields">
+                <div class="field"><span class="field-label">CLASS</span><span class="field-value">${e.Class}</span></div> <div class="field"><span class="field-label">SGG</span><span class="field-value tag">${e.sgg || '—'}</span></div>
                 <div class="field"><span class="field-label">SG CODE</span><span class="field-value tag sg">${e.sg_codes || '—'}</span></div>
-                <div class="field" style="flex:1"><span class="field-label">NAME</span><span class="field-value" style="font-size:11px; color:var(--muted)">${e.name}</span></div>
+                <div class="field" style="flex:1"><span class="field-label">Name</span><span class="field-value" style="font-size:11px; color:var(--muted)">${e.name}</span></div>
             </div>
         </div>
     `).join('');
@@ -136,7 +144,7 @@ function render() {
         for(let i=0; i<entries.length; i++) {
             for(let j=i+1; j<entries.length; j++) {
                 const res = calcPairSeg(entries[i], entries[j]);
-                pairs.push({ a: entries[i].unno, b: entries[j].unno, ...res });
+                pairs.push({ a: entries[i].UNNO, b: entries[j].UNNO, ...res }); // 수정: entries[i].UNNO
                 if(typeof res.level === 'number') maxOverall = Math.max(maxOverall, res.level);
             }
         }

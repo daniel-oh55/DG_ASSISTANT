@@ -20,7 +20,7 @@ header span { font-size: 14px; color: var(--muted); }
 .btn.secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 
 .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; border-left: 4px solid var(--accent); }
-.unno-badge { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); min-width: 70px; }
+.UNNO-badge { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); min-width: 70px; }
 .card-fields { display: flex; gap: 24px; flex: 1; flex-wrap: wrap; }
 .field { display: flex; flex-direction: column; gap: 3px; }
 .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
