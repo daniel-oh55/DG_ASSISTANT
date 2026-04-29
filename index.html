@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMDG Cloud Engine v3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IMDG TOTAL ENGINE <span>v3.0 (Supabase Linked)</span></h1>
+            <p class="subtitle">DG 데이터 통합 관리 및 자동 격리 분석 시스템</p>
+        </header>
+
+        <div class="search-area">
+            <div class="search-wrap">
+                <input type="text" id="searchInput" placeholder="UN 번호를 여러 개 입력하세요 (예: 3256 3259 3286 3317)">
+                <button class="btn" id="addBtn">데이터 조회 및 분석</button>
+                <button class="btn secondary" id="clearBtn">초기화</button>
+            </div>
+            <div id="errorMsg"></div>
+        </div>
+
+        <div id="cardList"></div>
+
+        <div id="segPanel"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
