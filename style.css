@@ -39,3 +39,45 @@ header span { font-size: 14px; color: var(--muted); }
 .seg-badge.s1 { background: rgba(255,214,0,0.1); color: var(--yellow); border: 1px solid var(--yellow); }
 .seg-badge.s2, .seg-badge.s3, .seg-badge.s4 { background: rgba(255,23,68,0.1); color: var(--red); border: 1px solid var(--red); }
 .error-msg { background: rgba(255,23,68,0.1); border: 1px solid var(--red); color: #ff6b6b; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; }
+.result-card {
+    position: relative; /* 삭제 버튼의 기준점 */
+    transition: transform 0.2s;
+}
+
+.result-card:hover {
+    transform: translateX(5px);
+    border-left-color: var(--accent2);
+}
+
+/* 개별 삭제 버튼 */
+.remove-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 23, 68, 0.1);
+    color: var(--red);
+    border: 1px solid var(--red);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.remove-btn:hover {
+    background: var(--red);
+    color: white;
+}
+
+/* 카드 내 필드 레이아웃 최적화 */
+.result-card {
+    position: relative; /* 삭제 버튼 위치 기준 */
+}
+
+.field-value.sub { color: var(--yellow); } /* SUB RISK 강조 */
+.field-value.name { font-size: 11px; line-height: 1.2; color: var(--muted); }
