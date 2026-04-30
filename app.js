@@ -519,3 +519,181 @@ document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('searchInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') addEntries();
 });
+
+
+// ==========================================================================
+//   신규 기능: 탭 전환(SPA) 및 DG 정보 상세 조회 로직
+// ==========================================================================
+
+// ── 1. 탭 전환 기능 (Tab Switching Logic) ──
+// DOM 조작: 요소를 선택하고 클릭 이벤트를 연결합니다.
+const menuItems = document.querySelectorAll('.menu-item');
+const tabs = document.querySelectorAll('.tab-content');
+
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // 1-1. 모든 메뉴와 탭의 'active' 상태를 해제합니다.
+        menuItems.forEach(mi => mi.classList.remove('active'));
+        tabs.forEach(t => t.classList.remove('active'));
+
+        // 1-2. 클릭한 메뉴에 'active' 추가
+        item.classList.add('active');
+        
+        // 1-3. 메뉴의 data-target 값을 읽어와서 해당 id를 가진 섹션을 활성화합니다.
+        const targetId = item.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+    });
+});
+
+
+
+
+
+// ── 2. DG 정보 상세 조회 기능 (Supabase Data Fetching) ──
+
+
+function mzClean(val) {
+    if (!val || val === null || val === undefined) return '-';
+    let str = String(val).trim();
+    if (str === '?') return '-'; // 단독 물음표는 대시로
+    return str.replace(/\?/g, ' '); // 데이터 사이 물음표는 공백으로
+}
+
+
+async function lookupDGInfo() {
+    const input = document.getElementById('lookupInput');
+    const view = document.getElementById('infoDetailView');
+    const errorMsg = document.getElementById('lookupErrorMsg');
+    
+    // 번호 정규화 (예: 30 -> 0030)
+    const unno = normalizeUNNO(input.value);
+
+    if (!unno) {
+        errorMsg.innerHTML = `<div class="error-msg">UN 번호를 입력해 주세요.</div>`;
+        return;
+    }
+
+    // 로딩 상태 표시
+    view.innerHTML = `<div style="padding:40px; text-align:center; color:var(--accent); font-family:'JetBrains Mono';">/ / SEARCHING_DATABASE [UN ${unno}]...</div>`;
+    errorMsg.innerHTML = '';
+
+    try {
+        // 🚨 수정 포인트: .single()을 제거하고 결과를 리스트로 받습니다.
+        const { data, error } = await _supabase
+            .from('DG_TABLE')
+            .select('*')
+            .eq('UNNO', unno); // 정확히 일치하는 모든 데이터 조회
+
+        if (error) throw error;
+
+        // 결과가 없을 때 처리
+        if (!data || data.length === 0) {
+            view.innerHTML = '';
+            errorMsg.innerHTML = `<div class="error-msg">⚠ UN ${unno} 를 찾을 수 없습니다. (입력값: ${unno})</div>`;
+            console.log(`[Lookup] No data found for UNNO: ${unno}`);
+            return;
+        }
+
+        // 결과가 여러 개일 경우 가장 첫 번째 항목을 사용 (또는 추후 리스트 선택 기능 추가 가능)
+        const item = data[0];
+        console.log(`[Lookup] Success:`, item);
+
+        // 데이터 정제 및 매핑
+        const res = {
+            name: mzClean(item.Name),
+            unno: mzClean(item.UNNO),
+            class: mzClean(item.Class),
+            sub: mzClean(item.SUB),
+            pg: mzClean(item.PG),
+            sp: mzClean(item['Special Provisions']),
+            lq: mzClean(item['Limited Quantities']),
+            eq: mzClean(item['Excepted Quantities']),
+            flash: mzClean(item.Flashpoint),
+            ems: mzClean(item.EmS),
+            p_inst: mzClean(item['Packing Instructions']),
+            p_prov: mzClean(item['Packing Provisions']),
+            ibc_inst: mzClean(item['IBC Instructions']),
+            ibc_prov: mzClean(item['IBC Provisions']),
+            tank_inst: mzClean(item['Portable tanks and bulk containers Instructions']),
+            tank_prov: mzClean(item['Portable tanks and bulk containers Provisions']),
+            stowage: mzClean(item['Stowage and Handling']),
+            segregation: mzClean(item.Segregation),
+            properties: mzClean(item['Properties and Observations'])
+        };
+
+        // ── HTML 렌더링 ──
+        view.innerHTML = `
+            <div class="dg-detail-grid">
+                <div class="grid-cell col-6 header-main">SUBSTANCE: ${res.name}</div>
+
+                <div class="grid-cell col-2"><div class="cell-label">(1) UN No</div><div class="cell-value text-accent">${res.unno}</div></div>
+                <div class="grid-cell col-4"><div class="cell-label">(2) Proper Shipping Name</div><div class="cell-value">${res.name}</div></div>
+
+                <div class="grid-cell col-2"><div class="cell-label">(3) Class</div><div class="cell-value text-accent">${res.class}</div></div>
+                <div class="grid-cell col-2"><div class="cell-label">(4) Sub Hazards</div><div class="cell-value text-accent">${res.sub}</div></div>
+                <div class="grid-cell col-2"><div class="cell-label">(5) Packing Group</div><div class="cell-value">${res.pg}</div></div>
+
+                <div class="grid-cell col-2"><div class="cell-label">(6) Special Provisions</div><div class="cell-value">${res.sp}</div></div>
+                <div class="grid-cell col-2"><div class="cell-label">(7a) Limited Qty</div><div class="cell-value">${res.lq}</div></div>
+                <div class="grid-cell col-2"><div class="cell-label">(7b) Excepted Qty</div><div class="cell-value">${res.eq}</div></div>
+
+                <div class="grid-cell flashpoint-cell">
+                    <span class="cell-label">Flashpoint:</span>
+                    <span class="cell-value">${res.flash}</span>
+                </div>
+                <div class="grid-cell col-2">
+                    <div class="cell-label">(15) EmS</div>
+                    <div class="cell-value text-orange" style="color:var(--accent2)">${res.ems}</div>
+                </div>
+
+                <div class="grid-cell col-2 header-sub">Category</div>
+                <div class="grid-cell col-2 header-sub">Instructions</div>
+                <div class="grid-cell col-2 header-sub">Provisions</div>
+
+                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">Packing</div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.p_inst}</div></div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.p_prov}</div></div>
+
+                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">IBCs</div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.ibc_inst}</div></div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.ibc_prov}</div></div>
+
+                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">Tanks</div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.tank_inst}</div></div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.tank_prov}</div></div>
+
+                <div class="grid-cell col-4 header-sub">(16a) Stowage and Handling</div>
+                <div class="grid-cell col-2 header-sub">(16b) Segregation</div>
+
+                <div class="grid-cell col-4"><div class="cell-value">${res.stowage}</div></div>
+                <div class="grid-cell col-2"><div class="cell-value">${res.segregation}</div></div>
+
+                <div class="grid-cell col-6 header-sub">(17) Properties and Observations</div>
+                <div class="grid-cell col-6">
+                    <div class="cell-value properties-text">${res.properties}</div>
+                </div>
+
+                <div class="grid-cell col-2">
+                    <div class="cell-label">Hazard Marks:</div>
+                    <div style="font-size:10px; color:var(--muted); margin-top:10px; font-family:'JetBrains Mono';">CLASS_${res.class}</div>
+                </div>
+                <div class="grid-cell col-4 hazard-label-area">
+                    <div class="diamond-label">
+                         <span class="diamond-text">${res.class}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        input.value = '';
+    } catch (err) {
+        console.error("Critical Error:", err);
+        errorMsg.innerHTML = `<div class="error-msg">SYSTEM ERROR: 데이터 조회 중 서버 오류가 발생했습니다.</div>`;
+    }
+}
+
+// ── 3. 이벤트 리스너 연결 ──
+document.getElementById('infoLookupBtn').addEventListener('click', lookupDGInfo);
+document.getElementById('lookupInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') lookupDGInfo();
+});
