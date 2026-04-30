@@ -1,227 +1,521 @@
-// --- [1. Supabase 초기화] ---
+// ═══════════════════════════════════════════════════════════════
+//  IMDG DG ASSISTANT — app.js
+//  Supabase 컬럼: UNNO, Name, Class, SUB, Segregation
+// ═══════════════════════════════════════════════════════════════
+
+// ── 1. Supabase 초기화 ──────────────────────────────────────────
 const SUPABASE_URL = 'https://atqcxiipzhghwoprqljp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0cWN4aWlwemhnaHdvcHJxbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MzgzNDIsImV4cCI6MjA5MzAxNDM0Mn0.F4nACbzg_91_vpHnJMUy42a-uv9og4iOw3buxKPbONU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- [2. 격리 상수 데이터] ---
-const DB_CONST = {
-    sgg: {
-        "SGG1": "acids", "SGG18": "alkalis", "SGG8": "hypochlorites", 
-        "SGG10": "liquid halogenated hydrocarbons", "SGG7": "heavy metals", "SGG6": "cyanides"
-    },
-    sgcode: {
-        "SG1": { "type": "", "target": "", "reqSeg": null, "desc": "Segregation as for class 1.3" },
-        "SG2": { "type": "CLASS", "target": "1.2G", "desc": "Segregation as for class 1.2G" },
-        "SG3": { "type": "CLASS", "target": "1.3G", "desc": "Segregation as for class 1.3G" },
-        "SG4": { "type": "CLASS", "target": "2.1", "desc": "Segregation as for class 2.1" },
-        "SG5": { "type": "CLASS", "target": "3", "desc": "Segregation as for class 3" },
-        "SG6": { "type": "CLASS", "target": "5.1", "desc": "Segregation as for class 5.1" },
-        "SG7": { "type": "CLASS", "target": "3", "reqSeg": 1, "desc": "Stow 'away from' class 3" },
-        "SG8": { "type": "CLASS", "target": "4.1", "reqSeg": 1, "desc": "Stow 'away from' class 4.1" },
-        "SG35": { "type": "SGG", "target": "SGG1", "reqSeg": 2, "desc": "Stow 'separated from' SGG1 (acids)" },
-        "SG36": { "type": "SGG", "target": "SGG18", "reqSeg": 2, "desc": "Stow 'separated from' SGG18 (alkalis)" },
-        "SG49": { "type": "SGG", "target": "SGG6", "reqSeg": 2, "desc": "Stow 'separated from' SGG6 (cyanides)" }
-    },
-    segTable: {
-        "1.1 1.2 1.5": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":4,"4.2":4,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":4,"9":"X"},
-        "1.3 1.6": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":3,"4.2":3,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":2,"9":"X"},
-        "1.4": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":2,"2.2":1,"2.3":1,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":4,"7":2,"8":2,"9":"X"},
-        "2.1": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":"X","2.2":"X","2.3":"X","3":2,"4.1":1,"4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":4,"7":2,"8":1,"9":"X"},
-        "2.2": {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":1,"2.1":"X","2.2":"X","2.3":"X","3":1,"4.1":"X","4.2":1,"4.3":"X","5.1":"X","5.2":1,"6.1":"X","6.2":2,"7":1,"8":"X","9":"X"},
-        "2.3": {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":1,"2.1":"X","2.2":"X","2.3":"X","3":2,"4.1":"X","4.2":2,"4.3":"X","5.1":"X","5.2":2,"6.1":"X","6.2":2,"7":1,"8":"X","9":"X"},
-        "3": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":"X","4.1":"X","4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":"X","9":"X"},
-        "4.1": {"1.1 1.2 1.5":4,"1.3 1.6":3,"1.4":2,"2.1":1,"2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":1,"4.3":"X","5.1":1,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":1,"9":"X"},
-        "4.2": {"1.1 1.2 1.5":4,"1.3 1.6":3,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":2,"4.1":1,"4.2":"X","4.3":1,"5.1":2,"5.2":2,"6.1":1,"6.2":3,"7":2,"8":1,"9":"X"},
-        "4.3": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":"X","2.3":"X","3":2,"4.1":"X","4.2":1,"4.3":"X","5.1":2,"5.2":2,"6.1":"X","6.2":2,"7":2,"8":1,"9":"X"},
-        "5.1": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":"X","2.3":"X","3":2,"4.1":1,"4.2":2,"4.3":2,"5.1":"X","5.2":2,"6.1":1,"6.2":3,"7":1,"8":2,"9":"X"},
-        "5.2": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":2,"5.2":"X","6.1":1,"6.2":3,"7":2,"8":2,"9":"X"},
-        "6.1": {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":"X","2.1":"X","2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":1,"4.3":"X","5.1":1,"5.2":1,"6.1":"X","6.2":1,"7":"X","8":"X","9":"X"},
-        "6.2": {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":4,"2.1":4,"2.2":2,"2.3":2,"3":3,"4.1":3,"4.2":3,"4.3":2,"5.1":3,"5.2":3,"6.1":1,"6.2":"X","7":3,"8":3,"9":"X"},
-        "7": {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":2,"2.1":2,"2.2":1,"2.3":1,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":1,"5.2":2,"6.1":"X","6.2":3,"7":"X","8":2,"9":"X"},
-        "8": {"1.1 1.2 1.5":4,"1.3 1.6":2,"1.4":2,"2.1":1,"2.2":"X","2.3":"X","3":"X","4.1":1,"4.2":1,"4.3":1,"5.1":2,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":"X","9":"X"},
-        "9": {"1.1 1.2 1.5":"X","1.3 1.6":"X","1.4":"X","2.1":"X","2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":"X","4.3":"X","5.1":"X","5.2":"X","6.1":"X","6.2":"X","7":"X","8":"X","9":"X"}
-    }
+// ── 2. 참조 데이터 (CLAUDE3.xlsx — SGG / SGCODE / SEG.TABLE) ───
+const REF = {
+
+  // SGG 그룹명
+  sgg: {
+    SGG1:  "acids",
+    SGG2:  "ammonium compounds",
+    SGG3:  "bromates",
+    SGG4:  "chlorates",
+    SGG5:  "chlorites",
+    SGG6:  "cyanides",
+    SGG7:  "heavy metals and their salts",
+    SGG8:  "hypochlorites",
+    SGG9:  "lead and its compounds",
+    SGG10: "liquid halogenated hydrocarbons",
+    SGG11: "mercury and mercury compounds",
+    SGG12: "nitrites and their mixtures",
+    SGG13: "perchlorates",
+    SGG14: "permanganates",
+    SGG15: "powdered metals",
+    SGG16: "peroxides",
+    SGG17: "azides",
+    SGG18: "alkalis"
+  },
+
+  // SG Code 정의 (엑셀 SGCODE 시트 전체 — reqSeg 있는 항목만 격리 엔진에 사용)
+  // type: 'CLASS' | 'SGG' | 'UNNO' | ''
+  // SGG type의 target은 'SGGn' 형식으로 정규화
+  sgcode: {
+    SG1:  { type:'',      target:'',      reqSeg:null, desc:'For packages carrying a subsidiary hazard label of class 1, segregation as for class 1, division 1.3.' },
+    SG2:  { type:'CLASS', target:'1.2G',  reqSeg:null, desc:'Segregation as for class 1.2G.' },
+    SG3:  { type:'CLASS', target:'1.3G',  reqSeg:null, desc:'Segregation as for class 1.3G.' },
+    SG4:  { type:'CLASS', target:'2.1',   reqSeg:null, desc:'Segregation as for class 2.1.' },
+    SG5:  { type:'CLASS', target:'3',     reqSeg:null, desc:'Segregation as for class 3.' },
+    SG6:  { type:'CLASS', target:'5.1',   reqSeg:null, desc:'Segregation as for class 5.1.' },
+    SG7:  { type:'CLASS', target:'3',     reqSeg:1,    desc:'Stow "away from" class 3.' },
+    SG8:  { type:'CLASS', target:'4.1',   reqSeg:1,    desc:'Stow "away from" class 4.1.' },
+    SG9:  { type:'CLASS', target:'4.3',   reqSeg:1,    desc:'Stow "away from" class 4.3.' },
+    SG10: { type:'CLASS', target:'5.1',   reqSeg:1,    desc:'Stow "away from" class 5.1.' },
+    SG11: { type:'CLASS', target:'6.2',   reqSeg:1,    desc:'Stow "away from" class 6.2.' },
+    SG12: { type:'CLASS', target:'7',     reqSeg:1,    desc:'Stow "away from" class 7.' },
+    SG13: { type:'CLASS', target:'8',     reqSeg:1,    desc:'Stow "away from" class 8.' },
+    SG14: { type:'CLASS', target:'1',     reqSeg:2,    desc:'Stow "separated from" class 1 except for division 1.4S.' },
+    SG15: { type:'CLASS', target:'3',     reqSeg:2,    desc:'Stow "separated from" class 3.' },
+    SG16: { type:'CLASS', target:'4.1',   reqSeg:2,    desc:'Stow "separated from" class 4.1.' },
+    SG17: { type:'CLASS', target:'5.1',   reqSeg:2,    desc:'Stow "separated from" class 5.1.' },
+    SG18: { type:'CLASS', target:'6.2',   reqSeg:2,    desc:'Stow "separated from" class 6.2.' },
+    SG19: { type:'CLASS', target:'7',     reqSeg:2,    desc:'Stow "separated from" class 7.' },
+    SG20: { type:'SGG',   target:'SGG1',  reqSeg:1,    desc:'Stow "away from" SGG1 – acids.' },
+    SG21: { type:'SGG',   target:'SGG18', reqSeg:1,    desc:'Stow "away from" SGG18 – alkalis.' },
+    SG24: { type:'SGG',   target:'SGG17', reqSeg:1,    desc:'Stow "away from" SGG17 – azides.' },
+    SG25: { type:'CLASS', target:'2, 3',  reqSeg:2,    desc:'Stow "separated from" goods of classes 2.1 and 3.' },
+    SG28: { type:'SGG',   target:'SGG2',  reqSeg:2,    desc:'Stow "separated from" SGG2 – ammonium compounds.' },
+    SG30: { type:'SGG',   target:'SGG7',  reqSeg:1,    desc:'Stow "away from" SGG7 – heavy metals and their salts.' },
+    SG31: { type:'SGG',   target:'SGG9',  reqSeg:1,    desc:'Stow "away from" SGG9 – lead and its compounds.' },
+    SG32: { type:'SGG',   target:'SGG10', reqSeg:1,    desc:'Stow "away from" SGG10 – liquid halogenated hydrocarbons.' },
+    SG33: { type:'SGG',   target:'SGG15', reqSeg:1,    desc:'Stow "away from" SGG15 – powdered metals.' },
+    SG34: { type:'SGG',   target:'SGG4',  reqSeg:2,    desc:'When containing ammonium compounds, "separated from" SGG4 – chlorates.' },
+    SG35: { type:'SGG',   target:'SGG1',  reqSeg:2,    desc:'Stow "separated from" SGG1 – acids.' },
+    SG36: { type:'SGG',   target:'SGG18', reqSeg:2,    desc:'Stow "separated from" SGG18 – alkalis.' },
+    SG38: { type:'SGG',   target:'SGG2',  reqSeg:2,    desc:'Stow "separated from" SGG2 – ammonium compounds.' },
+    SG39: { type:'SGG',   target:'SGG2',  reqSeg:2,    desc:'Stow "separated from" SGG2 – ammonium compounds (other than ammonium nitrate).' },
+    SG40: { type:'SGG',   target:'SGG2',  reqSeg:2,    desc:'Stow "separated from" SGG2 – ammonium compounds (other than mixtures of potassium nitrate and ammonium nitrate).' },
+    SG42: { type:'SGG',   target:'SGG3',  reqSeg:2,    desc:'Stow "separated from" SGG3 – bromates.' },
+    SG44: { type:'UNNO',  target:'1846',  reqSeg:2,    desc:'Stow "separated from" CARBON TETRACHLORIDE (UN 1846).' },
+    SG45: { type:'SGG',   target:'SGG4',  reqSeg:2,    desc:'Stow "separated from" SGG4 – chlorates.' },
+    SG47: { type:'SGG',   target:'SGG5',  reqSeg:2,    desc:'Stow "separated from" SGG5 – chlorites.' },
+    SG49: { type:'SGG',   target:'SGG6',  reqSeg:2,    desc:'Stow "separated from" SGG6 – cyanides.' },
+    SG51: { type:'SGG',   target:'SGG8',  reqSeg:2,    desc:'Stow "separated from" SGG8 – hypochlorites.' },
+    SG54: { type:'SGG',   target:'SGG11', reqSeg:2,    desc:'Stow "separated from" SGG11 – mercury and mercury compounds.' },
+    SG56: { type:'SGG',   target:'SGG12', reqSeg:2,    desc:'Stow "separated from" SGG12 – nitrites.' },
+    SG58: { type:'SGG',   target:'SGG13', reqSeg:2,    desc:'Stow "separated from" SGG13 – perchlorates.' },
+    SG59: { type:'SGG',   target:'SGG14', reqSeg:2,    desc:'Stow "separated from" SGG14 – permanganates.' },
+    SG60: { type:'SGG',   target:'SGG16', reqSeg:2,    desc:'Stow "separated from" SGG16 – peroxides.' },
+    SG61: { type:'SGG',   target:'SGG15', reqSeg:2,    desc:'Stow "separated from" SGG15 – powdered metals.' },
+    SG70: { type:'SGG',   target:'SGG1',  reqSeg:2,    desc:'For arsenic sulphides, "separated from" SGG1 – acids.' },
+  },
+
+  // SEG.TABLE (IMDG Code 7.2 기본 클래스 격리표)
+  segTable: {
+    "1.1 1.2 1.5": {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":4,"4.2":4,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":4,"9":"X"},
+    "1.3 1.6":     {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":4,"2.2":2,"2.3":2,"3":4,"4.1":3,"4.2":3,"4.3":4,"5.1":4,"5.2":4,"6.1":2,"6.2":4,"7":2,"8":2,"9":"X"},
+    "1.4":         {"1.1 1.2 1.5":"*","1.3 1.6":"*","1.4":"*","2.1":2,"2.2":1,"2.3":1,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":4,"7":2,"8":2,"9":"X"},
+    "2.1":         {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":"X","2.2":"X","2.3":"X","3":2,"4.1":1,"4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":4,"7":2,"8":1,"9":"X"},
+    "2.2":         {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":1,"2.1":"X","2.2":"X","2.3":"X","3":1,"4.1":"X","4.2":1,"4.3":"X","5.1":"X","5.2":1,"6.1":"X","6.2":2,"7":1,"8":"X","9":"X"},
+    "2.3":         {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":1,"2.1":"X","2.2":"X","2.3":"X","3":2,"4.1":"X","4.2":2,"4.3":"X","5.1":"X","5.2":2,"6.1":"X","6.2":2,"7":1,"8":"X","9":"X"},
+    "3":           {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":"X","4.1":"X","4.2":2,"4.3":2,"5.1":2,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":"X","9":"X"},
+    "4.1":         {"1.1 1.2 1.5":4,"1.3 1.6":3,"1.4":2,"2.1":1,"2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":1,"4.3":"X","5.1":1,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":1,"9":"X"},
+    "4.2":         {"1.1 1.2 1.5":4,"1.3 1.6":3,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":2,"4.1":1,"4.2":"X","4.3":1,"5.1":2,"5.2":2,"6.1":1,"6.2":3,"7":2,"8":1,"9":"X"},
+    "4.3":         {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":"X","2.3":"X","3":2,"4.1":"X","4.2":1,"4.3":"X","5.1":2,"5.2":2,"6.1":"X","6.2":2,"7":2,"8":1,"9":"X"},
+    "5.1":         {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":"X","2.3":"X","3":2,"4.1":1,"4.2":2,"4.3":2,"5.1":"X","5.2":2,"6.1":1,"6.2":3,"7":1,"8":2,"9":"X"},
+    "5.2":         {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":2,"2.1":2,"2.2":1,"2.3":2,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":2,"5.2":"X","6.1":1,"6.2":3,"7":2,"8":2,"9":"X"},
+    "6.1":         {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":"X","2.1":"X","2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":1,"4.3":"X","5.1":1,"5.2":1,"6.1":"X","6.2":1,"7":"X","8":"X","9":"X"},
+    "6.2":         {"1.1 1.2 1.5":4,"1.3 1.6":4,"1.4":4,"2.1":4,"2.2":2,"2.3":2,"3":3,"4.1":3,"4.2":3,"4.3":2,"5.1":3,"5.2":3,"6.1":1,"6.2":"X","7":3,"8":3,"9":"X"},
+    "7":           {"1.1 1.2 1.5":2,"1.3 1.6":2,"1.4":2,"2.1":2,"2.2":1,"2.3":1,"3":2,"4.1":2,"4.2":2,"4.3":2,"5.1":1,"5.2":2,"6.1":"X","6.2":3,"7":"X","8":2,"9":"X"},
+    "8":           {"1.1 1.2 1.5":4,"1.3 1.6":2,"1.4":2,"2.1":1,"2.2":"X","2.3":"X","3":"X","4.1":1,"4.2":1,"4.3":1,"5.1":2,"5.2":2,"6.1":"X","6.2":3,"7":2,"8":"X","9":"X"},
+    "9":           {"1.1 1.2 1.5":"X","1.3 1.6":"X","1.4":"X","2.1":"X","2.2":"X","2.3":"X","3":"X","4.1":"X","4.2":"X","4.3":"X","5.1":"X","5.2":"X","6.1":"X","6.2":"X","7":"X","8":"X","9":"X"}
+  }
 };
 
+// ── 3. SGG / SG 분리 유틸 ──────────────────────────────────────
+// Supabase의 Segregation 컬럼값에서 SGG와 SG를 분리
+// 예) "SGG18\xa0SG35" → { sgg: "SGG18", sgCodes: "SG35" }
+function normalizeText(value) {
+  return String(value ?? '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+    .replace(/\t/g, ' ')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeUNNO(value) {
+  const raw = String(value ?? '').trim().replace(/^UN\s*/i, '');
+  if (/^\d+$/.test(raw)) return String(Number(raw)).padStart(4, '0');
+  return raw.toUpperCase();
+}
+
+function normalizeSubRisk(value) {
+  const txt = normalizeText(value);
+  if (!txt || txt === '?' || txt === '？' || txt === '–' || txt === '-') return '-';
+  return txt;
+}
+
+function parseSeg(raw) {
+  const clean = normalizeText(raw);
+  if (!clean || clean === '–' || clean === '-') {
+    return { sgg: '', sgCodes: '', sgGroups: [], sgCodeList: [] };
+  }
+  const sgGroups = [...clean.matchAll(/\bSGG\s*0*(\d+)\b/gi)].map(m => `SGG${Number(m[1])}`);
+  const sgCodeList = [...clean.matchAll(/\bSG\s*0*(\d+)\b/gi)].map(m => `SG${Number(m[1])}`);
+  const uniqueGroups = [...new Set(sgGroups)];
+  const uniqueCodes = [...new Set(sgCodeList)];
+  return { sgg: uniqueGroups[0] || '', sgCodes: uniqueCodes.join(' '), sgGroups: uniqueGroups, sgCodeList: uniqueCodes };
+}
+
+function getSGGroups(e) {
+  if (Array.isArray(e.sgGroups)) return e.sgGroups;
+  if (e.sgg) return [e.sgg];
+  return [];
+}
+
+function getSGCodes(e) {
+  if (Array.isArray(e.sgCodeList)) return e.sgCodeList;
+  if (e.sgCodes) return String(e.sgCodes).split(/\s+/).filter(Boolean);
+  return [];
+}
+
+function prepareEntry(item) {
+  const parsed = parseSeg(item.Segregation);
+  item.SUB = normalizeSubRisk(item.SUB);
+  item._sgg = parsed.sgg;
+  item._sgCodes = parsed.sgCodes;
+  item.sgg = parsed.sgg;
+  item.sgCodes = parsed.sgCodes;
+  item.sgGroups = parsed.sgGroups;
+  item.sgCodeList = parsed.sgCodeList;
+  return item;
+}
+
+// ── 4. 클래스 정규화 (SEG.TABLE 키 매칭) ─────────────────────
+function normalizeClass(cls) {
+  if (!cls) return null;
+  const s = String(cls).trim();
+  const keys = Object.keys(REF.segTable);
+  // 직접 일치
+  if (keys.includes(s)) return s;
+  // 복합 키 내부에 포함 여부 (예: "1.1" → "1.1 1.2 1.5")
+  for (const k of keys) {
+    if (k.split(' ').includes(s)) return k;
+  }
+  return s; // 매칭 안 되면 원문 반환
+}
+
+// ── 5. SG5/SG6처럼 "as for class X" 리다이렉션 해소 ──────────
+// reqSeg가 null인 CLASS 타입 SG 코드는 해당 클래스의 SEG.TABLE 값을 그대로 적용
+function resolveAsForClass(sgTarget, clsA, clsB) {
+  // sgTarget: '3', '5.1' 등 CLASS 문자열
+  const targets = sgTarget.split(',').map(s => s.trim());
+  let maxLv = 0;
+  for (const t of targets) {
+    const normT = normalizeClass(t);
+    const normB = normalizeClass(clsB);
+    const row = REF.segTable[normT];
+    if (row && row[normB] !== undefined) {
+      const v = row[normB];
+      if (v === 'X') return { level: 'X', via: t };
+      if (typeof v === 'number' && v > maxLv) maxLv = v;
+    }
+  }
+  return maxLv > 0 ? { level: maxLv, via: sgTarget } : null;
+}
+
+// ── 6. 격리 엔진 ───────────────────────────────────────────────
+// 인자: a, b = Supabase 레코드 + 파생된 { sgg, sgCodes } 필드 포함 객체
+function calcPairSeg(a, b) {
+  let maxLevel = 0;
+  let hasStar = false;
+  const ruleHits = [];
+
+  function severity(level) {
+    if (level === '*') return 99;
+    if (typeof level === 'number') return level;
+    return 0;
+  }
+
+  function addReason(level, text) {
+    if (level === '*') hasStar = true;
+    if (typeof level === 'number' && level > maxLevel) maxLevel = level;
+    ruleHits.push({ level, text, severity: severity(level) });
+  }
+
+  const getSubClasses = (e) => {
+    const sub = normalizeSubRisk(e.SUB);
+    if (!sub || sub === '-' || sub === '–' || sub === '?') return [];
+    return sub.split(/[\/,]+/).map(s => s.trim()).filter(Boolean);
+  };
+
+  const getAllHazardClasses = (e) => {
+    const result = [];
+    if (e.Class) result.push(String(e.Class).trim());
+    result.push(...getSubClasses(e));
+    return [...new Set(result.filter(Boolean))];
+  };
+
+  const clsA = normalizeClass(a.Class);
+  const clsB = normalizeClass(b.Class);
+
+  if (clsA && clsB) {
+    const rowA = REF.segTable[clsA];
+    if (rowA && rowA[clsB] !== undefined) {
+      const val = rowA[clsB];
+      if (val === 'X') addReason(0, `Class ${a.Class} ↔ Class ${b.Class}: 격리적용없음 (DG 리스트 참조)`);
+      else if (val === '*') addReason('*', `Class ${a.Class} ↔ Class ${b.Class}: Class 1 특수규정 (*)`);
+      else if (typeof val === 'number') addReason(val, `Class ${a.Class} ↔ Class ${b.Class}: Seg ${val}`);
+    }
+  }
+
+  for (const sc of getSubClasses(a)) {
+    const row = REF.segTable[normalizeClass(sc)];
+    if (row && row[clsB] !== undefined) {
+      const v = row[clsB];
+      if (v === 'X') addReason(0, `UN${a.UNNO} SubRisk ${sc} ↔ Class ${b.Class}: 격리적용없음 (DG 리스트 참조)`);
+      else if (v === '*') addReason('*', `UN${a.UNNO} SubRisk ${sc} ↔ Class ${b.Class}: Class 1 특수규정 (*)`);
+      else if (typeof v === 'number') addReason(v, `UN${a.UNNO} SubRisk ${sc} ↔ Class ${b.Class}: Seg ${v}`);
+    }
+  }
+
+  for (const sc of getSubClasses(b)) {
+    const row = REF.segTable[normalizeClass(sc)];
+    if (row && row[clsA] !== undefined) {
+      const v = row[clsA];
+      if (v === 'X') addReason(0, `UN${b.UNNO} SubRisk ${sc} ↔ Class ${a.Class}: 격리적용없음 (DG 리스트 참조)`);
+      else if (v === '*') addReason('*', `UN${b.UNNO} SubRisk ${sc} ↔ Class ${a.Class}: Class 1 특수규정 (*)`);
+      else if (typeof v === 'number') addReason(v, `UN${b.UNNO} SubRisk ${sc} ↔ Class ${a.Class}: Seg ${v}`);
+    }
+  }
+
+  function applySGCodes(holder, other) {
+    const codes = getSGCodes(holder);
+    if (!codes.length) return;
+
+    const otherHazardClasses = getAllHazardClasses(other).map(normalizeClass);
+    const otherSGGroups = getSGGroups(other);
+    const otherUNNO = normalizeUNNO(other.UNNO);
+
+    for (const code of codes) {
+      const sg = REF.sgcode[code];
+      if (!sg) continue;
+
+      if (sg.type === 'CLASS') {
+        const targets = sg.target.split(',').map(s => normalizeClass(s.trim()));
+        if (sg.reqSeg === null) {
+          for (const otherClass of otherHazardClasses) {
+            for (const target of targets) {
+              const row = REF.segTable[target];
+              if (!row || row[otherClass] === undefined) continue;
+              const resolved = row[otherClass];
+              if (resolved === 'X') addReason(0, `${code} (UN${holder.UNNO}): as for class ${sg.target} ↔ ${otherClass}: 격리적용없음`);
+              else if (resolved === '*') addReason('*', `${code} (UN${holder.UNNO}): as for class ${sg.target} ↔ ${otherClass}: Class 1 특수규정 (*)`);
+              else if (typeof resolved === 'number') addReason(resolved, `${code} (UN${holder.UNNO}): as for class ${sg.target} ↔ ${otherClass}: Seg ${resolved}`);
+            }
+          }
+          continue;
+        }
+        if (otherHazardClasses.some(c => targets.includes(c))) {
+          addReason(sg.reqSeg, `${code} (UN${holder.UNNO}→UN${other.UNNO}): ${sg.desc}`);
+        }
+      } else if (sg.type === 'SGG') {
+        if (otherSGGroups.includes(sg.target)) {
+          const targetName = REF.sgg[sg.target] ? `${sg.target} ${REF.sgg[sg.target]}` : sg.target;
+          addReason(sg.reqSeg, `${code} (UN${holder.UNNO}→UN${other.UNNO}): ${targetName} 대상 — ${sg.desc}`);
+        }
+      } else if (sg.type === 'UNNO') {
+        if (otherUNNO === normalizeUNNO(sg.target)) {
+          addReason(sg.reqSeg, `${code} (UN${holder.UNNO}→UN${other.UNNO}): ${sg.desc}`);
+        }
+      }
+    }
+  }
+
+  applySGCodes(a, b);
+  applySGCodes(b, a);
+
+  const reasons = ruleHits.sort((x, y) => y.severity - x.severity).map(r => r.text);
+  if (hasStar) return { level: '*', reasons: reasons.length ? reasons : ['Class 1 특수규정 (*)'] };
+  return { level: maxLevel, reasons: reasons.length ? reasons : ['별도 격리 규정 없음'] };
+}
+
+// ── 7. 상태 ───────────────────────────────────────────────────
 let entries = [];
 
-// 클래스 번호 정규화 (1.1 1.2 1.5 등을 테이블 키와 매칭)
-function normalizeClass(cls) {
-    if (!cls) return null;
-    const s = String(cls).trim();
-    const keys = Object.keys(DB_CONST.segTable);
-    if (keys.includes(s)) return s;
-    for (const k of keys) { if (k.split(' ').includes(s)) return k; }
-    return s;
-}
-
-// --- [3. 격리 엔진 v2.5] ---
-function calcPairSeg(a, b) {
-    let maxLevel = 0; 
-    let reasons = [];
-
-    const clsA = normalizeClass(a.Class);
-    const clsB = normalizeClass(b.Class);
-
-    // 1. 기본 테이블 체크
-if (DB_CONST.segTable[clsA] && DB_CONST.segTable[clsA][clsB]) {
-        const val = DB_CONST.segTable[clsA][clsB];
-        maxLevel = (val === 'X') ? 0 : parseInt(val);
-        if (maxLevel > 0) reasons.push(`기본 클래스 격리 (Level ${maxLevel})`);
-    }
-
-    // 2. SG Code & SGG 정밀 분석 로직
-function evaluateSG(source, target) {
-        if (!source.sg_codes) return;
-        // SG Code가 여러 개일 수 있으므로 분리하여 처리합니다.
-        const codes = String(source.sg_codes).split(/[\s,]+/).filter(Boolean);
-
-        codes.forEach(code => {
-            const sg = DB_CONST.sgcode[code];
-            if (!sg) return;
-
-            let isMatch = false;
-            // 1. SG 코드가 특정 CLASS를 겨냥하는 경우
-            if (sg.type === 'CLASS' && normalizeClass(target.Class) === normalizeClass(sg.target)) isMatch = true;
-            // 2. SG 코드가 특정 SGG 그룹을 겨냥하는 경우 (이 부분이 요청하신 핵심 로직입니다!)[cite: 4]
-            if (sg.type === 'SGG' && target.sgg === sg.target) isMatch = true;
-
-            if (isMatch) {
-                // SG2~6처럼 '해당 클래스처럼 격리'하는 경우와 SG7~처럼 '정해진 수치'가 있는 경우 분리
-                const currentReq = sg.reqSeg || 0; 
-                if (currentReq > maxLevel) {
-                    maxLevel = currentReq;
-                    reasons.push(`${code}: ${sg.desc}`);
-                }
-            }
-        });
-    }
-
-    evaluateSG(a, b); // A의 규정이 B에 적용되는지 확인
-    evaluateSG(b, a); // B의 규정이 A에 적용되는지 확인
-
-    return { level: maxLevel, reason: reasons.length > 0 ? reasons[reasons.length - 1] : "격리 규정 없음" };
-}
-
-// --- [4. CRUD 및 UI 제어] ---
+// ── 8. Supabase 조회 ──────────────────────────────────────────
 async function addEntries() {
-    const input = document.getElementById('searchInput');
-    const rawValues = input.value.split(/[\s,]+/).filter(v => v.trim() !== "");
-    if (rawValues.length === 0) return;
+  const input = document.getElementById('searchInput');
+  const errEl = document.getElementById('errorMsg');
+  errEl.innerHTML = '';
 
-    const formattedValues = rawValues.map(v => {
-        const clean = v.trim();
-        return isNaN(clean) ? clean : clean.padStart(4, '0');
-    });
+  const rawValues = input.value
+    .split(/[\s,]+/)
+    .map(v => v.trim())
+    .filter(v => v !== '');
+  if (!rawValues.length) return;
 
+  const formatted = rawValues.map(v => normalizeUNNO(v));
+  const uniqueFormatted = Array.from(new Set(formatted));
+  if (!uniqueFormatted.length) return;
+
+  const existingUNs = new Set(entries.map(e => normalizeUNNO(e.UNNO)));
+  const skipped = uniqueFormatted.filter(v => existingUNs.has(v));
+  const toLookup = uniqueFormatted.filter(v => !existingUNs.has(v));
+  const msgs = [];
+
+  if (toLookup.length) {
     const { data, error } = await _supabase
-        .from('DG_TABLE')
-        .select('*') // 모든 컬럼을 가져옵니다.
-        .in('UNNO', formattedValues);
+      .from('DG_TABLE')
+      .select('*')
+      .in('UNNO', toLookup);
 
-    if (error) { alert("DB 호출 오류!"); return; }
-    if (data.length === 0) { alert("조회된 UN 번호가 없습니다."); return; }
+    if (error) {
+      errEl.innerHTML = `<div class="error-msg">⚠ DB 오류: ${error.message}</div>`;
+      return;
+    }
 
-    data.forEach(item => { 
-        if (!entries.some(e => e.UNNO === item.UNNO)) entries.push(item); 
+    const uniqueDataMap = new Map();
+    (data || []).forEach(item => {
+      const key = normalizeUNNO(item.UNNO);
+      if (!uniqueDataMap.has(key)) uniqueDataMap.set(key, item);
     });
-    
-    render(); 
-    input.value = '';
+
+    const notFound = toLookup.filter(v => !uniqueDataMap.has(v));
+    if (notFound.length) msgs.push(`⚠ DB에 없는 번호: ${notFound.join(', ')}`);
+    uniqueDataMap.forEach(item => entries.push(prepareEntry(item)));
+  }
+
+  if (skipped.length) msgs.push(`⚠ 이미 추가됨: ${skipped.join(', ')}`);
+  if (msgs.length) errEl.innerHTML = `<div class="error-msg">${msgs.join('<br>')}</div>`;
+
+  render();
+  input.value = '';
+  input.focus();
 }
 
-// 개별 삭제 함수
-function removeEntry(index) {
-    entries.splice(index, 1);
-    render();
+function removeEntry(unno) {
+  entries = entries.filter(e => String(e.UNNO) !== String(unno));
+  render();
+}
+
+function clearAll() {
+  entries = [];
+  document.getElementById('errorMsg').innerHTML = '';
+  render();
+}
+
+// ── 9. 렌더링 ─────────────────────────────────────────────────
+function segBadgeClass(level) {
+  if (level === 'X') return 's0';
+  if (level === '*') return 's4';
+  if (level === 0) return 's0';
+  return `s${level}`;
+}
+
+function segLabel(level) {
+  if (level === 'X') return 'X';
+  if (level === '*') return '*';
+  if (level === 0) return 'OK';
+  return String(level);
 }
 
 function render() {
-    const list = document.getElementById('cardList');
-    const panel = document.getElementById('segPanel');
+  const list  = document.getElementById('cardList');
+  const panel = document.getElementById('segPanel');
 
-    // 1. entries 배열을 순회하며 각 위험물 데이터(e)를 HTML 문자열로 변환합니다.
-    // map() 함수는 배열의 데이터를 하나씩 꺼내어 새로운 형태(HTML)로 조립할 때 사용합니다.
-    list.innerHTML = entries.map((e, index) => `
-        <div class="result-card">
-            <div class="UNNO-badge">${e.UNNO}</div>
-            
-            <div class="card-fields">
-                <!-- 1. CLASS 정보 -->
-                <div class="field">
-                    <span class="field-label">CLASS</span>
-                    <!-- e.Class 값이 없으면 '-'를 출력하도록 논리 연산자(||) 사용 -->
-                    <span class="field-value">${e.Class || '-'}</span>
-                </div>
+  if (!entries.length) {
+    list.innerHTML = '';
+    panel.innerHTML = '';
+    return;
+  }
 
-                <!-- 2. SUB RISK 정보 추가 -->
-                <div class="field">
-                    <span class="field-label">SUB RISK</span>
-                    <!-- Supabase의 컬럼명이 sub_risk->SUB 라고 가정합니다. (대소문자/언더바 정확히 일치해야 함) -->
-                    <span class="field-value sub" style="color: var(--yellow);">${e.SUB || '-'}</span>
-                </div>
+  // 카드 렌더링
+  list.innerHTML = entries.map(e => {
+    const subLabel  = normalizeSubRisk(e.SUB);
+    const sggTags   = getSGGroups(e).length
+      ? getSGGroups(e).map(g => `<span class="field-value tag" title="${REF.sgg[g] || ''}">${g}</span>`).join(' ')
+      : `<span class="field-value" style="color:var(--muted)">—</span>`;
+    const sgTags    = getSGCodes(e).length
+      ? getSGCodes(e).map(c => `<span class="field-value tag sg">${c}</span>`).join(' ')
+      : `<span class="field-value" style="color:var(--muted)">—</span>`;
 
-                <!-- 3. SGG (격리 그룹) 정보 추가 -->
-                <div class="field">
-                    <span class="field-label">SGG</span>
-                    <!-- 태그 형태의 디자인을 위해 tag 클래스 사용 -->
-                    <span class="field-value tag">${e.Segregation || '-'}</span>
-                </div>
-
-                <!-- 4. SG CODE (특수 격리 규정) 정보 추가 -->
-                <div class="field">
-                    <span class="field-label">SG CODE</span>
-                    <span class="field-value tag sg">${e.Segregation || '-'}</span>
-                </div>
-
-                <!-- 5. NAME (정식 명칭) 정보 추가 -->
-                <!-- flex: 1을 주어 카드의 남는 우측 공간을 이름이 모두 차지하도록 레이아웃 설계 -->
-                <div class="field" style="flex: 1; min-width: 150px;">
-                    <span class="field-label">NAME</span>
-                    <span class="field-value name" style="font-size: 12px; color: var(--muted); line-height: 1.3;">
-                        ${e.Name || '명칭 정보 없음'}
-                    </span>
-                </div>
-            </div>
-
-            <!-- 개별 삭제 버튼 (선택된 카드의 인덱스를 매개변수로 전달) -->
-            <button class="remove-btn" onclick="removeEntry(${index})">×</button>
+    return `
+    <div class="result-card">
+      <div class="UNNO-badge">${e.UNNO}</div>
+      <div class="card-fields">
+        <div class="field">
+          <span class="field-label">CLASS</span>
+          <span class="field-value">${e.Class || '—'}</span>
         </div>
-    `).join('');
+        <div class="field">
+          <span class="field-label">SUB RISK</span>
+          <span class="field-value sub">${subLabel}</span>
+        </div>
+        <div class="field">
+          <span class="field-label">SGG GROUP</span>
+          ${sggTags}
+        </div>
+        <div class="field">
+          <span class="field-label">SG CODE</span>
+          ${sgTags}
+        </div>
+        <div class="field" style="flex:1;min-width:160px">
+          <span class="field-label">NAME</span>
+          <span class="field-value name">${e.Name || '—'}</span>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeEntry('${e.UNNO}')" title="삭제">×</button>
+    </div>`;
+  }).join('');
 
-    // 2. 격리 분석 결과 렌더링
-    if (entries.length >= 2) {
-        let maxOverall = 0; let pairs = [];
-        for(let i=0; i<entries.length; i++) {
-            for(let j=i+1; j<entries.length; j++) {
-                const res = calcPairSeg(entries[i], entries[j]);
-                pairs.push({ a: entries[i].UNNO, b: entries[j].UNNO, ...res });
-                if(typeof res.level === 'number') maxOverall = Math.max(maxOverall, res.level);
-            }
-        }
-        const status = maxOverall === 0 ? {t:"혼적 가능", c:"var(--green)", i:"✅"} : {t:`격리 필요 (Level ${maxOverall})`, c:"var(--red)", i:"⚠️"};
-        
-        panel.innerHTML = `
-            <div class="seg-panel">
-                <div class="seg-panel-header">혼적 분석 결과</div>
-                <div class="seg-result-big">
-                    <div class="seg-icon">${status.i}</div>
-                    <div class="seg-main-text" style="color:${status.c}">${status.t}</div>
-                </div>
-                <div class="pair-grid">
-                    ${pairs.map(p => `
-                        <div class="pair-row">
-                            <span style="font-weight:700; font-family:'Space Mono';">UN${p.a} ↔ UN${p.b}</span> 
-                            <span class="seg-badge s${p.level}">${p.level === 0 ? 'OK' : p.level}</span> 
-                            <span style="font-size:12px; color:var(--muted); flex:1">${p.reason}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
-    } else { panel.innerHTML = ""; }
+  // 2개 이상이면 격리 분석
+  if (entries.length < 2) { panel.innerHTML = ''; return; }
+
+  let maxOverall = 0;
+  let hasStar = false;
+  const pairs = [];
+
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const res = calcPairSeg(entries[i], entries[j]);
+      pairs.push({ a: entries[i].UNNO, b: entries[j].UNNO, ...res });
+      if (res.level === '*') hasStar = true;
+      else if (typeof res.level === 'number') maxOverall = Math.max(maxOverall, res.level);
+    }
+  }
+
+  let statusText, statusColor, statusIcon;
+  if (maxOverall >= 3) {
+    statusText = `Segregation ${maxOverall} — 엄격한 격리 필요`;
+    statusColor = 'var(--red)'; statusIcon = '⚠️';
+  } else if (maxOverall >= 1) {
+    statusText = `Segregation ${maxOverall} — 격리 조건 준수 필요`;
+    statusColor = 'var(--yellow)'; statusIcon = '⚠️';
+  } else if (hasStar) {
+    statusText = 'Class 1 특수규정 적용 — 별도 확인 필요 (*)';
+    statusColor = 'var(--yellow)'; statusIcon = '⭐';
+  } else {
+    statusText = '혼적 가능 — 별도 격리 규정 없음';
+    statusColor = 'var(--green)'; statusIcon = '✅';
+  }
+
+  panel.innerHTML = `
+    <div class="seg-panel">
+      <div class="seg-panel-header">
+        <span style="font-family:'Space Mono',monospace;font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted)">
+          SEGREGATION ANALYSIS
+        </span>
+        <span style="font-size:12px;color:var(--muted);float:right">${entries.length}개 화물 · ${pairs.length}쌍</span>
+      </div>
+      <div class="seg-result-big">
+        <div class="seg-icon">${statusIcon}</div>
+        <div>
+          <div class="seg-main-text" style="color:${statusColor}">${statusText}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">IMDG Code 7.2 기준</div>
+        </div>
+      </div>
+      <div class="pair-grid">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px">PAIR DETAIL</div>
+        ${pairs.map(p => `
+          <div class="pair-row">
+            <span style="font-weight:700;font-family:'Space Mono';min-width:150px">UN${p.a} ↔ UN${p.b}</span>
+            <span class="seg-badge ${segBadgeClass(p.level)}">${segLabel(p.level)}</span>
+            <span style="font-size:12px;color:var(--muted);flex:1">${p.reasons.slice(0,3).join('<br>')}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;padding:12px 24px;border-top:1px solid var(--border)">
+        ${['OK — 격리 불필요','1 — Away from','2 — Separated from','3 — Sep. by compartment','4 — Sep. longitudinally','X — 격리 적용 없음'].map((t,i) => {
+          const cls = ['s0','s1','s2','s3','s0','s0'][i];
+          const lbl = ['OK','1','2','3','4','X'][i];
+          return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span class="seg-badge ${cls}" style="min-width:28px;padding:2px 6px">${lbl}</span>${t}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
 }
 
-// 이벤트 리스너
+// ── 10. 이벤트 리스너 ─────────────────────────────────────────
 document.getElementById('addBtn').addEventListener('click', addEntries);
-document.getElementById('clearBtn').addEventListener('click', () => { entries = []; render(); });
-document.getElementById('searchInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') addEntries(); });
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addEntries();
+});

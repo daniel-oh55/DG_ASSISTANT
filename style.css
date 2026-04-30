@@ -55,22 +55,22 @@ header span { font-size: 14px; color: var(--muted); }
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 23, 68, 0.1);
+    background: transparent;
     color: var(--red);
-    border: 1px solid var(--red);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    border: none;
+    padding: 0 6px;
+    min-width: auto;
+    height: auto;
+    border-radius: 0;
     cursor: pointer;
     font-weight: bold;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: color 0.2s;
 }
 
 .remove-btn:hover {
-    background: var(--red);
     color: white;
 }
 
