@@ -692,8 +692,388 @@ async function lookupDGInfo() {
     }
 }
 
+
+
+
 // ── 3. 이벤트 리스너 연결 ──
 document.getElementById('infoLookupBtn').addEventListener('click', lookupDGInfo);
 document.getElementById('lookupInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') lookupDGInfo();
+});
+
+
+// ── 4. 실무 지식 노트 로직 ──────────────────────────────────────
+
+let isEditMode = false;
+let currentFileUrl = null;  // 현재 게시글의 파일 URL 보관용
+let currentFileName = null; // 현재 게시글의 파일명 보관용
+let currentFileRemoved = false; // 수정 시 기존 첨부파일 삭제 여부
+
+// 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
+function formatDate(isoString) {
+    if(!isoString) return "-";
+    const d = new Date(isoString);
+    if(isNaN(d.getTime())) return "-";
+    return d.getFullYear() + "." + 
+           String(d.getMonth() + 1).padStart(2, '0') + "." + 
+           String(d.getDate()).padStart(2, '0') + " " +
+           String(d.getHours()).padStart(2, '0') + ":" + 
+           String(d.getMinutes()).padStart(2, '0');
+}
+
+// HTML 표시용 이스케이프 처리
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// 데이터 안전 전송용 인코딩 / 디코딩
+function encodeSafeNote(note) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(note))));
+}
+
+function decodeSafeNote(safeNote) {
+    return JSON.parse(decodeURIComponent(escape(atob(safeNote))));
+}
+
+// 노트 목록 불러오기
+async function fetchNotes() {
+    const { data, error } = await _supabase
+        .from('DG_NOTES')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('노트 목록 조회 오류:', error);
+        return;
+    }
+
+    const noteList = document.getElementById('noteList');
+    if (!noteList) return;
+
+    if (!data || data.length === 0) {
+        noteList.innerHTML = `<div style="color:var(--muted); font-size:14px;">저장된 노트가 없습니다.</div>`;
+        return;
+    }
+
+    noteList.innerHTML = data.map(note => {
+        const created = formatDate(note.created_at);
+        const updated = note.updated_at ? `<div style="color:var(--accent2); font-size:10px; margin-top:3px;">(Edit) ${formatDate(note.updated_at)}</div>` : "";
+        const safeNote = encodeSafeNote(note);
+        const fileMark = note.file_url ? `<div class="note-card-attachment">📎 ${escapeHtml(note.file_name || '첨부파일')}</div>` : "";
+
+        return `
+            <div class="note-card" onclick="openModalSafe('${safeNote}')">
+                <div class="note-card-header">
+                    <div class="note-card-title">${escapeHtml(note.title)}</div>
+                    <div class="note-card-date">
+                        <div>${created}</div>
+                        ${updated}
+                    </div>
+                </div>
+                <div class="note-card-meta">${escapeHtml(note.author)}</div>
+                <div class="note-card-body">${escapeHtml(note.content)}</div>
+                ${fileMark}
+                <div class="note-card-btns" onclick="event.stopPropagation()">
+                    <button class="btn-sm" onclick="prepareEditSafe('${safeNote}')">수정</button>
+                    <button class="btn-sm" onclick="deleteNoteSafe('${safeNote}')">삭제</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 노트 저장 / 수정
+async function saveNote() {
+    const titleEl = document.getElementById('noteTitle');
+    const authorEl = document.getElementById('noteAuthor');
+    const pwEl = document.getElementById('notePw');
+    const contentEl = document.getElementById('noteContent');
+    const fileEl = document.getElementById('noteFile');
+    const editIdEl = document.getElementById('editNoteId');
+    const editStatus = document.getElementById('editStatus');
+    const saveBtn = document.getElementById('saveNoteBtn');
+
+    const title = titleEl.value.trim();
+    const author = authorEl.value.trim();
+    const password = pwEl.value.trim();
+    const content = contentEl.value.trim();
+    const editId = editIdEl.value.trim();
+
+    if (!title || !author || !password || !content) {
+        alert('제목, 작성자, 비밀번호, 내용을 모두 입력해 주세요.');
+        return;
+    }
+
+    saveBtn.disabled = true;
+    const originalBtnText = saveBtn.innerText;
+    saveBtn.innerText = '저장 중...';
+
+    try {
+        let fileUrl = currentFileRemoved ? null : currentFileUrl;
+        let fileName = currentFileRemoved ? null : currentFileName;
+        const selectedFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+
+        // 첨부파일이 선택된 경우에만 Storage 업로드
+        if (selectedFile) {
+            const safeFileName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            const storagePath = `notes/${safeFileName}`;
+
+            const { error: uploadError } = await _supabase
+                .storage
+                .from('dg_files')
+                .upload(storagePath, selectedFile, { upsert: false });
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicUrlData } = _supabase
+                .storage
+                .from('dg_files')
+                .getPublicUrl(storagePath);
+
+            fileUrl = publicUrlData.publicUrl;
+            fileName = selectedFile.name;
+        }
+
+        const noteData = {
+            title,
+            author,
+            password,
+            content,
+            file_url: fileUrl,
+            file_name: fileName
+        };
+
+        let result;
+        if (editId) {
+            result = await _supabase
+                .from('DG_NOTES')
+                .update({
+                    ...noteData,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', editId)
+                .select()
+                .single();
+        } else {
+            result = await _supabase
+                .from('DG_NOTES')
+                .insert([noteData]);
+        }
+
+        if (result.error) throw result.error;
+
+        resetNoteForm();
+        await fetchNotes();
+        alert(editId ? '노트가 수정되었습니다.' : '노트가 저장되었습니다.');
+    } catch (err) {
+        console.error('노트 저장 오류:', err);
+        if (editStatus) {
+            editStatus.innerHTML = `<span style="color:var(--red); font-size:12px;">저장 실패: ${escapeHtml(err.message || err)}</span>`;
+        }
+        alert('노트 저장 실패: ' + (err.message || err));
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = originalBtnText;
+    }
+}
+
+// 입력폼 초기화
+function resetNoteForm() {
+    document.getElementById('editNoteId').value = '';
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteAuthor').value = '';
+    document.getElementById('notePw').value = '';
+    document.getElementById('noteContent').value = '';
+    document.getElementById('noteFile').value = '';
+    document.getElementById('editStatus').innerHTML = '';
+
+    isEditMode = false;
+    currentFileUrl = null;
+    currentFileName = null;
+    currentFileRemoved = false;
+    updateSelectedFileUI();
+
+    document.getElementById('saveNoteBtn').innerText = '노트 저장하기';
+}
+
+// 모달 열기
+function openModalSafe(safeNote) {
+    const note = decodeSafeNote(safeNote);
+
+    document.getElementById('modalTitle').innerText = note.title || '-';
+    document.getElementById('modalAuthor').innerText = note.author || '-';
+    document.getElementById('modalDate').innerHTML = `
+        <div>${formatDate(note.created_at)}</div>
+        ${note.updated_at ? `<div style="color:var(--accent2); margin-top:3px;">(Edit) ${formatDate(note.updated_at)}</div>` : ''}
+    `;
+    document.getElementById('modalContent').innerText = note.content || '-';
+
+    const attachment = document.getElementById('modalAttachment');
+    if (note.file_url) {
+        attachment.innerHTML = `
+            <a href="${note.file_url}" target="_blank" style="color:var(--accent);">
+                📎 ${escapeHtml(note.file_name || '첨부파일 열기')}
+            </a>
+        `;
+    } else {
+        attachment.innerHTML = '';
+    }
+
+    document.getElementById('noteModal').style.display = 'flex';
+}
+
+// 모달 닫기
+function closeModal() {
+    document.getElementById('noteModal').style.display = 'none';
+}
+
+// 수정 준비
+function prepareEditSafe(safeNote) {
+    const note = decodeSafeNote(safeNote);
+    const inputPw = prompt('수정 비밀번호를 입력하세요:');
+
+    if (inputPw !== note.password) {
+        if (inputPw !== null) alert('비밀번호가 일치하지 않습니다.');
+        return;
+    }
+
+    isEditMode = true;
+    currentFileUrl = note.file_url || null;
+    currentFileName = note.file_name || null;
+    currentFileRemoved = false;
+
+    document.getElementById('editNoteId').value = note.id;
+    document.getElementById('noteTitle').value = note.title || '';
+    document.getElementById('noteAuthor').value = note.author || '';
+    document.getElementById('notePw').value = note.password || '';
+    document.getElementById('noteContent').value = note.content || '';
+    document.getElementById('noteFile').value = '';
+
+    document.getElementById('saveNoteBtn').innerText = '노트 수정하기';
+    document.getElementById('editStatus').innerHTML = `
+        <span style="color:var(--accent2); font-size:12px;">
+            수정 모드: ${escapeHtml(note.title || '')}
+        </span>
+    `;
+    updateSelectedFileUI();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// 파일 선택/기존 첨부파일 표시 및 X 버튼으로 선택 취소
+function ensureFileSelectionBox() {
+    const fileEl = document.getElementById('noteFile');
+    if (!fileEl) return null;
+
+    let box = document.getElementById('fileSelectionStatus');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'fileSelectionStatus';
+        box.style.cssText = 'font-size:12px; color:var(--muted); margin-left:8px; display:flex; align-items:center; gap:6px; max-width:320px;';
+        fileEl.insertAdjacentElement('afterend', box);
+    }
+    return box;
+}
+
+function updateSelectedFileUI() {
+    const fileEl = document.getElementById('noteFile');
+    const box = ensureFileSelectionBox();
+    if (!fileEl || !box) return;
+
+    const selectedFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+
+    if (selectedFile) {
+        box.innerHTML = `
+            <span style="color:var(--accent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(selectedFile.name)}</span>
+            <button type="button" onclick="clearSelectedNoteFile()" title="선택 파일 삭제" style="background:transparent; border:0; color:var(--red); cursor:pointer; font-weight:900; font-size:16px; line-height:1;">×</button>
+        `;
+        return;
+    }
+
+    if (currentFileName && !currentFileRemoved) {
+        box.innerHTML = `
+            <span style="color:var(--accent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">현재 첨부파일: ${escapeHtml(currentFileName)}</span>
+            <button type="button" onclick="removeCurrentNoteFile()" title="기존 첨부파일 삭제" style="background:transparent; border:0; color:var(--red); cursor:pointer; font-weight:900; font-size:16px; line-height:1;">×</button>
+        `;
+        return;
+    }
+
+    box.innerHTML = '';
+}
+
+function clearSelectedNoteFile() {
+    const fileEl = document.getElementById('noteFile');
+    if (fileEl) fileEl.value = '';
+    updateSelectedFileUI();
+}
+
+function removeCurrentNoteFile() {
+    currentFileUrl = null;
+    currentFileName = null;
+    currentFileRemoved = true;
+    const fileEl = document.getElementById('noteFile');
+    if (fileEl) fileEl.value = '';
+    updateSelectedFileUI();
+}
+
+// 노트 삭제 (비밀번호 확인)
+async function deleteNoteSafe(safeNote) {
+    const note = decodeSafeNote(safeNote);
+    const inputPw = prompt('비밀번호를 입력하세요:');
+
+    if (inputPw === note.password) {
+        const { error } = await _supabase
+            .from('DG_NOTES')
+            .delete()
+            .eq('id', note.id)
+            .eq('password', inputPw);
+
+        if (error) {
+            console.error('노트 삭제 오류:', error);
+            alert('삭제 실패: ' + error.message);
+        } else {
+            await fetchNotes();
+        }
+    } else if (inputPw !== null) {
+        alert('비밀번호가 일치하지 않습니다.');
+    }
+}
+
+// 기존 호출 호환용
+async function deleteNote(id, correctPw) {
+    const inputPw = prompt('비밀번호를 입력하세요:');
+    if (inputPw === correctPw) {
+        const { error } = await _supabase.from('DG_NOTES').delete().eq('id', id).eq('password', inputPw);
+        if (error) alert('삭제 실패: ' + error.message);
+        else fetchNotes();
+    } else if (inputPw !== null) {
+        alert('비밀번호가 일치하지 않습니다.');
+    }
+}
+
+// 이벤트 리스너
+const saveNoteBtn = document.getElementById('saveNoteBtn');
+if (saveNoteBtn) {
+    saveNoteBtn.addEventListener('click', saveNote);
+}
+
+const noteFileInput = document.getElementById('noteFile');
+if (noteFileInput) {
+    ensureFileSelectionBox();
+    noteFileInput.addEventListener('change', updateSelectedFileUI);
+}
+
+// 탭 클릭 시 노트 데이터 로딩
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        if(item.getAttribute('data-target') === 'tab-notes') {
+            fetchNotes();
+        }
+    });
 });

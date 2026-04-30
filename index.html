@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMDG Cloud Engine v3.0</title>
+    <title>IMDG Cloud Engine v3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;600&family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -18,6 +18,7 @@
                 <!-- data-target 속성으로 어떤 탭을 열지 JS에게 알려줍니다. -->
                 <li class="menu-item active" data-target="tab-segregation">📦 격리규정 확인</li>
                 <li class="menu-item" data-target="tab-lookup">🔍 DG정보 상세조회</li>
+                <li class="menu-item" data-target="tab-notes">📝 DG 추가정보 노트</li>
             </ul>
         </nav>
 
@@ -67,6 +68,43 @@
                 <div id="infoDetailView"></div>
                 </div>
             </section>
+
+<section id="tab-notes" class="tab-content">
+    <div class="container">
+        <input type="hidden" id="editNoteId">
+        <div class="search-area note-form">
+            <div class="note-input-grid">
+                <input type="text" id="noteTitle" placeholder="제목">
+                <input type="text" id="noteAuthor" placeholder="작성자">
+                <input type="password" id="notePw" placeholder="비밀번호 (수정/삭제용)">
+            </div>
+            <textarea id="noteContent" placeholder="내용을 입력하세요..." rows="4"></textarea>
+            <div class="note-footer">
+                <input type="file" id="noteFile">
+                <div id="editStatus"></div> <button class="btn accent2" id="saveNoteBtn">노트 저장하기</button>
+            </div>
+        </div>
+
+        <div id="noteList" class="note-grid"></div>
+    </div>
+</section>
+
+<div id="noteModal" class="modal-overlay">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h2 id="modalTitle">제목</h2>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-meta">
+            <span id="modalAuthor">작성자</span> | <span id="modalDate">날짜</span>
+        </div>
+        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+        <div id="modalContent" class="modal-body">내용</div>
+        <div id="modalAttachment" class="modal-foot"></div>
+    </div>
+</div>
+</section>
+
 
         </main>
     </div>

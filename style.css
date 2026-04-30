@@ -144,3 +144,131 @@ header span { font-size: 14px; color: var(--muted); }
     .dg-detail-grid { grid-template-columns: 1fr; }
     .col-2, .col-4, .col-6, .header-main, .flashpoint-cell { grid-column: span 1; }
 }
+
+
+/* 실무 노트 전용 스타일 */
+.note-form {
+    background: var(--surface);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    gap: 15px !important;
+}
+.note-input-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 10px;
+}
+.note-input-grid input, textarea {
+    background: var(--bg) !important;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px;
+    border-radius: 6px;
+    outline: none;
+    font-family: var(--font-main);
+}
+.note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.file-input { font-size: 13px; color: var(--muted); }
+
+/* 노트 카드 그리드 */
+.note-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+.note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+    transition: 0.3s
+    height: 280px; /* 고정 높이 */
+    cursor: pointer;
+    flex-direction: column;
+    }
+
+.note-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+.note-card-header {
+    display: flex;
+    justify-content: space-between; /* 제목과 날짜를 양 끝으로 */
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+.note-card-date {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+/* 2. 수정 폼 내 파일 삭제 UI */
+.file-manage-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 5px;
+}
+
+.remove-file-icon {
+    color: var(--red);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+}
+
+
+.note-card-title { font-weight: 700; color: var(--accent); font-size: 17px; }
+.note-card-meta { font-size: 12px; color: var(--muted); }
+.note-card-body { flex: 1; overflow: hidden; 
+    display: -webkit-box;
+    -webkit-line-clamp: 5; /* 5줄만 표시 */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+    font-size: 14px; line-height: 1.6; color: #cbd5e1; white-space: pre-wrap; }
+
+.note-card-attachment {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0,212,255,0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.note-card-attachment img { max-width: 100%; border-radius: 4px; margin-top: 5px; }
+.note-card-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+.btn-sm { padding: 5px 10px; font-size: 11px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); }
+.btn-sm:hover { color: var(--red); border-color: var(--red); }
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9999; backdrop-filter: blur(5px);
+}
+.modal-window {
+    background: var(--surface); border: 1px solid var(--border);
+    width: 90%; max-width: 700px; max-height: 85vh;
+    border-radius: 16px; padding: 30px; overflow-y: auto;
+    position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-close {
+    background: transparent; border: none; color: var(--muted);
+    font-size: 32px; cursor: pointer; transition: 0.2s;
+}
+.modal-close:hover { color: var(--red); }
+.modal-body { line-height: 1.8; color: #e2e8f0; white-space: pre-wrap; font-size: 16px; }
+.modal-meta { font-size: 13px; color: var(--muted); margin-top: 10px; }
