@@ -1,25 +1,57 @@
 :root {
-    --bg: #0a0e17; --surface: #111827; --border: #1e2d45;
-    --accent: #00d4ff; --accent2: #ff6b35; --green: #00e676; --yellow: #ffd600;
-    --red: #ff1744; --text: #e2e8f0; --muted: #64748b;
-    --font-main: 'Noto Sans KR', 'Plus Jakarta Sans', sans-serif;
-    --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+    /* 2026 Neo-Precision 컬러 시스템 */
+    --bg: #0d1117; 
+    --surface: rgba(22, 27, 34, 0.7); /* 글래스모피즘: 투명도 조절 */
+    --surface-solid: #161b22;
+    --border: rgba(255, 255, 255, 0.08); /* 얇고 투명한 경계선 */
+    --accent: #00f2ff; /* 일렉트릭 틸 */
+    --accent-glow: rgba(0, 242, 255, 0.15);
+    --accent2: #ff5c00; /* 비탈 오렌지 */
+    --green: #00e676; --yellow: #ffd600; --red: #ff1744;
+    --text-main: #e6edf3;
+    --text-muted: #8b949e;
+    
+    /* 정밀한 레이어 설계를 위한 뎁스(Depth) */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.6);
+    --glass-blur: blur(12px);
+    
+    --font-main: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: var(--font-main); min-height: 100vh; }
+
+body { 
+    background: var(--bg); 
+    color: var(--text-main); 
+    font-family: var(--font-main); 
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 배경에 유기적인 질감(Organic Texture) 추가 [cite: 92] */
+body::before {
+    content: "";
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+    opacity: 0.03; pointer-events: none; z-index: 0;
+}
 
 /* 좌측 메뉴 레이아웃 */
 .app-wrapper { display: flex; min-height: 100vh; }
 .sidebar {
     width: 260px;
-    background: var(--surface);
+    background: rgba(13, 17, 23, 0.8); /* 적응형 글래스모피즘 */
+    backdrop-filter: var(--glass-blur);
     border-right: 1px solid var(--border);
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
+    z-index: 10;
 }
+
+
 .logo {
     font-family: var(--font-mono);
     font-size: 22px;
@@ -30,17 +62,24 @@ body { background: var(--bg); color: var(--text); font-family: var(--font-main);
     letter-spacing: -1px;
 }
 .menu-list { list-style: none; }
+
 .menu-item {
-    padding: 16px 20px;
-    margin-bottom: 8px;
-    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    color: var(--muted);
+    color: var(--text-muted);
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
 }
-.menu-item.active { background: var(--accent); color: var(--bg); }
-.menu-item:hover:not(.active) { background: rgba(0,212,255,0.1); color: var(--accent); }
+
+.menu-item.active { 
+    background: var(--accent-glow); 
+    color: var(--accent);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 242, 255, 0.1);
+}
 
 .content-area { flex: 1; overflow-y: auto; }
 .tab-content { display: none; }
@@ -107,32 +146,88 @@ header span { font-size: 14px; color: var(--muted); }
 .error-msg { background: rgba(255,23,68,0.1); border: 1px solid var(--red); color: #ff6b6b; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; }
 
 /* DG 상세조회 화면 */
+/* [복원 및 개선] DG 상세조회 그리드 레이아웃 */
 .dg-detail-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 2px;
+    gap: 1px;
     background: var(--border);
-    border: 2px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
     margin-top: 25px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
-.grid-cell { background: #1a202c; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center; }
-.cell-label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
-.cell-value { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--text); }
-.properties-text { font-weight: 500 !important; color: #ffffff !important; line-height: 1.8; font-size: 15px; font-family: var(--font-main); }
+
+.grid-cell { 
+    background: #1a202c; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: stretch; /* 레이블과 값이 꽉 차도록 */
+    padding: 0; 
+}
+
+/* 칸 안의 메뉴명(레이블) 영역 */
+.cell-label { 
+    font-size: 10px; 
+    color: var(--accent); 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    letter-spacing: 1px; 
+    padding: 6px 15px;
+    background: rgba(0, 0, 0, 0.2); /* 메뉴 영역만 살짝 어둡게 */
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+/* 칸 안의 실제 데이터 영역 */
+.cell-value { 
+    font-family: var(--font-mono); 
+    font-size: 15px; 
+    font-weight: 700; 
+    color: #ffffff; 
+    padding: 10px 15px;
+    flex-grow: 1;
+}
+
+/* 원본 레이아웃 전용 클래스 복원 */
 .col-2 { grid-column: span 2; }
 .col-4 { grid-column: span 4; }
 .col-6 { grid-column: span 6; }
-.header-main { grid-column: span 6; background: #0b5f73; color: white; padding: 18px 25px; font-weight: 800; font-size: 19px; }
-.header-sub { background: rgba(255, 255, 255, 0.05); color: var(--muted); text-align: center; font-size: 12px; font-weight: 800; justify-content: center; }
-.flashpoint-cell { grid-column: span 4; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; padding-left: 20px; gap: 15px; }
-.text-accent { color: var(--accent); }
-.text-orange { color: var(--accent2); }
+
+.header-main { 
+    grid-column: span 6; 
+    background: linear-gradient(90deg, #0b5f73, #084a59) !important; 
+    color: white !important; 
+    padding: 18px 25px !important; 
+    font-size: 19px !important; 
+    font-weight: 800; 
+}
+
+.header-sub { 
+    background: #2d3748 !important; 
+    color: var(--text-muted) !important; 
+    text-align: center; 
+    font-size: 11px !important; 
+    font-weight: 800; 
+    justify-content: center;
+    padding: 8px !important;
+}
+
+/* 플래시포인트 전용 레이아웃 복원 */
+.flashpoint-cell { 
+    grid-column: span 4; 
+    flex-direction: row !important; 
+    align-items: center; 
+    padding-left: 0;
+}
+.flashpoint-cell .cell-label { border-bottom: none; border-right: 1px solid var(--border); height: 100%; display: flex; align-items: center; }
+
+/* 하단 위험물 다이아몬드 라벨 복원 */
 .hazard-label-area { background: #111827; display: flex; align-items: center; justify-content: center; min-height: 160px; }
 .diamond-label { width: 85px; height: 85px; background: var(--accent2); transform: rotate(45deg); border: 3px solid #000; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 .diamond-text { transform: rotate(-45deg); color: #000; font-weight: 900; font-size: 15px; text-align: center; line-height: 1; }
+
+.properties-text { font-weight: 500 !important; color: #cbd5e1 !important; line-height: 1.6; font-size: 14px; font-family: var(--font-main); }
 
 @media (max-width: 900px) {
     .app-wrapper { flex-direction: column; }
@@ -272,3 +367,148 @@ header span { font-size: 14px; color: var(--muted); }
 .modal-close:hover { color: var(--red); }
 .modal-body { line-height: 1.8; color: #e2e8f0; white-space: pre-wrap; font-size: 16px; }
 .modal-meta { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+/* ─────────────────────────────────────────────────────────────
+   REFINED APPLE GLASS UI - 고휘도 글래스모피즘 버전
+   ───────────────────────────────────────────────────────────── */
+
+#infoLookupBtn {
+    /* 1. 배경: 더 밝은 틸(Teal) 베이스와 화이트 그라데이션 혼합 */
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.25) 0%, 
+        rgba(0, 242, 255, 0.3) 50%, 
+        rgba(0, 242, 255, 0.15) 100%
+    );
+    
+    /* 2. 더 강력한 블러 효과로 맑은 유리 질감 구현 */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    
+    /* 3. 테두리: '하이라이트 선'을 더 밝게 하여 유리의 절단면 강조 */
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    
+    /* 4. 그림자: 외부로 퍼지는 은은한 광원(Glow) 추가 */
+    box-shadow: 
+        0 10px 30px rgba(0, 242, 255, 0.25),
+        inset 0 0 15px rgba(255, 255, 255, 0.3);
+    
+    /* 5. 텍스트: 시인성을 위해 순백색과 미세한 섀도우 적용 */
+    color: #ffffff !important;
+    font-weight: 800;
+    text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
+    
+    /* 6. 레이아웃 안정화 (기존 btn 클래스 오버라이딩) */
+    padding: 14px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* 마우스 호버 시: 더 밝게 빛나는 효과 (High-energy style) [cite: 60] */
+#infoLookupBtn:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.4) 0%, 
+        rgba(0, 242, 255, 0.5) 100%
+    );
+    transform: translateY(-3px) scale(1.03);
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 15px 45px rgba(0, 242, 255, 0.4),
+        inset 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+/* 버튼 내부를 관통하는 빛의 섬광 (Shimmer Effect) */
+#infoLookupBtn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: none;
+}
+
+#infoLookupBtn:hover::before {
+    left: 150%;
+    transition: 0.8s;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2026 ADAPTIVE GLASS UI - TRIPLE COLOR SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+/* [1] 공통 글래스 속성 (모든 버튼에 적용) */
+#addBtn, #infoLookupBtn, #saveNoteBtn {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 10px;
+    font-weight: 800;
+    color: #ffffff !important;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* [2] 블루 계열 - 격리규정 확인 (Add Button) */
+#addBtn {
+    background: linear-gradient(135deg, rgba(0, 150, 255, 0.3) 0%, rgba(0, 80, 255, 0.2) 100%);
+}
+#addBtn:hover {
+    background: rgba(0, 150, 255, 0.5);
+    box-shadow: 0 12px 40px rgba(0, 150, 255, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* [3] 노란 계열 - 상세 정보 검색 (Lookup Button) */
+#infoLookupBtn {
+    background: linear-gradient(135deg, rgba(255, 200, 0, 0.3) 0%, rgba(255, 150, 0, 0.2) 100%);
+}
+#infoLookupBtn:hover {
+    background: rgba(255, 200, 0, 0.5);
+    box-shadow: 0 12px 40px rgba(255, 200, 0, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* [4] 붉은 계열 - 노트 저장하기 (Save Button) */
+#saveNoteBtn {
+    background: linear-gradient(135deg, rgba(255, 50, 100, 0.3) 0%, rgba(200, 20, 50, 0.2) 100%);
+}
+#saveNoteBtn:hover {
+    background: rgba(255, 50, 100, 0.5);
+    box-shadow: 0 12px 40px rgba(255, 50, 100, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* [5] 공통 섬광 효과 (Shimmer Effect) */
+#addBtn::before, #infoLookupBtn::before, #saveNoteBtn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: skewX(-25deg);
+    transition: 0.8s;
+}
+
+#addBtn:hover::before, #infoLookupBtn:hover::before, #saveNoteBtn:hover::before {
+    left: 150%;
+}
+
+/* 클릭 시 반응(Active State) */
+#addBtn:active, #infoLookupBtn:active, #saveNoteBtn:active {
+    transform: translateY(0) scale(0.98);
+    filter: brightness(1.2);
+}

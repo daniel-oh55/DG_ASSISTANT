@@ -574,7 +574,12 @@ async function lookupDGInfo() {
     }
 
     // 로딩 상태 표시
-    view.innerHTML = `<div style="padding:40px; text-align:center; color:var(--accent); font-family:'JetBrains Mono';">/ / SEARCHING_DATABASE [UN ${unno}]...</div>`;
+    view.innerHTML = `
+    <div style="padding:60px; text-align:center; color:var(--accent); font-family:var(--font-mono); letter-spacing:2px;">
+        <div class="loading-spinner" style="margin-bottom:20px;">⚡ SYSTEM_ACCESSING_DATABASE...</div>
+        <div style="font-size:12px; color:var(--text-muted); opacity:0.6;">NEO-PRECISION ENGINE v3.1</div>
+    </div>
+`;
     errorMsg.innerHTML = '';
 
     try {
@@ -622,68 +627,68 @@ async function lookupDGInfo() {
         };
 
         // ── HTML 렌더링 ──
-        view.innerHTML = `
-            <div class="dg-detail-grid">
-                <div class="grid-cell col-6 header-main">SUBSTANCE: ${res.name}</div>
+        // [복원] 원본 데이터 배치 구조 + 시인성 강화 레이아웃
+view.innerHTML = `
+    <div class="dg-detail-grid">
+        <div class="grid-cell col-6 header-main">SUBSTANCE: ${res.name}</div>
 
-                <div class="grid-cell col-2"><div class="cell-label">(1) UN No</div><div class="cell-value text-accent">${res.unno}</div></div>
-                <div class="grid-cell col-4"><div class="cell-label">(2) Proper Shipping Name</div><div class="cell-value">${res.name}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(1) UN No</div><div class="cell-value text-accent">${res.unno}</div></div>
+        <div class="grid-cell col-4"><div class="cell-label">(2) Proper Shipping Name</div><div class="cell-value">${res.name}</div></div>
 
-                <div class="grid-cell col-2"><div class="cell-label">(3) Class</div><div class="cell-value text-accent">${res.class}</div></div>
-                <div class="grid-cell col-2"><div class="cell-label">(4) Sub Hazards</div><div class="cell-value text-accent">${res.sub}</div></div>
-                <div class="grid-cell col-2"><div class="cell-label">(5) Packing Group</div><div class="cell-value">${res.pg}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(3) Class</div><div class="cell-value text-accent">${res.class}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(4) Sub Hazards</div><div class="cell-value text-orange">${res.sub}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(5) Packing Group</div><div class="cell-value">${res.pg}</div></div>
 
-                <div class="grid-cell col-2"><div class="cell-label">(6) Special Provisions</div><div class="cell-value">${res.sp}</div></div>
-                <div class="grid-cell col-2"><div class="cell-label">(7a) Limited Qty</div><div class="cell-value">${res.lq}</div></div>
-                <div class="grid-cell col-2"><div class="cell-label">(7b) Excepted Qty</div><div class="cell-value">${res.eq}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(6) Special Provisions</div><div class="cell-value">${res.sp}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(7a) Limited Qty</div><div class="cell-value">${res.lq}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(7b) Excepted Qty</div><div class="cell-value">${res.eq}</div></div>
 
-                <div class="grid-cell flashpoint-cell">
-                    <span class="cell-label">Flashpoint:</span>
-                    <span class="cell-value">${res.flash}</span>
-                </div>
-                <div class="grid-cell col-2">
-                    <div class="cell-label">(15) EmS</div>
-                    <div class="cell-value text-orange" style="color:var(--accent2)">${res.ems}</div>
-                </div>
+        <div class="grid-cell flashpoint-cell">
+            <div class="cell-label">Flashpoint</div>
+            <div class="cell-value">${res.flash}</div>
+        </div>
+        <div class="grid-cell col-2">
+            <div class="cell-label">(15) EmS</div>
+            <div class="cell-value text-orange">${res.ems}</div>
+        </div>
 
-                <div class="grid-cell col-2 header-sub">Category</div>
-                <div class="grid-cell col-2 header-sub">Instructions</div>
-                <div class="grid-cell col-2 header-sub">Provisions</div>
+        <div class="grid-cell col-2 header-sub">Category</div>
+        <div class="grid-cell col-2 header-sub">Instructions</div>
+        <div class="grid-cell col-2 header-sub">Provisions</div>
 
-                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">Packing</div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.p_inst}</div></div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.p_prov}</div></div>
+        <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">Packing</div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.p_inst}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.p_prov}</div></div>
 
-                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">IBCs</div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.ibc_inst}</div></div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.ibc_prov}</div></div>
+        <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">IBCs</div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.ibc_inst}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.ibc_prov}</div></div>
 
-                <div class="grid-cell col-2 header-sub" style="background:transparent; color:var(--muted)">Tanks</div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.tank_inst}</div></div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.tank_prov}</div></div>
+        <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">Tanks</div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.tank_inst}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.tank_prov}</div></div>
 
-                <div class="grid-cell col-4 header-sub">(16a) Stowage and Handling</div>
-                <div class="grid-cell col-2 header-sub">(16b) Segregation</div>
+        <div class="grid-cell col-4 header-sub">(16a) Stowage and Handling</div>
+        <div class="grid-cell col-2 header-sub">(16b) Segregation</div>
+        <div class="grid-cell col-4"><div class="cell-value" style="font-size:13px;">${res.stowage}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${res.segregation}</div></div>
 
-                <div class="grid-cell col-4"><div class="cell-value">${res.stowage}</div></div>
-                <div class="grid-cell col-2"><div class="cell-value">${res.segregation}</div></div>
+        <div class="grid-cell col-6 header-sub">(17) Properties and Observations</div>
+        <div class="grid-cell col-6">
+            <div class="cell-value properties-text">${res.properties}</div>
+        </div>
 
-                <div class="grid-cell col-6 header-sub">(17) Properties and Observations</div>
-                <div class="grid-cell col-6">
-                    <div class="cell-value properties-text">${res.properties}</div>
-                </div>
-
-                <div class="grid-cell col-2">
-                    <div class="cell-label">Hazard Marks:</div>
-                    <div style="font-size:10px; color:var(--muted); margin-top:10px; font-family:'JetBrains Mono';">CLASS_${res.class}</div>
-                </div>
-                <div class="grid-cell col-4 hazard-label-area">
-                    <div class="diamond-label">
-                         <span class="diamond-text">${res.class}</span>
-                    </div>
-                </div>
+        <div class="grid-cell col-2">
+            <div class="cell-label">Hazard Marks</div>
+            <div class="cell-value" style="font-size:11px; color:var(--text-muted);">CLASS_${res.class}</div>
+        </div>
+        <div class="grid-cell col-4 hazard-label-area">
+            <div class="diamond-label">
+                 <span class="diamond-text">${res.class}</span>
             </div>
-        `;
+        </div>
+    </div>
+`;
         
         input.value = '';
     } catch (err) {
