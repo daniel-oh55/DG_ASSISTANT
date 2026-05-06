@@ -736,6 +736,34 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+async function readJsonResponse(response) {
+    const text = await response.text();
+
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        throw new Error(`API가 JSON이 아닌 응답을 반환했습니다. 상태코드: ${response.status}, 응답: ${text.slice(0, 120)}`);
+    }
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const result = String(reader.result || '');
+            const base64 = result.includes(',') ? result.split(',')[1] : result;
+            resolve(base64);
+        };
+
+        reader.onerror = () => {
+            reject(new Error('파일을 읽는 중 오류가 발생했습니다.'));
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
 // 데이터 안전 전송용 인코딩 / 디코딩
 function encodeSafeNote(note) {
     return btoa(unescape(encodeURIComponent(JSON.stringify(note))));
@@ -830,25 +858,37 @@ async function saveNote() {
         const selectedFile = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
 
         // 첨부파일이 선택된 경우에만 Storage 업로드
-        if (selectedFile) {
-            const safeFileName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-            const storagePath = `notes/${safeFileName}`;
+        // 첨부파일이 선택된 경우 Vercel API를 통해 Storage 업로드
+if (selectedFile) {
+    const maxSize = 4 * 1024 * 1024; // 약 4MB 제한
 
-            const { error: uploadError } = await _supabase
-                .storage
-                .from('dg_files')
-                .upload(storagePath, selectedFile, { upsert: false });
+    if (selectedFile.size > maxSize) {
+        throw new Error('첨부파일은 4MB 이하만 업로드할 수 있습니다.');
+    }
 
-            if (uploadError) throw uploadError;
+    const fileBase64 = await fileToBase64(selectedFile);
 
-            const { data: publicUrlData } = _supabase
-                .storage
-                .from('dg_files')
-                .getPublicUrl(storagePath);
+    const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            file_name: selectedFile.name,
+            file_type: selectedFile.type,
+            file_base64: fileBase64
+        })
+    });
 
-            fileUrl = publicUrlData.publicUrl;
-            fileName = selectedFile.name;
-        }
+    const uploadResult = await readJsonResponse(uploadResponse);
+
+    if (!uploadResponse.ok || !uploadResult.ok) {
+        throw new Error(uploadResult.message || '첨부파일 업로드 실패');
+    }
+
+    fileUrl = uploadResult.file_url;
+    fileName = uploadResult.file_name;
+}
 
         const noteData = {
             title,
