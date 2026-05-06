@@ -1,9 +1,13 @@
-// api/notes-save.js
-import { supabaseAdmin } from './_supabase.js';
+const { supabaseAdmin } = require('./_supabase');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, message: 'Method not allowed' });
+    return res.status(405).json({
+      ok: false,
+      message: 'Method not allowed'
+    });
   }
 
   try {
@@ -43,10 +47,11 @@ export default async function handler(req, res) {
       data
     });
   } catch (err) {
-    console.error('[notes-save] error:', err);
+    console.error('[api/notes-save] error:', err);
+
     return res.status(500).json({
       ok: false,
       message: err.message || 'Failed to save note'
     });
   }
-}
+};
