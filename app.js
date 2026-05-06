@@ -747,49 +747,55 @@ function decodeSafeNote(safeNote) {
 
 // 노트 목록 불러오기
 async function fetchNotes() {
-    const { data, error } = await _supabase
-        .from('DG_NOTES')
-        .select('*')
-        .order('created_at', { ascending: false });
+    try {
+        const response = await fetch('/api/notes');
+        const result = await response.json();
 
-    if (error) {
-        console.error('노트 목록 조회 오류:', error);
-        return;
-    }
+        if (!response.ok || !result.ok) {
+            throw new Error(result.message || '노트 목록 조회 실패');
+        }
 
-    const noteList = document.getElementById('noteList');
-    if (!noteList) return;
+        const data = result.data || [];
+        const noteList = document.getElementById('noteList');
+        if (!noteList) return;
 
-    if (!data || data.length === 0) {
-        noteList.innerHTML = `<div style="color:var(--muted); font-size:14px;">저장된 노트가 없습니다.</div>`;
-        return;
-    }
+        if (!data || data.length === 0) {
+            noteList.innerHTML = `<div style="color:var(--muted); font-size:14px;">저장된 노트가 없습니다.</div>`;
+            return;
+        }
 
-    noteList.innerHTML = data.map(note => {
-        const created = formatDate(note.created_at);
-        const updated = note.updated_at ? `<div style="color:var(--accent2); font-size:10px; margin-top:3px;">(Edit) ${formatDate(note.updated_at)}</div>` : "";
-        const safeNote = encodeSafeNote(note);
-        const fileMark = note.file_url ? `<div class="note-card-attachment">📎 ${escapeHtml(note.file_name || '첨부파일')}</div>` : "";
+        noteList.innerHTML = data.map(note => {
+            const created = formatDate(note.created_at);
+            const updated = note.updated_at ? `<div style="color:var(--accent2); font-size:10px; margin-top:3px;">(Edit) ${formatDate(note.updated_at)}</div>` : "";
+            const safeNote = encodeSafeNote(note);
+            const fileMark = note.file_url ? `<div class="note-card-attachment">📎 ${escapeHtml(note.file_name || '첨부파일')}</div>` : "";
 
-        return `
-            <div class="note-card" onclick="openModalSafe('${safeNote}')">
-                <div class="note-card-header">
-                    <div class="note-card-title">${escapeHtml(note.title)}</div>
-                    <div class="note-card-date">
-                        <div>${created}</div>
-                        ${updated}
+            return `
+                <div class="note-card" onclick="openModalSafe('${safeNote}')">
+                    <div class="note-card-header">
+                        <div class="note-card-title">${escapeHtml(note.title)}</div>
+                        <div class="note-card-date">
+                            <div>${created}</div>
+                            ${updated}
+                        </div>
+                    </div>
+                    <div class="note-card-meta">${escapeHtml(note.author)}</div>
+                    <div class="note-card-body">${escapeHtml(note.content)}</div>
+                    ${fileMark}
+                    <div class="note-card-btns" onclick="event.stopPropagation()">
+                        <button class="btn-sm" onclick="prepareEditSafe('${safeNote}')">수정</button>
+                        <button class="btn-sm" onclick="deleteNoteSafe('${safeNote}')">삭제</button>
                     </div>
                 </div>
-                <div class="note-card-meta">${escapeHtml(note.author)}</div>
-                <div class="note-card-body">${escapeHtml(note.content)}</div>
-                ${fileMark}
-                <div class="note-card-btns" onclick="event.stopPropagation()">
-                    <button class="btn-sm" onclick="prepareEditSafe('${safeNote}')">수정</button>
-                    <button class="btn-sm" onclick="deleteNoteSafe('${safeNote}')">삭제</button>
-                </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('노트 목록 조회 오류:', err);
+        const noteList = document.getElementById('noteList');
+        if (noteList) {
+            noteList.innerHTML = `<div class="error-msg">노트 목록 조회 실패: ${escapeHtml(err.message || err)}</div>`;
+        }
+    }
 }
 
 // 노트 저장 / 수정
@@ -853,24 +859,24 @@ async function saveNote() {
             file_name: fileName
         };
 
-        let result;
-        if (editId) {
-            result = await _supabase
-                .from('DG_NOTES')
-                .update({
-                    ...noteData,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', editId)
-                .select()
-                .single();
-        } else {
-            result = await _supabase
-                .from('DG_NOTES')
-                .insert([noteData]);
-        }
+        const apiUrl = editId ? '/api/notes-update' : '/api/notes-save';
 
-        if (result.error) throw result.error;
+const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        id: editId || undefined,
+        ...noteData
+    })
+});
+
+const result = await response.json();
+
+if (!response.ok || !result.ok) {
+    throw new Error(result.message || '노트 저장 실패');
+}
 
         resetNoteForm();
         await fetchNotes();
@@ -940,12 +946,6 @@ function closeModal() {
 // 수정 준비
 function prepareEditSafe(safeNote) {
     const note = decodeSafeNote(safeNote);
-    const inputPw = prompt('수정 비밀번호를 입력하세요:');
-
-    if (inputPw !== note.password) {
-        if (inputPw !== null) alert('비밀번호가 일치하지 않습니다.');
-        return;
-    }
 
     isEditMode = true;
     currentFileUrl = note.file_url || null;
@@ -955,14 +955,14 @@ function prepareEditSafe(safeNote) {
     document.getElementById('editNoteId').value = note.id;
     document.getElementById('noteTitle').value = note.title || '';
     document.getElementById('noteAuthor').value = note.author || '';
-    document.getElementById('notePw').value = note.password || '';
+    document.getElementById('notePw').value = '';
     document.getElementById('noteContent').value = note.content || '';
     document.getElementById('noteFile').value = '';
 
     document.getElementById('saveNoteBtn').innerText = '노트 수정하기';
     document.getElementById('editStatus').innerHTML = `
         <span style="color:var(--accent2); font-size:12px;">
-            수정 모드: ${escapeHtml(note.title || '')}
+            수정 모드: ${escapeHtml(note.title || '')} / 저장 시 기존 비밀번호를 입력하세요.
         </span>
     `;
     updateSelectedFileUI();
@@ -1032,21 +1032,31 @@ async function deleteNoteSafe(safeNote) {
     const note = decodeSafeNote(safeNote);
     const inputPw = prompt('비밀번호를 입력하세요:');
 
-    if (inputPw === note.password) {
-        const { error } = await _supabase
-            .from('DG_NOTES')
-            .delete()
-            .eq('id', note.id)
-            .eq('password', inputPw);
+    if (inputPw === null) return;
 
-        if (error) {
-            console.error('노트 삭제 오류:', error);
-            alert('삭제 실패: ' + error.message);
-        } else {
-            await fetchNotes();
+    try {
+        const response = await fetch('/api/notes-delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: note.id,
+                password: inputPw
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+            throw new Error(result.message || '삭제 실패');
         }
-    } else if (inputPw !== null) {
-        alert('비밀번호가 일치하지 않습니다.');
+
+        await fetchNotes();
+        alert('삭제되었습니다.');
+    } catch (err) {
+        console.error('노트 삭제 오류:', err);
+        alert(err.message || '삭제 실패');
     }
 }
 
