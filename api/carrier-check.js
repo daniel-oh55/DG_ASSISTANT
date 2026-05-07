@@ -97,10 +97,12 @@ module.exports = async function handler(req, res) {
 
     // 3) 정확한 UNNO 룰 + Class ALL 룰 조회
     const { data: ruleRows, error: ruleError } = await supabaseAdmin
-      .from('dg_carrier_rules')
-      .select('*')
-      .eq('is_active', true)
-      .or(`unno.eq.${inputUnno},unno.eq.ALL`);
+  .from('dg_carrier_rules')
+  .select('*')
+  .eq('is_active', true)
+  .or(`unno.eq.${inputUnno},unno.eq.ALL`)
+  .order('carrier_group', { ascending: true })
+  .order('sort_order', { ascending: true });
 
     if (ruleError) throw ruleError;
 
