@@ -645,7 +645,7 @@ view.innerHTML = `
         <div class="grid-cell col-2"><div class="cell-label">(4) Sub Hazards</div><div class="cell-value text-orange">${res.sub}</div></div>
         <div class="grid-cell col-2"><div class="cell-label">(5) Packing Group</div><div class="cell-value">${res.pg}</div></div>
 
-        <div class="grid-cell col-2"><div class="cell-label">(6) Special Provisions</div><div class="cell-value">${res.sp}</div></div>
+        <div class="grid-cell col-2"><div class="cell-label">(6) Special Provisions</div><div class="cell-value">${renderSpecialProvisionLinks(res.sp)}</div></div>
         <div class="grid-cell col-2"><div class="cell-label">(7a) Limited Qty</div><div class="cell-value">${res.lq}</div></div>
         <div class="grid-cell col-2"><div class="cell-label">(7b) Excepted Qty</div><div class="cell-value">${res.eq}</div></div>
 
