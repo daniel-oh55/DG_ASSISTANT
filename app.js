@@ -1148,6 +1148,46 @@ function carrierStatusClass(status) {
     return '';
 }
 
+function normalizeForCompare(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/[.,;:()[\]'"-]/g, '')
+        .trim();
+}
+
+function renderRuleRemarkCondition(rule) {
+    const remarkCode = rule.remark_code || '';
+    const remarkText = rule.remark_text || '';
+    const conditionText = rule.condition_text || '';
+
+    const normalizedRemark = normalizeForCompare(remarkText);
+    const normalizedCondition = normalizeForCompare(conditionText);
+
+    const isSameText =
+        normalizedRemark &&
+        normalizedCondition &&
+        normalizedRemark === normalizedCondition;
+
+    let html = '';
+
+    if (remarkCode || remarkText) {
+        const remarkDisplay = remarkCode
+            ? `${escapeHtml(remarkCode)}${remarkText ? ' - ' + escapeHtml(remarkText) : ''}`
+            : escapeHtml(remarkText);
+
+        html += `<div><b>Remark:</b> ${remarkDisplay}</div>`;
+    } else {
+        html += `<div><b>Remark:</b> 없음</div>`;
+    }
+
+    if (conditionText && !isSameText) {
+        html += `<div><b>Condition:</b> ${escapeHtml(conditionText)}</div>`;
+    }
+
+    return html;
+}
+
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
     const showOnlyAllowed = document.getElementById('showOnlyAllowedCarrier')?.checked;
@@ -1183,8 +1223,7 @@ function renderCarrierResultFromApi(dgItem, results) {
         <div class="carrier-rule-line">
             <div><b>Rule:</b> ${escapeHtml(rule.class_no || '-')} / ${escapeHtml(rule.unno || '-')}</div>
             <div><b>Status:</b> ${escapeHtml(rule.status || '-')}</div>
-            ${rule.remark_code ? `<div><b>Remark:</b> ${escapeHtml(rule.remark_code)} - ${escapeHtml(rule.remark_text || '')}</div>` : `<div><b>Remark:</b> 없음</div>`}
-            ${rule.condition_text ? `<div><b>Condition:</b> ${escapeHtml(rule.condition_text)}</div>` : ''}
+            ${renderRuleRemarkCondition(rule)}
             ${rule.document_required ? `<div><b>Required Docs:</b> ${escapeHtml(rule.document_required)}</div>` : ''}
         </div>
     `).join('')
