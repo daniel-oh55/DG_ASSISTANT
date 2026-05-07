@@ -536,3 +536,157 @@ header span { font-size: 14px; color: var(--muted); }
     transform: translateY(0) scale(0.98);
     filter: brightness(1.2);
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   선사별 선적가부 조회
+   ───────────────────────────────────────────────────────────── */
+
+.carrier-option-box {
+    margin-top: -18px;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.carrier-filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.carrier-summary-card {
+    background: linear-gradient(135deg, rgba(0, 242, 255, 0.12), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(0, 242, 255, 0.28);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.carrier-summary-title {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.carrier-summary-name {
+    margin-top: 6px;
+    color: var(--text-main);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.carrier-summary-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.carrier-summary-meta span {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    border-radius: 999px;
+    padding: 6px 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.carrier-result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+.carrier-result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    min-height: 190px;
+}
+
+.carrier-result-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.carrier-name {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.carrier-status {
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+
+.carrier-allowed {
+    border-color: rgba(0, 230, 118, 0.55);
+}
+
+.carrier-allowed .carrier-status {
+    color: var(--green);
+    background: rgba(0, 230, 118, 0.12);
+    border: 1px solid rgba(0, 230, 118, 0.45);
+}
+
+.carrier-restricted {
+    border-color: rgba(255, 214, 0, 0.6);
+}
+
+.carrier-restricted .carrier-status {
+    color: var(--yellow);
+    background: rgba(255, 214, 0, 0.12);
+    border: 1px solid rgba(255, 214, 0, 0.45);
+}
+
+.carrier-prohibited {
+    border-color: rgba(255, 23, 68, 0.65);
+}
+
+.carrier-prohibited .carrier-status {
+    color: var(--red);
+    background: rgba(255, 23, 68, 0.12);
+    border: 1px solid rgba(255, 23, 68, 0.45);
+}
+
+.carrier-rule-box {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+.carrier-rule-line {
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.carrier-rule-line.muted {
+    color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+    .carrier-summary-card {
+        flex-direction: column;
+    }
+
+    .carrier-summary-meta {
+        justify-content: flex-start;
+    }
+}

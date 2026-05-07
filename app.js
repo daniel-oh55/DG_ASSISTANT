@@ -1126,3 +1126,435 @@ menuItems.forEach(item => {
         }
     });
 });
+
+
+// ==========================================================================
+// 신규 기능: 선사별 선적가부 조회
+// ==========================================================================
+
+const CARRIER_REMARKS = {
+    SKR_HAL: {
+        B: 'Substance, "Temperature Controlled" - Prohibited',
+        E: 'Irrespective of DG/Non-DG, Carbon/Activated Carbon(Charcoal) & Lithium Metal Battery are prohibited',
+        I: 'All item of S.P.900 in IMDG Code - Prohibited',
+        J: '9/2211 & 9/3314 only accept if load open top container or reefer container',
+        L: 'LITHIUM ION BATTERIES are allowed only under SKR/HAL HQ approval and RFDG condition',
+        M: 'Only cargo loaded into ISO tanks is permitted',
+        N: 'SKR / HAL vessel only'
+    },
+    NSS_DYS: {
+        10: 'Non-DG is prohibited including Charcoal, Carbon black, Wooden charcoal, Bamboo charcoal, etc.',
+        11: 'Non-DG is also prohibited: Lithium ion batteries',
+        12: 'Vehicle with used lithium ion batteries are prohibited',
+        13: 'Non-DG is also prohibited: Lithium metal batteries',
+        14: 'Class 5.1 from INDIA is prohibited',
+        15: 'For vehicles with lithium-ion batteries, SOC must be under 50% and LOI must be submitted'
+    }
+};
+
+const CARRIER_RULES = [
+    // ─────────────────────────────
+    // SKR / HAL
+    // ─────────────────────────────
+
+    // Class ALL rules
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '2',
+        unno: 'ALL',
+        status: 'RESTRICTED',
+        remarkCode: 'N',
+        remark: 'See the remark N (SKR / HAL vessel only)'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '5.2',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '6.2',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '7',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+
+    // UNNO specific rules
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '2.1',
+        unno: '2203',
+        status: 'RESTRICTED',
+        remarkCode: 'M',
+        remark: 'Only ISO Tank Permitted'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '3',
+        unno: '1090',
+        status: 'RESTRICTED',
+        remarkCode: 'M',
+        remark: 'Only ISO Tank Permitted'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '4.1',
+        unno: '3231',
+        status: 'PROHIBITED',
+        remarkCode: 'B',
+        remark: 'Temperature Controlled - Prohibited'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '5.1',
+        unno: '1479',
+        status: 'PROHIBITED',
+        remarkCode: 'I',
+        remark: 'SP900 - Prohibited'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '9',
+        unno: '2211',
+        status: 'RESTRICTED',
+        remarkCode: 'J',
+        remark: 'Only accept if load open top container or reefer container'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '9',
+        unno: '3480',
+        status: 'RESTRICTED',
+        remarkCode: 'L/N',
+        remark: 'Lithium ion batteries: RFDG only and manufacturer approval required'
+    },
+    {
+        group: 'SKR_HAL',
+        carrierName: 'SKR / HAL',
+        classNo: '9',
+        unno: '3481',
+        status: 'RESTRICTED',
+        remarkCode: 'L/N',
+        remark: 'Lithium ion batteries: RFDG only and manufacturer approval required'
+    },
+
+    // ─────────────────────────────
+    // NSS / DYS
+    // ─────────────────────────────
+
+    // Class ALL rules
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '1',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '7',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '6.2',
+        unno: 'ALL',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '5.1',
+        unno: 'ALL_FROM_INDIA',
+        status: 'RESTRICTED',
+        remarkCode: '14',
+        remark: 'Class 5.1 from INDIA is prohibited'
+    },
+
+    // UNNO specific rules
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '2.1',
+        unno: '1030',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '2.3',
+        unno: '2186',
+        status: 'PROHIBITED',
+        remarkCode: '',
+        remark: ''
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '4.2',
+        unno: '1361',
+        status: 'PROHIBITED',
+        remarkCode: '10',
+        remark: 'Non-DG is also prohibited including Charcoal / Carbon commodities'
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '9',
+        unno: '3480',
+        status: 'PROHIBITED',
+        remarkCode: '11',
+        remark: 'Non-DG is also prohibited: Lithium ion batteries'
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '9',
+        unno: '3481',
+        status: 'PROHIBITED',
+        remarkCode: '11',
+        remark: 'Non-DG is also prohibited: Lithium ion batteries'
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '9',
+        unno: '3166',
+        status: 'RESTRICTED',
+        remarkCode: '12/15',
+        remark: 'Vehicle with used lithium ion batteries prohibited. For lithium-ion battery vehicles, SOC under 50% and LOI required.'
+    },
+    {
+        group: 'NSS_DYS',
+        carrierName: 'NSS / DYS',
+        classNo: '9',
+        unno: '3171',
+        status: 'RESTRICTED',
+        remarkCode: '12/15',
+        remark: 'Vehicle with used lithium ion batteries prohibited. For lithium-ion battery vehicles, SOC under 50% and LOI required.'
+    }
+];
+
+function getMainClassForCarrierCheck(classValue) {
+    const cls = normalizeText(classValue);
+    if (!cls || cls === '-') return '';
+
+    // 예: 2.1 -> 2, 6.1 -> 6.1 유지 여부
+    // SKR/HAL의 Class 2 ALL은 2.1/2.2/2.3 전체에 적용하기 위해 mainClass도 함께 사용
+    return cls.split('.')[0];
+}
+
+function findCarrierRuleForDG(group, unno, classNo) {
+    const normalizedUnno = normalizeUNNO(unno);
+    const normalizedClass = normalizeText(classNo);
+    const mainClass = getMainClassForCarrierCheck(normalizedClass);
+
+    const rules = CARRIER_RULES.filter(rule => rule.group === group);
+
+    // 1순위: 정확한 UNNO 매칭
+    const exactMatches = rules.filter(rule => normalizeUNNO(rule.unno) === normalizedUnno);
+
+    // 2순위: CLASS + ALL 매칭
+    const classAllMatches = rules.filter(rule => {
+        if (rule.unno !== 'ALL') return false;
+
+        const ruleClass = normalizeText(rule.classNo);
+        return ruleClass === normalizedClass || ruleClass === mainClass;
+    });
+
+    const matched = [...exactMatches, ...classAllMatches];
+
+    if (!matched.length) {
+        return {
+            group,
+            status: 'ALLOWED',
+            matchedRules: []
+        };
+    }
+
+    // PROHIBITED가 하나라도 있으면 금지 우선
+    const hasProhibited = matched.some(rule => rule.status === 'PROHIBITED');
+    const status = hasProhibited ? 'PROHIBITED' : 'RESTRICTED';
+
+    return {
+        group,
+        status,
+        matchedRules: matched
+    };
+}
+
+function carrierStatusLabel(status) {
+    if (status === 'ALLOWED') return '선적 가능';
+    if (status === 'RESTRICTED') return '조건부 가능 / 제한';
+    if (status === 'PROHIBITED') return '선적 금지';
+    return '-';
+}
+
+function carrierStatusClass(status) {
+    if (status === 'ALLOWED') return 'carrier-allowed';
+    if (status === 'RESTRICTED') return 'carrier-restricted';
+    if (status === 'PROHIBITED') return 'carrier-prohibited';
+    return '';
+}
+
+function renderCarrierResult(dgItem, results) {
+    const resultBox = document.getElementById('carrierCheckResult');
+    const showOnlyAllowed = document.getElementById('showOnlyAllowedCarrier')?.checked;
+
+    const filteredResults = showOnlyAllowed
+        ? results.filter(r => r.status === 'ALLOWED')
+        : results;
+
+    const unno = escapeHtml(dgItem.UNNO || '');
+    const name = escapeHtml(dgItem.Name || '-');
+    const classNo = escapeHtml(dgItem.Class || '-');
+    const sub = escapeHtml(dgItem.SUB || '-');
+
+    resultBox.innerHTML = `
+        <div class="carrier-summary-card">
+            <div>
+                <div class="carrier-summary-title">UN ${unno}</div>
+                <div class="carrier-summary-name">${name}</div>
+            </div>
+            <div class="carrier-summary-meta">
+                <span>CLASS ${classNo}</span>
+                <span>SUB ${sub}</span>
+            </div>
+        </div>
+
+        <div class="carrier-result-grid">
+            ${filteredResults.map(result => {
+                const carrierName = result.group === 'SKR_HAL' ? 'SKR / HAL' : 'NSS / DYS';
+                const ruleHtml = result.matchedRules.length
+                    ? result.matchedRules.map(rule => `
+                        <div class="carrier-rule-line">
+                            <div><b>Rule:</b> ${escapeHtml(rule.classNo)} / ${escapeHtml(rule.unno)}</div>
+                            ${rule.remarkCode ? `<div><b>Remark:</b> ${escapeHtml(rule.remarkCode)} - ${escapeHtml(rule.remark)}</div>` : `<div><b>Remark:</b> 없음</div>`}
+                        </div>
+                    `).join('')
+                    : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
+
+                return `
+                    <div class="carrier-result-card ${carrierStatusClass(result.status)}">
+                        <div class="carrier-result-header">
+                            <div class="carrier-name">${carrierName}</div>
+                            <div class="carrier-status">${carrierStatusLabel(result.status)}</div>
+                        </div>
+                        <div class="carrier-rule-box">
+                            ${ruleHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+async function checkCarrierLoadingPossibility() {
+    const input = document.getElementById('carrierCheckInput');
+    const errorMsg = document.getElementById('carrierCheckErrorMsg');
+    const resultBox = document.getElementById('carrierCheckResult');
+
+    if (!input || !resultBox) return;
+
+    const unno = normalizeUNNO(input.value);
+
+    errorMsg.innerHTML = '';
+    resultBox.innerHTML = '';
+
+    if (!unno) {
+        errorMsg.innerHTML = `<div class="error-msg">UNNO를 입력해 주세요.</div>`;
+        return;
+    }
+
+    resultBox.innerHTML = `
+        <div style="padding:40px; text-align:center; color:var(--accent); font-family:var(--font-mono);">
+            CARRIER RULE CHECKING...
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/api/dg-lookup?unno=${encodeURIComponent(unno)}`);
+        const result = await readJsonResponse(response);
+
+        if (!response.ok || !result.ok) {
+            throw new Error(result.message || 'DG_TABLE 조회 실패');
+        }
+
+        const data = result.data || [];
+
+        if (!data.length) {
+            resultBox.innerHTML = '';
+            errorMsg.innerHTML = `<div class="error-msg">UN ${escapeHtml(unno)} 를 DG_TABLE에서 찾을 수 없습니다.</div>`;
+            return;
+        }
+
+        const dgItem = data[0];
+
+        const results = [
+            findCarrierRuleForDG('SKR_HAL', dgItem.UNNO, dgItem.Class),
+            findCarrierRuleForDG('NSS_DYS', dgItem.UNNO, dgItem.Class)
+        ];
+
+        renderCarrierResult(dgItem, results);
+    } catch (err) {
+        console.error('선사별 선적가부 조회 오류:', err);
+        resultBox.innerHTML = '';
+        errorMsg.innerHTML = `<div class="error-msg">조회 중 오류가 발생했습니다: ${escapeHtml(err.message || err)}</div>`;
+    }
+}
+
+const carrierCheckBtn = document.getElementById('carrierCheckBtn');
+if (carrierCheckBtn) {
+    carrierCheckBtn.addEventListener('click', checkCarrierLoadingPossibility);
+}
+
+const carrierCheckInput = document.getElementById('carrierCheckInput');
+if (carrierCheckInput) {
+    carrierCheckInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkCarrierLoadingPossibility();
+    });
+}
+
+const showOnlyAllowedCarrier = document.getElementById('showOnlyAllowedCarrier');
+if (showOnlyAllowedCarrier) {
+    showOnlyAllowedCarrier.addEventListener('change', () => {
+        const input = document.getElementById('carrierCheckInput');
+        if (input && input.value.trim()) {
+            checkCarrierLoadingPossibility();
+        }
+    });
+}

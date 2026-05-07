@@ -16,6 +16,7 @@
             <div class="logo">DG ASSISTANT</div>
             <ul class="menu-list">
     <li class="menu-item active" data-target="tab-lookup">🔍 IMDG 조회 (UNNO)</li>
+    <li class="menu-item" data-target="tab-carrier-check">🚢 선사별 선적가부 조회</li>
     <li class="menu-item" data-target="tab-segregation">📦 격리규정 확인</li>
     <li class="menu-item" data-target="tab-notes">📝 DG 추가정보 노트</li>
         </nav>
@@ -66,6 +67,33 @@
                 <div id="infoDetailView"></div>
                 </div>
             </section>
+
+<section id="tab-carrier-check" class="tab-content">
+    <div class="container">
+        <header>
+            <h1>선사별 선적가부 조회 <span>Carrier DG Restriction</span></h1>
+            <p class="subtitle">UNNO 기준 SKR/HAL, NSS/DYS 선적 가능 여부 조회</p>
+        </header>
+
+        <div class="search-area">
+            <div class="search-wrap">
+                <input type="text" id="carrierCheckInput" placeholder="UNNO 4자리를 입력하세요 (예: 3480)">
+                <button class="btn accent2" id="carrierCheckBtn">선적가부 조회</button>
+            </div>
+            <div id="carrierCheckErrorMsg"></div>
+        </div>
+
+        <div class="carrier-option-box">
+            <label class="carrier-filter-label">
+                <input type="checkbox" id="showOnlyAllowedCarrier">
+                선적 가능한 선사만 보기
+            </label>
+        </div>
+
+        <div id="carrierCheckResult"></div>
+    </div>
+</section>
+
 
 <section id="tab-notes" class="tab-content">
     <div class="container">
