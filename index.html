@@ -15,18 +15,9 @@
         <nav class="sidebar">
             <div class="logo">DG ASSISTANT</div>
             <ul class="menu-list">
-    <li class="menu-item active" data-tab="dgDetail">
-        <i class="icon-search"></i> IMDG 조회 (UNNO)
-    </li>
-    
-    <li class="menu-item" data-tab="segCheck">
-        <i class="icon-shield"></i> 격리규정 확인
-    </li>
-    
-    <li class="menu-item" data-tab="notes">
-        <i class="icon-edit"></i> DG추가정보노트
-    </li>
-</ul>
+    <li class="menu-item active" data-target="tab-lookup">🔍 IMDG 조회 (UNNO)</li>
+    <li class="menu-item" data-target="tab-segregation">📦 격리규정 확인</li>
+    <li class="menu-item" data-target="tab-notes">📝 DG 추가정보 노트</li>
         </nav>
 
         <!-- 3. 오른쪽 메인 콘텐츠 영역 -->
@@ -34,7 +25,7 @@
             
             <!-- [탭 1] 격리규정 확인 (기존 기능) -->
             <!-- active 클래스가 있으므로 처음 접속 시 이 화면이 보입니다. -->
-            <section id="tab-segregation" class="tab-content active">
+            <section id="tab-segregation" class="tab-content">
                 <div class="container">
                 <header>
                     <h1>DG 격리여부 확인 <span>v3.1 (SKR/HAL)</span></h1>
@@ -56,7 +47,7 @@
             </section>
 
             <!-- [탭 2] DG정보 상세조회 (신규 기능) -->
-            <section id="tab-lookup" class="tab-content">
+            <section id="tab-lookup" class="tab-content active">
                 <div class="container">
                 <header>
                     <h1>DG 정보 상세 조회 <span>Master Data</span></h1>
