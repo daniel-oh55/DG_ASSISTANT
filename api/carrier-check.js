@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
     // 2) 활성화된 선사 그룹 조회
     // 현재는 룰 테이블에 있는 carrier_group 기준으로 자동 구성
     const { data: carrierRows, error: carrierError } = await supabaseAdmin
-      .from('DG_CARRIER_RULES')
+      .from('dg_carrier_rules')
       .select('carrier_group, carrier_name')
       .eq('is_active', true);
 
@@ -97,7 +97,7 @@ module.exports = async function handler(req, res) {
 
     // 3) 정확한 UNNO 룰 + Class ALL 룰 조회
     const { data: ruleRows, error: ruleError } = await supabaseAdmin
-      .from('DG_CARRIER_RULES')
+      .from('dg_carrier_rules')
       .select('*')
       .eq('is_active', true)
       .or(`unno.eq.${inputUnno},unno.eq.ALL`);
