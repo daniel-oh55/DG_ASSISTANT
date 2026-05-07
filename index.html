@@ -13,13 +13,34 @@
         
         <!-- 2. 왼쪽 사이드바 영역 -->
         <nav class="sidebar">
-            <div class="logo">DG ASSISTANT</div>
-            <ul class="menu-list">
-    <li class="menu-item active" data-target="tab-lookup">🔍 IMDG 조회 (UNNO)</li>
-    <li class="menu-item" data-target="tab-carrier-check">🚢 선사별 선적가부 조회</li>
-    <li class="menu-item" data-target="tab-segregation">📦 격리규정 확인</li>
-    <li class="menu-item" data-target="tab-notes">📝 DG 추가정보 노트</li>
-        </nav>
+    <div class="sidebar-logo-box">
+        <div class="sidebar-emblem">⚓</div>
+        <div class="sidebar-title">DG ASSISTANT</div>
+        <div class="sidebar-subtitle">IMDG Control System</div>
+    </div>
+
+    <ul class="menu-list">
+        <li class="menu-item active" data-target="tab-lookup">
+            <span class="menu-icon">⌕</span>
+            <span class="menu-text">IMDG 조회 (UNNO)</span>
+        </li>
+
+        <li class="menu-item" data-target="tab-carrier-check">
+            <span class="menu-icon">▦</span>
+            <span class="menu-text">선사별 선적가부 조회</span>
+        </li>
+
+        <li class="menu-item" data-target="tab-segregation">
+            <span class="menu-icon">☷</span>
+            <span class="menu-text">격리규정 확인</span>
+        </li>
+
+        <li class="menu-item" data-target="tab-notes">
+            <span class="menu-icon">✎</span>
+            <span class="menu-text">DG 추가정보 노트</span>
+        </li>
+    </ul>
+</nav>
 
         <!-- 3. 오른쪽 메인 콘텐츠 영역 -->
         <main class="content-area">
