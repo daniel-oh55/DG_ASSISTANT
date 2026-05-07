@@ -554,87 +554,314 @@ header span {
 
 /* DG 상세조회 화면 */
 /* [복원 및 개선] DG 상세조회 그리드 레이아웃 */
+/* ─────────────────────────────────────────────────────────────
+   DG DETAIL GRID - Neo Precision Glass Data Board
+   ───────────────────────────────────────────────────────────── */
+
 .dg-detail-grid {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    margin-top: 26px;
+
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
     overflow: hidden;
-    margin-top: 25px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
-.grid-cell { 
-    background: #1a202c; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: stretch; /* 레이블과 값이 꽉 차도록 */
-    padding: 0; 
+/* 상단 은은한 엣지 라이트 */
+.dg-detail-grid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    z-index: 2;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 191, 165, 0.65),
+        rgba(255, 255, 255, 0.20),
+        transparent
+    );
+    box-shadow: 0 0 18px rgba(0, 191, 165, 0.28);
 }
 
-/* 칸 안의 메뉴명(레이블) 영역 */
-.cell-label { 
-    font-size: 10px; 
-    color: var(--accent); 
-    text-transform: uppercase; 
-    font-weight: 700; 
-    letter-spacing: 1px; 
-    padding: 6px 15px;
-    background: rgba(0, 0, 0, 0.2); /* 메뉴 영역만 살짝 어둡게 */
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+/* 내부 데이터 셀 */
+.grid-cell {
+    position: relative;
+    min-height: 78px;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012)),
+        rgba(18, 25, 36, 0.88);
+
+    transition:
+        background 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
 }
 
-/* 칸 안의 실제 데이터 영역 */
-.cell-value { 
-    font-family: var(--font-mono); 
-    font-size: 15px; 
-    font-weight: 700; 
-    color: #ffffff; 
-    padding: 10px 15px;
-    flex-grow: 1;
+/* 셀 호버 시 데이터 보드 느낌 */
+.grid-cell:hover {
+    background:
+        linear-gradient(145deg, rgba(0,191,165,0.075), rgba(255,255,255,0.018)),
+        rgba(22, 31, 44, 0.94);
+    box-shadow: inset 0 0 0 1px rgba(0, 191, 165, 0.12);
 }
 
-/* 원본 레이아웃 전용 클래스 복원 */
-.col-2 { grid-column: span 2; }
-.col-4 { grid-column: span 4; }
-.col-6 { grid-column: span 6; }
+/* 셀 제목 */
+.cell-label {
+    min-height: 32px;
+    padding: 8px 14px 6px;
 
-.header-main { 
-    grid-column: span 6; 
-    background: linear-gradient(90deg, #0b5f73, #084a59) !important; 
-    color: white !important; 
-    padding: 18px 25px !important; 
-    font-size: 19px !important; 
-    font-weight: 800; 
+    display: flex;
+    align-items: center;
+
+    color: #94A3B8;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0.28), rgba(0,0,0,0.08));
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
 }
 
-.header-sub { 
-    background: #2d3748 !important; 
-    color: var(--text-muted) !important; 
-    text-align: center; 
-    font-size: 11px !important; 
-    font-weight: 800; 
+/* 실제 값 */
+.cell-value {
+    flex: 1;
+    padding: 13px 14px 14px;
+
+    display: flex;
+    align-items: center;
+
+    color: #f4f8fb;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+/* 기존 레이아웃 유지 */
+.col-2 {
+    grid-column: span 2;
+}
+
+.col-4 {
+    grid-column: span 4;
+}
+
+.col-6 {
+    grid-column: span 6;
+}
+
+/* 메인 헤더 */
+.header-main {
+    grid-column: span 6;
+    min-height: 68px;
+
+    padding: 20px 26px !important;
+
+    display: flex;
+    align-items: center;
+
+    color: #ffffff !important;
+    font-size: 19px !important;
+    font-weight: 900;
+    letter-spacing: 0.2px;
+
+    background:
+        linear-gradient(90deg, rgba(0, 191, 165, 0.42), rgba(34, 51, 68, 0.72)),
+        radial-gradient(circle at left center, rgba(0, 242, 255, 0.20), transparent 42%) !important;
+
+    border-bottom: 1px solid rgba(0, 191, 165, 0.24);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(0,191,165,0.16);
+}
+
+/* 구분 헤더 */
+.header-sub {
+    min-height: 38px;
+    padding: 10px 12px !important;
+
+    display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 8px !important;
+
+    color: #9fb3c8 !important;
+    font-family: var(--font-mono);
+    font-size: 11px !important;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.018)),
+        rgba(34, 51, 68, 0.68) !important;
+
+    border-top: 1px solid rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.20);
 }
 
-/* 플래시포인트 전용 레이아웃 복원 */
-.flashpoint-cell { 
-    grid-column: span 4; 
-    flex-direction: row !important; 
-    align-items: center; 
-    padding-left: 0;
+/* JS에서 inline style로 accent를 준 Packing/IBCs/Tanks 헤더 보정 */
+.header-sub[style*="transparent"] {
+    color: #00F5D4 !important;
+    background:
+        linear-gradient(90deg, rgba(0, 191, 165, 0.09), transparent) !important;
+    justify-content: flex-start !important;
+    border-left: 2px solid rgba(0, 191, 165, 0.55);
 }
-.flashpoint-cell .cell-label { border-bottom: none; border-right: 1px solid var(--border); height: 100%; display: flex; align-items: center; }
 
-/* 하단 위험물 다이아몬드 라벨 복원 */
-.hazard-label-area { background: #111827; display: flex; align-items: center; justify-content: center; min-height: 160px; }
-.diamond-label { width: 85px; height: 85px; background: var(--accent2); transform: rotate(45deg); border: 3px solid #000; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.diamond-text { transform: rotate(-45deg); color: #000; font-weight: 900; font-size: 15px; text-align: center; line-height: 1; }
+/* 강조 텍스트 */
+.text-accent {
+    color: #00F5D4 !important;
+    text-shadow: 0 0 14px rgba(0, 191, 165, 0.25);
+}
 
-.properties-text { font-weight: 500 !important; color: #cbd5e1 !important; line-height: 1.6; font-size: 14px; font-family: var(--font-main); }
+.text-orange {
+    color: #ffb86b !important;
+    text-shadow: 0 0 12px rgba(255, 184, 107, 0.16);
+}
+
+/* Flashpoint 전용 */
+.flashpoint-cell {
+    grid-column: span 4;
+    flex-direction: row !important;
+    align-items: stretch;
+}
+
+.flashpoint-cell .cell-label {
+    width: 135px;
+    min-height: 100%;
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+        linear-gradient(180deg, rgba(0,0,0,0.26), rgba(0,0,0,0.12));
+}
+
+.flashpoint-cell .cell-value {
+    flex: 1;
+}
+
+/* Properties 긴 문장 */
+.properties-text {
+    display: block !important;
+    color: #d8e2ea !important;
+    font-family: var(--font-main) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.75 !important;
+    letter-spacing: 0.05px;
+}
+
+/* Hazard Label 영역 */
+.hazard-label-area {
+    min-height: 175px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at center, rgba(255, 92, 0, 0.12), transparent 58%),
+        linear-gradient(145deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        rgba(9, 14, 22, 0.92);
+}
+
+/* 위험물 다이아몬드 */
+.diamond-label {
+    width: 92px;
+    height: 92px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform: rotate(45deg);
+
+    background:
+        linear-gradient(145deg, #ff8a3d, #ff5c00);
+
+    border: 3px solid rgba(0, 0, 0, 0.85);
+
+    box-shadow:
+        0 12px 24px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(255, 92, 0, 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.28);
+}
+
+.diamond-text {
+    transform: rotate(-45deg);
+    color: #0b0f14;
+    font-weight: 950;
+    font-size: 17px;
+    text-align: center;
+    line-height: 1;
+    font-family: var(--font-mono);
+}
+
+/* SP 버튼이 그리드 안에서 튀지 않게 정리 */
+.sp-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 2px 6px 2px 0;
+    padding: 3px 8px;
+
+    border-radius: 999px;
+    border: 1px solid rgba(0, 191, 165, 0.35);
+    background: rgba(0, 191, 165, 0.09);
+
+    color: #00F5D4;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 900;
+
+    cursor: pointer;
+    text-decoration: none;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.sp-link-btn:hover {
+    color: #ffffff;
+    background: rgba(0, 191, 165, 0.20);
+    border-color: rgba(0, 191, 165, 0.65);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* 결과 화면이 비어 있을 때와 로딩 상태가 어색하지 않도록 */
+#infoDetailView {
+    min-height: 40px;
+}
 
 @media (max-width: 900px) {
     .app-wrapper {
@@ -732,6 +959,52 @@ header span {
     width: 100%;
 }
 
+}
+@media (max-width: 900px) {
+    .dg-detail-grid {
+        grid-template-columns: 1fr;
+        border-radius: 16px;
+    }
+
+    .col-2,
+    .col-4,
+    .col-6,
+    .header-main,
+    .flashpoint-cell {
+        grid-column: span 1;
+    }
+
+    .header-main {
+        font-size: 16px !important;
+        padding: 18px !important;
+    }
+
+    .grid-cell {
+        min-height: auto;
+    }
+
+    .cell-value {
+        font-size: 14px;
+    }
+
+    .flashpoint-cell {
+        flex-direction: column !important;
+    }
+
+    .flashpoint-cell .cell-label {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .hazard-label-area {
+        min-height: 140px;
+    }
+
+    .diamond-label {
+        width: 78px;
+        height: 78px;
+    }
 }
 
 
