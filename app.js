@@ -1132,7 +1132,7 @@ menuItems.forEach(item => {
 // 신규 기능: 선사별 선적가부 조회
 // ==========================================================================
 
-
+let carrierCommonRulesStore = {};
 
 function carrierStatusLabel(status) {
     if (status === 'ALLOWED') return '선적 가능';
@@ -1151,6 +1151,9 @@ function carrierStatusClass(status) {
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
     const showOnlyAllowed = document.getElementById('showOnlyAllowedCarrier')?.checked;
+
+    carrierCommonRulesStore = {};
+
 
     const filteredResults = showOnlyAllowed
         ? results.filter(r => r.status === 'ALLOWED')
@@ -1183,21 +1186,23 @@ function renderCarrierResultFromApi(dgItem, results) {
             ${rule.remark_code ? `<div><b>Remark:</b> ${escapeHtml(rule.remark_code)} - ${escapeHtml(rule.remark_text || '')}</div>` : `<div><b>Remark:</b> 없음</div>`}
             ${rule.condition_text ? `<div><b>Condition:</b> ${escapeHtml(rule.condition_text)}</div>` : ''}
             ${rule.document_required ? `<div><b>Required Docs:</b> ${escapeHtml(rule.document_required)}</div>` : ''}
-            ${rule.version_no ? `<div><b>Version:</b> ${escapeHtml(rule.version_no)} / ${escapeHtml(rule.effective_date || '')}</div>` : ''}
         </div>
     `).join('')
     : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
 
-const commonHtml = result.common_rules && result.common_rules.length
+const commonRules = result.common_rules || [];
+const commonKey = result.carrier_group || result.carrier_name || '';
+carrierCommonRulesStore[commonKey] = {
+    carrierName: result.carrier_name || result.carrier_group || '-',
+    rules: commonRules
+};
+
+const commonButtonHtml = commonRules.length
     ? `
-        <div class="carrier-common-box">
-            <div class="carrier-common-title">공통 주의사항</div>
-            ${result.common_rules.map(rule => `
-                <div class="carrier-common-line">
-                    ${rule.remark_code ? `<span class="carrier-common-code">${escapeHtml(rule.remark_code)}</span>` : ''}
-                    <span>${escapeHtml(rule.condition_text || rule.remark_text || '-')}</span>
-                </div>
-            `).join('')}
+        <div class="carrier-common-action">
+            <button type="button" class="btn-sm carrier-common-btn" onclick="openCarrierCommonModal('${escapeHtml(commonKey)}')">
+                공통 주의사항 조회
+            </button>
         </div>
     `
     : '';
@@ -1210,8 +1215,8 @@ const commonHtml = result.common_rules && result.common_rules.length
                         </div>
                         <div class="carrier-rule-box">
                           ${ruleHtml}
-                          ${commonHtml}
-                      </div>
+                          ${commonButtonHtml}
+                        </div>
                     </div>
                 `;
             }).join('')}
@@ -1221,6 +1226,66 @@ const commonHtml = result.common_rules && result.common_rules.length
             ※ 본 결과는 선사별 DG 금지/제한 리스트 기준입니다. 실제 선적 전에는 IMDG Code, 터미널 규정, POL/POD 국가 규정, 선박 운항 조건을 함께 확인해야 합니다.
         </div>
     `;
+}
+
+function openCarrierCommonModal(carrierKey) {
+    const data = carrierCommonRulesStore[carrierKey];
+
+    if (!data || !data.rules || data.rules.length === 0) {
+        alert('표시할 공통 주의사항이 없습니다.');
+        return;
+    }
+
+    let modal = document.getElementById('carrierCommonModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'carrierCommonModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-window carrier-common-modal-window">
+                <div class="modal-header">
+                    <h2 id="carrierCommonModalTitle">공통 주의사항</h2>
+                    <button class="modal-close" onclick="closeCarrierCommonModal()">×</button>
+                </div>
+                <div class="modal-meta" id="carrierCommonModalMeta"></div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <div id="carrierCommonModalBody" class="carrier-common-modal-body"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', e => {
+            if (e.target.id === 'carrierCommonModal') {
+                closeCarrierCommonModal();
+            }
+        });
+    }
+
+    document.getElementById('carrierCommonModalTitle').innerText = `${data.carrierName} 공통 주의사항`;
+    document.getElementById('carrierCommonModalMeta').innerText = '해당 선사의 전체 DG 공통 조건입니다. UNNO별 판정과 별도로 확인하세요.';
+
+    document.getElementById('carrierCommonModalBody').innerHTML = data.rules.map(rule => `
+        <div class="carrier-common-modal-item">
+            <div class="carrier-common-modal-item-head">
+                ${rule.remark_code ? `<span class="carrier-common-code">${escapeHtml(rule.remark_code)}</span>` : ''}
+                <span class="carrier-common-modal-status ${carrierStatusClass(rule.status)}">${escapeHtml(carrierStatusLabel(rule.status))}</span>
+            </div>
+            <div class="carrier-common-modal-text">
+                ${escapeHtml(rule.condition_text || rule.remark_text || '-')}
+            </div>
+            ${rule.psn ? `<div class="carrier-common-modal-psn">${escapeHtml(rule.psn)}</div>` : ''}
+        </div>
+    `).join('');
+
+    modal.style.display = 'flex';
+}
+
+function closeCarrierCommonModal() {
+    const modal = document.getElementById('carrierCommonModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 async function checkCarrierLoadingPossibility() {

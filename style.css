@@ -729,3 +729,87 @@ header span { font-size: 14px; color: var(--muted); }
     font-size: 11px;
     text-align: center;
 }
+
+/* 선사별 공통 주의사항 버튼 */
+.carrier-common-action {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255,255,255,0.16);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.carrier-common-btn {
+    color: var(--accent);
+    border-color: rgba(0, 242, 255, 0.35);
+    background: rgba(0, 242, 255, 0.08);
+}
+
+.carrier-common-btn:hover {
+    color: white;
+    border-color: var(--accent);
+}
+
+/* 공통 주의사항 팝업 */
+.carrier-common-modal-window {
+    max-width: 780px;
+}
+
+.carrier-common-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carrier-common-modal-item {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.carrier-common-modal-item-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.carrier-common-modal-status {
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 4px 9px;
+}
+
+.carrier-common-modal-status.carrier-allowed {
+    color: var(--green);
+    background: rgba(0, 230, 118, 0.12);
+    border: 1px solid rgba(0, 230, 118, 0.45);
+}
+
+.carrier-common-modal-status.carrier-restricted {
+    color: var(--yellow);
+    background: rgba(255, 214, 0, 0.12);
+    border: 1px solid rgba(255, 214, 0, 0.45);
+}
+
+.carrier-common-modal-status.carrier-prohibited {
+    color: var(--red);
+    background: rgba(255, 23, 68, 0.12);
+    border: 1px solid rgba(255, 23, 68, 0.45);
+}
+
+.carrier-common-modal-text {
+    color: #dbeafe;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.carrier-common-modal-psn {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--font-mono);
+}
