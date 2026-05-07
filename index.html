@@ -15,11 +15,18 @@
         <nav class="sidebar">
             <div class="logo">DG ASSISTANT</div>
             <ul class="menu-list">
-                <!-- data-target 속성으로 어떤 탭을 열지 JS에게 알려줍니다. -->
-                <li class="menu-item active" data-target="tab-segregation">📦 격리규정 확인</li>
-                <li class="menu-item" data-target="tab-lookup">🔍 DG정보 상세조회</li>
-                <li class="menu-item" data-target="tab-notes">📝 DG 추가정보 노트</li>
-            </ul>
+    <li class="menu-item active" data-tab="dgDetail">
+        <i class="icon-search"></i> IMDG 조회 (UNNO)
+    </li>
+    
+    <li class="menu-item" data-tab="segCheck">
+        <i class="icon-shield"></i> 격리규정 확인
+    </li>
+    
+    <li class="menu-item" data-tab="notes">
+        <i class="icon-edit"></i> DG추가정보노트
+    </li>
+</ul>
         </nav>
 
         <!-- 3. 오른쪽 메인 콘텐츠 영역 -->

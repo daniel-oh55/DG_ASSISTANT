@@ -68,20 +68,41 @@ body::before {
 
 .menu-item {
     padding: 14px 18px;
-    margin-bottom: 6px;
-    border-radius: 8px;
+    margin-bottom: 8px; /* 간격 소폭 확대 */
+    border-radius: 10px;
     cursor: pointer;
     color: var(--text-muted);
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 햅틱 반응을 위한 핵심: 스프링 물리법칙(cubic-bezier) 적용 */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 햅틱(Haptic) 호버 반응: 미세한 확장과 오른쪽 이동 */
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+    /* 1.03배 커지며 오른쪽으로 5px 이동하여 튀어나오는 느낌 부여 */
+    transform: scale(1.03) translateX(5px);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    box-shadow: 
+        -5px 5px 15px rgba(0, 0, 0, 0.3),
+        0 0 10px rgba(0, 242, 255, 0.1);
+}
+
+/* 클릭 시 눌리는 듯한 반응 추가 */
+.menu-item:active {
+    transform: scale(0.98) translateX(2px);
+    filter: brightness(1.2);
 }
 
 .menu-item.active { 
     background: var(--accent-glow); 
     color: var(--accent);
     border: 1px solid rgba(0, 242, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 242, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 242, 255, 0.15);
 }
 
 .content-area { flex: 1; overflow-y: auto; }
