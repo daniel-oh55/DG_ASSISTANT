@@ -1194,15 +1194,6 @@ function normalizeForCompare(value) {
 function renderRuleRemarkCondition(rule) {
     const remarkCode = rule.remark_code || '';
     const remarkText = rule.remark_text || '';
-    const conditionText = rule.condition_text || '';
-
-    const normalizedRemark = normalizeForCompare(remarkText);
-    const normalizedCondition = normalizeForCompare(conditionText);
-
-    const isSameText =
-        normalizedRemark &&
-        normalizedCondition &&
-        normalizedRemark === normalizedCondition;
 
     let html = '';
 
@@ -1216,8 +1207,12 @@ function renderRuleRemarkCondition(rule) {
         html += `<div><b>Remark:</b> 없음</div>`;
     }
 
-    if (conditionText && !isSameText) {
-        html += `<div><b>Condition:</b> ${escapeHtml(conditionText)}</div>`;
+    if (rule.container_condition) {
+        html += `<div><b>Container:</b> ${escapeHtml(rule.container_condition)}</div>`;
+    }
+
+    if (rule.stowage_condition) {
+        html += `<div><b>Stowage:</b> ${escapeHtml(rule.stowage_condition)}</div>`;
     }
 
     return html;
