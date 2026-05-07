@@ -111,20 +111,20 @@ module.exports = async function handler(req, res) {
     return rule.carrier_group === carrier.carrier_group;
   });
 
-  const matchedRules = carrierRules.filter(rule => {
-    const ruleUnno = normalizeUNNO(rule.unno);
-    const ruleClass = normalizeText(rule.class_no);
+  const exactRules = carrierRules.filter(rule => {
+  const ruleUnno = normalizeUNNO(rule.unno);
+  return ruleUnno === inputUnno;
+});
 
-    // 1순위: 정확한 UNNO
-    if (ruleUnno === inputUnno) return true;
+const classAllRules = carrierRules.filter(rule => {
+  const ruleClass = normalizeText(rule.class_no);
+  return rule.unno === 'ALL' && (ruleClass === classNo || ruleClass === mainClass);
+});
 
-    // 2순위: Class + ALL
-    if (rule.unno === 'ALL') {
-      return ruleClass === classNo || ruleClass === mainClass;
-    }
+// 정확한 UNNO 룰이 있으면 Class ALL보다 우선 적용
+// 예: TSL Class 2.1 ALL PROHIBITED + UN1030 acceptable exception
+const matchedRules = exactRules.length ? exactRules : classAllRules;
 
-    return false;
-  });
 
   // COMMON 룰은 판정에는 직접 반영하지 않고, 화면 안내용으로만 내려줌
   const commonRules = carrierRules.filter(rule => {
