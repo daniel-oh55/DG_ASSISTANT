@@ -1176,15 +1176,31 @@ function renderCarrierResultFromApi(dgItem, results) {
         <div class="carrier-result-grid">
             ${filteredResults.map(result => {
                 const ruleHtml = result.matched_rules && result.matched_rules.length
-                    ? result.matched_rules.map(rule => `
-                        <div class="carrier-rule-line">
-                            <div><b>Rule:</b> ${escapeHtml(rule.class_no || '-')} / ${escapeHtml(rule.unno || '-')}</div>
-                            <div><b>Status:</b> ${escapeHtml(rule.status || '-')}</div>
-                            ${rule.remark_code ? `<div><b>Remark:</b> ${escapeHtml(rule.remark_code)} - ${escapeHtml(rule.remark_text || '')}</div>` : `<div><b>Remark:</b> 없음</div>`}
-                            ${rule.version_no ? `<div><b>Version:</b> ${escapeHtml(rule.version_no)} / ${escapeHtml(rule.effective_date || '')}</div>` : ''}
-                        </div>
-                    `).join('')
-                    : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
+    ? result.matched_rules.map(rule => `
+        <div class="carrier-rule-line">
+            <div><b>Rule:</b> ${escapeHtml(rule.class_no || '-')} / ${escapeHtml(rule.unno || '-')}</div>
+            <div><b>Status:</b> ${escapeHtml(rule.status || '-')}</div>
+            ${rule.remark_code ? `<div><b>Remark:</b> ${escapeHtml(rule.remark_code)} - ${escapeHtml(rule.remark_text || '')}</div>` : `<div><b>Remark:</b> 없음</div>`}
+            ${rule.condition_text ? `<div><b>Condition:</b> ${escapeHtml(rule.condition_text)}</div>` : ''}
+            ${rule.document_required ? `<div><b>Required Docs:</b> ${escapeHtml(rule.document_required)}</div>` : ''}
+            ${rule.version_no ? `<div><b>Version:</b> ${escapeHtml(rule.version_no)} / ${escapeHtml(rule.effective_date || '')}</div>` : ''}
+        </div>
+    `).join('')
+    : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
+
+const commonHtml = result.common_rules && result.common_rules.length
+    ? `
+        <div class="carrier-common-box">
+            <div class="carrier-common-title">공통 주의사항</div>
+            ${result.common_rules.map(rule => `
+                <div class="carrier-common-line">
+                    ${rule.remark_code ? `<span class="carrier-common-code">${escapeHtml(rule.remark_code)}</span>` : ''}
+                    <span>${escapeHtml(rule.condition_text || rule.remark_text || '-')}</span>
+                </div>
+            `).join('')}
+        </div>
+    `
+    : '';
 
                 return `
                     <div class="carrier-result-card ${carrierStatusClass(result.status)}">
@@ -1193,8 +1209,9 @@ function renderCarrierResultFromApi(dgItem, results) {
                             <div class="carrier-status">${escapeHtml(result.status_label || carrierStatusLabel(result.status))}</div>
                         </div>
                         <div class="carrier-rule-box">
-                            ${ruleHtml}
-                        </div>
+                          ${ruleHtml}
+                          ${commonHtml}
+                      </div>
                     </div>
                 `;
             }).join('')}

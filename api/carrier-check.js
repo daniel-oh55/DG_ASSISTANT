@@ -100,51 +100,69 @@ module.exports = async function handler(req, res) {
   .from('dg_carrier_rules')
   .select('*')
   .eq('is_active', true)
-  .or(`unno.eq.${inputUnno},unno.eq.ALL`)
+  .or(`unno.eq.${inputUnno},unno.eq.ALL,unno.eq.COMMON`)
   .order('carrier_group', { ascending: true })
   .order('sort_order', { ascending: true });
 
     if (ruleError) throw ruleError;
 
     const results = carriers.map(carrier => {
-      const matchedRules = (ruleRows || []).filter(rule => {
-        if (rule.carrier_group !== carrier.carrier_group) return false;
+  const carrierRules = (ruleRows || []).filter(rule => {
+    return rule.carrier_group === carrier.carrier_group;
+  });
 
-        const ruleUnno = normalizeUNNO(rule.unno);
-        const ruleClass = normalizeText(rule.class_no);
+  const matchedRules = carrierRules.filter(rule => {
+    const ruleUnno = normalizeUNNO(rule.unno);
+    const ruleClass = normalizeText(rule.class_no);
 
-        // 1순위: 정확한 UNNO
-        if (ruleUnno === inputUnno) return true;
+    // 1순위: 정확한 UNNO
+    if (ruleUnno === inputUnno) return true;
 
-        // 2순위: Class + ALL
-        if (rule.unno === 'ALL') {
-          return ruleClass === classNo || ruleClass === mainClass;
-        }
+    // 2순위: Class + ALL
+    if (rule.unno === 'ALL') {
+      return ruleClass === classNo || ruleClass === mainClass;
+    }
 
-        return false;
-      });
+    return false;
+  });
 
-      const status = decideStatus(matchedRules);
+  // COMMON 룰은 판정에는 직접 반영하지 않고, 화면 안내용으로만 내려줌
+  const commonRules = carrierRules.filter(rule => {
+    return normalizeText(rule.unno).toUpperCase() === 'COMMON';
+  });
 
-      return {
-        carrier_group: carrier.carrier_group,
-        carrier_name: carrier.carrier_name,
-        status,
-        status_label: getCarrierStatusLabel(status),
-        matched_rules: matchedRules.map(rule => ({
-          id: rule.id,
-          class_no: rule.class_no,
-          unno: rule.unno,
-          psn: rule.psn,
-          status: rule.status,
-          remark_code: rule.remark_code,
-          remark_text: rule.remark_text,
-          source_file: rule.source_file,
-          version_no: rule.version_no,
-          effective_date: rule.effective_date
-        }))
-      };
-    });
+  const status = decideStatus(matchedRules);
+
+  const mapRule = rule => ({
+    id: rule.id,
+    class_no: rule.class_no,
+    unno: rule.unno,
+    psn: rule.psn,
+    status: rule.status,
+    remark_code: rule.remark_code,
+    remark_text: rule.remark_text,
+    source_file: rule.source_file,
+    version_no: rule.version_no,
+    effective_date: rule.effective_date,
+    condition_type: rule.condition_type,
+    condition_text: rule.condition_text,
+    booking_scope: rule.booking_scope,
+    origin_condition: rule.origin_condition,
+    destination_condition: rule.destination_condition,
+    container_condition: rule.container_condition,
+    stowage_condition: rule.stowage_condition,
+    document_required: rule.document_required
+  });
+
+  return {
+    carrier_group: carrier.carrier_group,
+    carrier_name: carrier.carrier_name,
+    status,
+    status_label: getCarrierStatusLabel(status),
+    matched_rules: matchedRules.map(mapRule),
+    common_rules: commonRules.map(mapRule)
+  };
+});
 
     return res.status(200).json({
       ok: true,
