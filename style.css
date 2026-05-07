@@ -1335,47 +1335,138 @@ header span {
    선사별 선적가부 조회
    ───────────────────────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────────────────────
+   CARRIER RESULT CARD - Neo Glass Restriction Board
+   선사별 선적가부 조회 결과 카드 업그레이드
+   ───────────────────────────────────────────────────────────── */
+
+/* 옵션 영역 */
 .carrier-option-box {
-    margin-top: -18px;
+    margin-top: -14px;
     margin-bottom: 24px;
-    color: var(--text-muted);
+    padding: 12px 16px;
+
+    display: inline-flex;
+    align-items: center;
+
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+        rgba(18, 25, 36, 0.72);
+
+    color: #94A3B8;
     font-size: 13px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 8px 20px rgba(0,0,0,0.16);
 }
 
 .carrier-filter-label {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     cursor: pointer;
+    user-select: none;
 }
 
+.carrier-filter-label input {
+    accent-color: #00BFA5;
+}
+
+/* 조회 대상 요약 카드 */
 .carrier-summary-card {
-    background: linear-gradient(135deg, rgba(0, 242, 255, 0.12), rgba(255, 255, 255, 0.03));
-    border: 1px solid rgba(0, 242, 255, 0.28);
-    border-radius: 14px;
-    padding: 22px 24px;
-    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+
+    margin-bottom: 24px;
+    padding: 24px 26px;
+
     display: flex;
     justify-content: space-between;
     gap: 18px;
     align-items: flex-start;
+
+    border-radius: 20px;
+    border: 1px solid rgba(0, 191, 165, 0.26);
+
+    background:
+        radial-gradient(circle at top left, rgba(0, 191, 165, 0.20), transparent 38%),
+        linear-gradient(145deg, rgba(255,255,255,0.060), rgba(255,255,255,0.018)),
+        rgba(18, 25, 36, 0.86);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 18px 44px rgba(0,0,0,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* 요약 카드 상단 라이트 */
+.carrier-summary-card::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 191, 165, 0.75),
+        rgba(255,255,255,0.24),
+        transparent
+    );
+    box-shadow: 0 0 18px rgba(0, 191, 165, 0.32);
+}
+
+.carrier-summary-card::after {
+    content: "DG RESTRICTION CHECK";
+    position: absolute;
+    right: 24px;
+    bottom: 18px;
+
+    color: rgba(148, 163, 184, 0.08);
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    pointer-events: none;
 }
 
 .carrier-summary-title {
+    position: relative;
+    z-index: 1;
+
     font-family: var(--font-mono);
-    color: var(--accent);
-    font-size: 24px;
-    font-weight: 800;
+    color: #00F5D4;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+
+    text-shadow: 0 0 18px rgba(0, 191, 165, 0.24);
 }
 
 .carrier-summary-name {
-    margin-top: 6px;
-    color: var(--text-main);
-    font-size: 14px;
-    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+
+    margin-top: 8px;
+    max-width: 760px;
+
+    color: #e6edf3;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 600;
 }
 
 .carrier-summary-meta {
+    position: relative;
+    z-index: 1;
+
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
@@ -1383,228 +1474,310 @@ header span {
 }
 
 .carrier-summary-meta span {
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(0, 191, 165, 0.25);
+    background: rgba(0, 191, 165, 0.08);
     border-radius: 999px;
-    padding: 6px 12px;
-    color: var(--text-muted);
+    padding: 7px 12px;
+
+    color: #b7f7ed;
     font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 800;
 }
 
+/* 결과 카드 그리드 */
 .carrier-result-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
     gap: 18px;
 }
 
+/* 개별 선사 카드 */
 .carrier-result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+
+    min-height: 220px;
     padding: 20px;
-    min-height: 190px;
+
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.052), rgba(255,255,255,0.014)),
+        rgba(18, 25, 36, 0.84);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 14px 34px rgba(0,0,0,0.28),
+        inset 0 1px 0 rgba(255,255,255,0.055);
+
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
 }
 
+.carrier-result-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 191, 165, 0.26);
+    box-shadow:
+        0 22px 46px rgba(0,0,0,0.36),
+        0 0 24px rgba(0,191,165,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+/* 카드 상태별 왼쪽 라인 */
+.carrier-result-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 18px;
+    bottom: 18px;
+    width: 3px;
+    border-radius: 999px;
+    opacity: 0.9;
+}
+
+/* 카드 상태별 배경 라이트 */
+.carrier-result-card::after {
+    content: "";
+    position: absolute;
+    right: -42px;
+    top: -42px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.28;
+    pointer-events: none;
+}
+
+/* 선사 카드 헤더 */
 .carrier-result-header {
+    position: relative;
+    z-index: 1;
+
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    align-items: center;
+    align-items: flex-start;
+
     margin-bottom: 16px;
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid rgba(255,255,255,0.065);
 }
 
 .carrier-name {
     font-family: var(--font-mono);
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 19px;
+    font-weight: 900;
+    color: #f4f8fb;
+    letter-spacing: -0.2px;
 }
 
+/* 상태 배지 공통 */
 .carrier-status {
-    font-size: 13px;
-    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 92px;
+    padding: 7px 11px;
+
     border-radius: 999px;
-    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 900;
     white-space: nowrap;
+
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-.carrier-allowed {
-    border-color: rgba(0, 230, 118, 0.55);
-}
-
-.carrier-allowed .carrier-status {
-    color: var(--green);
-    background: rgba(0, 230, 118, 0.12);
-    border: 1px solid rgba(0, 230, 118, 0.45);
-}
-
-.carrier-restricted {
-    border-color: rgba(255, 214, 0, 0.6);
-}
-
-.carrier-restricted .carrier-status {
-    color: var(--yellow);
-    background: rgba(255, 214, 0, 0.12);
-    border: 1px solid rgba(255, 214, 0, 0.45);
-}
-
-.carrier-prohibited {
-    border-color: rgba(255, 23, 68, 0.65);
-}
-
-.carrier-prohibited .carrier-status {
-    color: var(--red);
-    background: rgba(255, 23, 68, 0.12);
-    border: 1px solid rgba(255, 23, 68, 0.45);
-}
-
+/* Rule 영역 */
 .carrier-rule-box {
-    border-top: 1px solid var(--border);
-    padding-top: 14px;
+    position: relative;
+    z-index: 1;
+
+    padding-top: 2px;
+    border-top: none;
 }
 
 .carrier-rule-line {
-    color: #cbd5e1;
+    margin-bottom: 12px;
+    padding: 12px 13px;
+
+    color: #d8e2ea;
     font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 10px;
+    line-height: 1.65;
+
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,0.06);
+
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.040), rgba(255,255,255,0.012)),
+        rgba(9, 14, 22, 0.45);
+}
+
+.carrier-rule-line b {
+    color: #ffffff;
+    font-weight: 800;
 }
 
 .carrier-rule-line.muted {
-    color: var(--text-muted);
+    color: #94A3B8;
 }
 
-@media (max-width: 900px) {
-    .carrier-summary-card {
-        flex-direction: column;
-    }
-
-    .carrier-summary-meta {
-        justify-content: flex-start;
-    }
+/* 상태별 카드 색상: 선적 가능 */
+.carrier-result-card.carrier-allowed {
+    border-color: rgba(0, 230, 118, 0.34);
 }
 
-/* 선사별 공통 주의사항 */
-.carrier-common-box {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px dashed rgba(255,255,255,0.16);
+.carrier-result-card.carrier-allowed::before {
+    background: #00e676;
+    box-shadow: 0 0 16px rgba(0, 230, 118, 0.48);
 }
 
-.carrier-common-title {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--accent);
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+.carrier-result-card.carrier-allowed::after {
+    background: radial-gradient(circle, rgba(0, 230, 118, 0.45), transparent 70%);
 }
 
-.carrier-common-line {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.5;
-    margin-bottom: 8px;
+.carrier-result-card.carrier-allowed .carrier-name {
+    color: #dfffea;
 }
 
-.carrier-common-code {
-    min-width: 24px;
-    height: 20px;
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: rgba(0, 242, 255, 0.12);
-    border: 1px solid rgba(0, 242, 255, 0.3);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-align: center;
+.carrier-result-card.carrier-allowed .carrier-status {
+    color: #00e676;
+    background: rgba(0, 230, 118, 0.12);
+    border: 1px solid rgba(0, 230, 118, 0.48);
 }
 
-/* 선사별 공통 주의사항 버튼 */
+/* 상태별 카드 색상: 조건부 가능 / 제한 */
+.carrier-result-card.carrier-restricted {
+    border-color: rgba(255, 214, 0, 0.36);
+}
+
+.carrier-result-card.carrier-restricted::before {
+    background: #ffd600;
+    box-shadow: 0 0 16px rgba(255, 214, 0, 0.48);
+}
+
+.carrier-result-card.carrier-restricted::after {
+    background: radial-gradient(circle, rgba(255, 214, 0, 0.42), transparent 70%);
+}
+
+.carrier-result-card.carrier-restricted .carrier-name {
+    color: #fff7c2;
+}
+
+.carrier-result-card.carrier-restricted .carrier-status {
+    color: #ffd600;
+    background: rgba(255, 214, 0, 0.12);
+    border: 1px solid rgba(255, 214, 0, 0.48);
+}
+
+/* 상태별 카드 색상: 선적 금지 */
+.carrier-result-card.carrier-prohibited {
+    border-color: rgba(255, 23, 68, 0.42);
+}
+
+.carrier-result-card.carrier-prohibited::before {
+    background: #ff1744;
+    box-shadow: 0 0 16px rgba(255, 23, 68, 0.50);
+}
+
+.carrier-result-card.carrier-prohibited::after {
+    background: radial-gradient(circle, rgba(255, 23, 68, 0.44), transparent 70%);
+}
+
+.carrier-result-card.carrier-prohibited .carrier-name {
+    color: #ffd7df;
+}
+
+.carrier-result-card.carrier-prohibited .carrier-status {
+    color: #ff6b86;
+    background: rgba(255, 23, 68, 0.12);
+    border: 1px solid rgba(255, 23, 68, 0.52);
+}
+
+/* 공통 주의사항 버튼 */
 .carrier-common-action {
+    position: relative;
+    z-index: 1;
+
     margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px dashed rgba(255,255,255,0.16);
+    padding-top: 13px;
+    border-top: 1px dashed rgba(255,255,255,0.14);
+
     display: flex;
     justify-content: flex-end;
 }
 
 .carrier-common-btn {
-    color: var(--accent);
-    border-color: rgba(0, 242, 255, 0.35);
-    background: rgba(0, 242, 255, 0.08);
+    min-height: auto;
+    padding: 7px 12px;
+
+    color: #00F5D4;
+    border-color: rgba(0, 191, 165, 0.35);
+    background: rgba(0, 191, 165, 0.08);
+
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-weight: 800;
 }
 
 .carrier-common-btn:hover {
-    color: white;
-    border-color: var(--accent);
+    color: #ffffff;
+    border-color: rgba(0, 191, 165, 0.75);
+    background: rgba(0, 191, 165, 0.18);
 }
 
-/* 공통 주의사항 팝업 */
-.carrier-common-modal-window {
-    max-width: 780px;
-}
-
-.carrier-common-modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.carrier-common-modal-item {
-    background: rgba(255,255,255,0.035);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+/* 하단 안내문 */
+#carrierCheckResult > div[style*="margin-top:18px"] {
     padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.025);
 }
 
-.carrier-common-modal-item-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 8px;
-}
+/* 모바일 대응 */
+@media (max-width: 900px) {
+    .carrier-option-box {
+        display: flex;
+        width: 100%;
+    }
 
-.carrier-common-modal-status {
-    font-size: 11px;
-    font-weight: 800;
-    border-radius: 999px;
-    padding: 4px 9px;
-}
+    .carrier-summary-card {
+        flex-direction: column;
+        padding: 22px;
+    }
 
-.carrier-common-modal-status.carrier-allowed {
-    color: var(--green);
-    background: rgba(0, 230, 118, 0.12);
-    border: 1px solid rgba(0, 230, 118, 0.45);
-}
+    .carrier-summary-card::after {
+        display: none;
+    }
 
-.carrier-common-modal-status.carrier-restricted {
-    color: var(--yellow);
-    background: rgba(255, 214, 0, 0.12);
-    border: 1px solid rgba(255, 214, 0, 0.45);
-}
+    .carrier-summary-title {
+        font-size: 24px;
+    }
 
-.carrier-common-modal-status.carrier-prohibited {
-    color: var(--red);
-    background: rgba(255, 23, 68, 0.12);
-    border: 1px solid rgba(255, 23, 68, 0.45);
-}
+    .carrier-summary-meta {
+        justify-content: flex-start;
+    }
 
-.carrier-common-modal-text {
-    color: #dbeafe;
-    font-size: 13px;
-    line-height: 1.6;
-}
+    .carrier-result-grid {
+        grid-template-columns: 1fr;
+    }
 
-.carrier-common-modal-psn {
-    margin-top: 8px;
-    color: var(--text-muted);
-    font-size: 12px;
-    font-family: var(--font-mono);
+    .carrier-result-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .carrier-status {
+        min-width: auto;
+    }
 }
 
 /* ─────────────────────────────────────────────────────────────
