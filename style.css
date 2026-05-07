@@ -1844,3 +1844,371 @@ header span {
     font-family: var(--font-mono);
     font-weight: 900;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DG 추가정보 노트 - Reading First Layout
+   좌측: 노트 라이브러리 / 우측: 노트 작성
+   ───────────────────────────────────────────────────────────── */
+
+.note-page-container {
+    max-width: 1420px;
+}
+
+.note-main-header {
+    margin-bottom: 24px;
+}
+
+.note-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.75fr) 430px;
+    gap: 22px;
+    align-items: start;
+}
+
+/* 좌측 노트 라이브러리 */
+.note-library-panel {
+    min-width: 0;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
+        rgba(18, 25, 36, 0.58);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 16px 36px rgba(0,0,0,0.22);
+}
+
+.note-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.note-section-head h2 {
+    margin: 0 0 7px 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.2px;
+}
+
+.note-section-head p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* 검색 영역 */
+.note-search-box {
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.014)),
+        rgba(9, 14, 22, 0.50);
+    border: 1px solid rgba(255,255,255,0.075);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+.note-search-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px 112px;
+    gap: 10px;
+    align-items: center;
+}
+
+.note-search-wrap input {
+    width: 100%;
+    min-height: 48px;
+    background: rgba(13, 17, 23, 0.88);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 0 15px;
+    border-radius: 12px;
+    outline: none;
+    font-family: var(--font-main);
+    font-size: 14px;
+}
+
+.note-search-wrap input:focus {
+    border-color: rgba(0, 242, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.08);
+}
+
+.note-search-status {
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.note-search-keyword {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 900;
+}
+
+/* 노트 카드 */
+.note-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+    gap: 18px;
+}
+
+.note-card {
+    position: relative;
+    min-height: 270px;
+    height: 100%;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.052), rgba(255,255,255,0.014)),
+        rgba(18, 25, 36, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 12px 28px rgba(0,0,0,0.20);
+    transition: 0.25s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.note-card:hover {
+    border-color: rgba(0, 242, 255, 0.40);
+    transform: translateY(-4px);
+    box-shadow:
+        0 18px 42px rgba(0,0,0,0.30),
+        0 0 24px rgba(0, 242, 255, 0.08);
+}
+
+.note-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 18px;
+    bottom: 18px;
+    width: 3px;
+    border-radius: 999px;
+    background: rgba(0, 242, 255, 0.65);
+    box-shadow: 0 0 14px rgba(0, 242, 255, 0.35);
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.note-card:hover::before {
+    opacity: 1;
+}
+
+.note-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.note-card-title {
+    color: var(--accent);
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.35;
+    word-break: keep-all;
+}
+
+.note-card-date {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.note-card-meta {
+    color: #aab6c3;
+    font-size: 12px;
+}
+
+.note-card-body {
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    color: #d8e2ea;
+    font-size: 14px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+}
+
+.note-card-attachment {
+    margin-top: 2px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(0, 242, 255, 0.06);
+    border: 1px solid rgba(0, 242, 255, 0.10);
+    color: #e6faff;
+    font-size: 12px;
+}
+
+.note-card-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 6px;
+}
+
+/* 우측 작성 패널 */
+.note-editor-panel {
+    position: sticky;
+    top: 24px;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.014)),
+        rgba(18, 25, 36, 0.78);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.055),
+        0 16px 38px rgba(0,0,0,0.28);
+}
+
+.editor-head {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.note-form {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 14px !important;
+}
+
+.note-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.note-field label,
+.note-file-panel label {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.note-field input,
+.note-field textarea {
+    width: 100%;
+    background: rgba(13, 17, 23, 0.90) !important;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 12px 13px;
+    border-radius: 12px;
+    outline: none;
+    font-family: var(--font-main);
+    font-size: 14px;
+}
+
+.note-field textarea {
+    resize: vertical;
+    min-height: 220px;
+    line-height: 1.65;
+}
+
+.note-field input:focus,
+.note-field textarea:focus {
+    border-color: rgba(0, 242, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.08);
+}
+
+.note-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.note-char-guide,
+.note-file-guide {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.note-file-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 13px;
+    border: 1px dashed rgba(255,255,255,0.16);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.025);
+}
+
+.note-file-panel label span {
+    color: var(--text-muted);
+    font-family: var(--font-main);
+    text-transform: none;
+    font-weight: 500;
+}
+
+.note-file-panel input {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.note-edit-status {
+    min-height: 20px;
+}
+
+.note-save-btn {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 14px;
+    margin-top: 4px;
+}
+
+/* 파일 선택 상태 표시 보정 */
+#fileSelectionStatus {
+    margin-left: 0 !important;
+    margin-top: 7px;
+    max-width: 100% !important;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .note-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .note-editor-panel {
+        position: static;
+        order: -1;
+    }
+}
+
+@media (max-width: 720px) {
+    .note-search-wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .note-editor-row {
+        grid-template-columns: 1fr;
+    }
+
+    .note-grid {
+        grid-template-columns: 1fr;
+    }
+}

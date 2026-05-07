@@ -117,31 +117,81 @@
 
 
 <section id="tab-notes" class="tab-content">
-    <div class="container">
+    <div class="container note-page-container">
         <input type="hidden" id="editNoteId">
-        <div class="search-area note-form">
-            <div class="note-input-grid">
-                <input type="text" id="noteTitle" placeholder="제목">
-                <input type="text" id="noteAuthor" placeholder="작성자">
-                <input type="password" id="notePw" placeholder="비밀번호 (수정/삭제용)">
-            </div>
-            <textarea id="noteContent" placeholder="내용을 입력하세요..." rows="4"></textarea>
-            <div class="note-footer">
-                <input type="file" id="noteFile">
-                <div id="editStatus"></div> <button class="btn accent2" id="saveNoteBtn">노트 저장하기</button>
-            </div>
-        </div>
 
-        <div class="note-search-box">
-            <div class="note-search-wrap">
-                <input type="text" id="noteSearchInput" placeholder="노트 제목 또는 내용 검색">
-                <button class="btn" id="noteSearchBtn">노트 검색</button>
-                <button class="btn secondary" id="noteSearchClearBtn">전체 보기</button>
-            </div>
-            <div id="noteSearchStatus" class="note-search-status"></div>
-        </div>
+        <header class="note-main-header">
+            <h1>DG 추가정보 노트 <span>Knowledge Notes</span></h1>
+            <p class="subtitle">DG 실무 메모, 선사별 추가 규정, 첨부파일을 관리합니다.</p>
+        </header>
 
-        <div id="noteList" class="note-grid"></div>
+        <div class="note-workspace">
+            <!-- 좌측: 읽기 / 검색 / 노트 목록 -->
+            <section class="note-library-panel">
+                <div class="note-section-head">
+                    <div>
+                        <h2>▦ 노트 라이브러리</h2>
+                        <p>제목 또는 내용에 포함된 키워드로 검색할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="note-search-box">
+                    <div class="note-search-wrap">
+                        <input type="text" id="noteSearchInput" placeholder="노트 제목 또는 내용 검색">
+                        <button class="btn" id="noteSearchBtn">검색</button>
+                        <button class="btn secondary" id="noteSearchClearBtn">전체 보기</button>
+                    </div>
+                    <div id="noteSearchStatus" class="note-search-status"></div>
+                </div>
+
+                <div id="noteList" class="note-grid"></div>
+            </section>
+
+            <!-- 우측: 작성 / 수정 -->
+            <aside class="note-editor-panel">
+                <div class="note-section-head editor-head">
+                    <div>
+                        <h2>✎ 노트 작성</h2>
+                        <p>새로운 DG 실무 정보를 기록하세요.</p>
+                    </div>
+                </div>
+
+                <div class="note-form">
+                    <div class="note-field">
+                        <label for="noteTitle">제목</label>
+                        <input type="text" id="noteTitle" placeholder="예: 리튬배터리 선적 규정">
+                    </div>
+
+                    <div class="note-editor-row">
+                        <div class="note-field">
+                            <label for="noteAuthor">작성자</label>
+                            <input type="text" id="noteAuthor" placeholder="작성자 이름">
+                        </div>
+
+                        <div class="note-field">
+                            <label for="notePw">비밀번호</label>
+                            <input type="password" id="notePw" placeholder="수정/삭제용">
+                        </div>
+                    </div>
+
+                    <div class="note-field">
+                        <label for="noteContent">내용</label>
+                        <textarea id="noteContent" placeholder="내용을 입력하세요..." rows="10"></textarea>
+                        <div class="note-char-guide">DG 규정, 선사별 제한, 터미널 요청사항 등을 자유롭게 기록하세요.</div>
+                    </div>
+
+                    <div class="note-file-panel">
+                        <label for="noteFile">첨부파일 <span>(선택)</span></label>
+                        <input type="file" id="noteFile">
+                        <div class="note-file-guide">최대 4MB까지 업로드 가능합니다.</div>
+                    </div>
+
+                    <div id="editStatus" class="note-edit-status"></div>
+
+                    <button class="btn accent2 note-save-btn" id="saveNoteBtn">노트 저장하기</button>
+                </div>
+            </aside>
+        </div>
     </div>
 </section>
 
@@ -159,7 +209,6 @@
         <div id="modalAttachment" class="modal-foot"></div>
     </div>
 </div>
-</section>
 
 
         </main>
