@@ -11,15 +11,26 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { data, error } = await supabaseAdmin
+    const keyword = String(req.query.q || '').trim();
+
+    let query = supabaseAdmin
       .from('DG_NOTES')
-      .select('id, title, author, content, file_url, file_name, created_at, updated_at')
-      .order('created_at', { ascending: false });
+      .select('id, title, author, content, file_url, file_name, created_at, updated_at');
+
+    // 제목 또는 내용에 키워드가 포함된 노트 검색
+    if (keyword) {
+      const safeKeyword = keyword.replace(/[%_]/g, '\\$&');
+      query = query.or(`title.ilike.%${safeKeyword}%,content.ilike.%${safeKeyword}%`);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
 
     return res.status(200).json({
       ok: true,
+      keyword,
+      count: data ? data.length : 0,
       data: data || []
     });
   } catch (err) {

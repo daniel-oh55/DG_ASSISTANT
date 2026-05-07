@@ -716,9 +716,10 @@ document.getElementById('lookupInput').addEventListener('keydown', e => {
 // ── 4. 실무 지식 노트 로직 ──────────────────────────────────────
 
 let isEditMode = false;
-let currentFileUrl = null;  // 현재 게시글의 파일 URL 보관용
-let currentFileName = null; // 현재 게시글의 파일명 보관용
-let currentFileRemoved = false; // 수정 시 기존 첨부파일 삭제 여부
+let currentFileUrl = null;
+let currentFileName = null;
+let currentFileRemoved = false;
+let currentNoteSearchKeyword = '';
 
 // 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
 function formatDate(isoString) {
@@ -780,10 +781,16 @@ function decodeSafeNote(safeNote) {
 }
 
 // 노트 목록 불러오기
-async function fetchNotes() {
+async function fetchNotes(keyword = currentNoteSearchKeyword) {
     try {
-        const response = await fetch('/api/notes');
-        const result = await response.json();
+        currentNoteSearchKeyword = String(keyword || '').trim();
+
+        const url = currentNoteSearchKeyword
+            ? `/api/notes?q=${encodeURIComponent(currentNoteSearchKeyword)}`
+            : '/api/notes';
+
+        const response = await fetch(url);
+        const result = await readJsonResponse(response);
 
         if (!response.ok || !result.ok) {
             throw new Error(result.message || '노트 목록 조회 실패');
@@ -791,10 +798,25 @@ async function fetchNotes() {
 
         const data = result.data || [];
         const noteList = document.getElementById('noteList');
+        const statusEl = document.getElementById('noteSearchStatus');
+
         if (!noteList) return;
 
+        if (statusEl) {
+            if (currentNoteSearchKeyword) {
+                statusEl.innerHTML = `
+                    <span class="note-search-keyword">"${escapeHtml(currentNoteSearchKeyword)}"</span>
+                    검색 결과 ${data.length}건
+                `;
+            } else {
+                statusEl.innerHTML = `전체 노트 ${data.length}건`;
+            }
+        }
+
         if (!data || data.length === 0) {
-            noteList.innerHTML = `<div style="color:var(--muted); font-size:14px;">저장된 노트가 없습니다.</div>`;
+            noteList.innerHTML = currentNoteSearchKeyword
+                ? `<div style="color:var(--muted); font-size:14px;">검색 결과가 없습니다.</div>`
+                : `<div style="color:var(--muted); font-size:14px;">저장된 노트가 없습니다.</div>`;
             return;
         }
 
@@ -830,6 +852,19 @@ async function fetchNotes() {
             noteList.innerHTML = `<div class="error-msg">노트 목록 조회 실패: ${escapeHtml(err.message || err)}</div>`;
         }
     }
+}
+
+function searchNotes() {
+    const input = document.getElementById('noteSearchInput');
+    const keyword = input ? input.value.trim() : '';
+    fetchNotes(keyword);
+}
+
+function clearNoteSearch() {
+    const input = document.getElementById('noteSearchInput');
+    if (input) input.value = '';
+    currentNoteSearchKeyword = '';
+    fetchNotes('');
 }
 
 // 노트 저장 / 수정
@@ -1386,4 +1421,21 @@ if (showOnlyAllowedCarrier) {
             checkCarrierLoadingPossibility();
         }
     });
+}
+
+const noteSearchBtn = document.getElementById('noteSearchBtn');
+if (noteSearchBtn) {
+    noteSearchBtn.addEventListener('click', searchNotes);
+}
+
+const noteSearchInput = document.getElementById('noteSearchInput');
+if (noteSearchInput) {
+    noteSearchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') searchNotes();
+    });
+}
+
+const noteSearchClearBtn = document.getElementById('noteSearchClearBtn');
+if (noteSearchClearBtn) {
+    noteSearchClearBtn.addEventListener('click', clearNoteSearch);
 }

@@ -307,7 +307,7 @@ header span { font-size: 14px; color: var(--muted); }
     padding: 20px;
     display: flex;
     gap: 12px;
-    transition: 0.3s
+    transition: 0.3s;
     height: 280px; /* 고정 높이 */
     cursor: pointer;
     flex-direction: column;
@@ -391,6 +391,56 @@ header span { font-size: 14px; color: var(--muted); }
 .modal-close:hover { color: var(--red); }
 .modal-body { line-height: 1.8; color: #e2e8f0; white-space: pre-wrap; font-size: 16px; }
 .modal-meta { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+.note-search-box {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.note-search-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.note-search-wrap input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 13px 14px;
+    border-radius: 8px;
+    outline: none;
+    font-family: var(--font-main);
+}
+
+.note-search-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.08);
+}
+
+.note-search-status {
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.note-search-keyword {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .note-search-wrap {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 
 /* ─────────────────────────────────────────────────────────────
    REFINED APPLE GLASS UI - 고휘도 글래스모피즘 버전
