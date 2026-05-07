@@ -759,10 +759,43 @@ function renderSpecialProvisionLinks(spText) {
     const uniqueSpNos = [...new Set(matches)];
 
     return uniqueSpNos.map(spNo => `
-        <button type="button" class="sp-link-btn" onclick="openSpecialProvisionModal('${escapeHtml(spNo)}')">
-            SP ${escapeHtml(spNo)}
-        </button>
-    `).join(' ');
+    <button type="button" class="sp-link-btn" onclick="openSpecialProvisionModal('${escapeHtml(spNo)}')">
+        ${escapeHtml(spNo)}
+    </button>
+`).join(' ');
+}
+
+function formatSpecialProvisionContent(content) {
+    const raw = String(content || '').trim();
+
+    if (!raw) return '<p>-</p>';
+
+    // 1) 줄바꿈이 있으면 줄바꿈 기준으로 문단 분리
+    // 2) 줄바꿈이 거의 없는 긴 문장은 세미콜론+공백, 마침표+공백 기준으로 보기 좋게 분리
+    let normalized = raw
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+    if (!normalized.includes('\n')) {
+        normalized = normalized
+            .replace(/;\s+/g, ';\n')
+            .replace(/\.\s+(?=[A-Z0-9(])/g, '.\n');
+    }
+
+    const paragraphs = normalized
+        .split(/\n+/)
+        .map(p => p.trim())
+        .filter(Boolean);
+
+    return paragraphs.map(p => {
+        // (a), (b), 1., 2. 같은 항목은 살짝 들여쓰기
+        const isListLike = /^(\([a-z0-9]+\)|[0-9]+\.)\s+/i.test(p);
+        const cls = isListLike ? 'sp-content-paragraph sp-content-listlike' : 'sp-content-paragraph';
+
+        return `<p class="${cls}">${escapeHtml(p)}</p>`;
+    }).join('');
 }
 
 async function openSpecialProvisionModal(spNo) {
@@ -819,8 +852,10 @@ async function openSpecialProvisionModal(spNo) {
         `;
 
         document.getElementById('spModalContent').innerHTML = `
-            <div class="sp-content-text">${escapeHtml(item.content || '-')}</div>
-        `;
+    <div class="sp-content-text">
+        ${formatSpecialProvisionContent(item.content)}
+    </div>
+`;
     } catch (err) {
         console.error('SP 조회 오류:', err);
         document.getElementById('spModalContent').innerHTML = `
