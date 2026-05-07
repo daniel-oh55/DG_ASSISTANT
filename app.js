@@ -1106,18 +1106,6 @@ async function deleteNoteSafe(safeNote) {
     }
 }
 
-// 기존 호출 호환용
-async function deleteNote(id, correctPw) {
-    const inputPw = prompt('비밀번호를 입력하세요:');
-    if (inputPw === correctPw) {
-        const { error } = await _supabase.from('DG_NOTES').delete().eq('id', id).eq('password', inputPw);
-        if (error) alert('삭제 실패: ' + error.message);
-        else fetchNotes();
-    } else if (inputPw !== null) {
-        alert('비밀번호가 일치하지 않습니다.');
-    }
-}
-
 // 이벤트 리스너
 const saveNoteBtn = document.getElementById('saveNoteBtn');
 if (saveNoteBtn) {

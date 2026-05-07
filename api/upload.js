@@ -21,6 +21,15 @@ module.exports = async function handler(req, res) {
     }
 
     const buffer = Buffer.from(file_base64, 'base64');
+    const maxSize = 4 * 1024 * 1024;
+
+
+if (buffer.length > maxSize) {
+  return res.status(413).json({
+    ok: false,
+    message: '첨부파일은 4MB 이하만 업로드할 수 있습니다.'
+  });
+}
 
     const safeFileName = `${Date.now()}_${file_name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const storagePath = `notes/${safeFileName}`;

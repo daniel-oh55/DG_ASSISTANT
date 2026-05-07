@@ -18,6 +18,9 @@
     
     --font-main: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
     --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+
+    --text: var(--text-main);
+    --muted: var(--text-muted);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
