@@ -3,11 +3,6 @@
 //  Supabase 컬럼: UNNO, Name, Class, SUB, Segregation
 // ═══════════════════════════════════════════════════════════════
 
-// ── 1. Supabase 초기화 ──────────────────────────────────────────
-const SUPABASE_URL = 'https://atqcxiipzhghwoprqljp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0cWN4aWlwemhnaHdvcHJxbGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MzgzNDIsImV4cCI6MjA5MzAxNDM0Mn0.F4nACbzg_91_vpHnJMUy42a-uv9og4iOw3buxKPbONU';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 // ── 2. 참조 데이터 (CLAUDE3.xlsx — SGG / SGCODE / SEG.TABLE) ───
 const REF = {
 
@@ -343,15 +338,24 @@ async function addEntries() {
   const msgs = [];
 
   if (toLookup.length) {
-    const { data, error } = await _supabase
-      .from('DG_TABLE')
-      .select('*')
-      .in('UNNO', toLookup);
+const response = await fetch('/api/dg-search', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    unnos: toLookup
+  })
+});
 
-    if (error) {
-      errEl.innerHTML = `<div class="error-msg">⚠ DB 오류: ${error.message}</div>`;
-      return;
-    }
+const result = await readJsonResponse(response);
+
+if (!response.ok || !result.ok) {
+  errEl.innerHTML = `<div class="error-msg">⚠ DB 오류: ${escapeHtml(result.message || 'DG_TABLE 조회 실패')}</div>`;
+  return;
+}
+
+const data = result.data || [];
 
     const uniqueDataMap = new Map();
     (data || []).forEach(item => {
@@ -584,12 +588,14 @@ async function lookupDGInfo() {
 
     try {
         // 🚨 수정 포인트: .single()을 제거하고 결과를 리스트로 받습니다.
-        const { data, error } = await _supabase
-            .from('DG_TABLE')
-            .select('*')
-            .eq('UNNO', unno); // 정확히 일치하는 모든 데이터 조회
+        const response = await fetch(`/api/dg-lookup?unno=${encodeURIComponent(unno)}`);
+const result = await readJsonResponse(response);
 
-        if (error) throw error;
+if (!response.ok || !result.ok) {
+    throw new Error(result.message || 'DG 상세조회 실패');
+}
+
+const data = result.data || [];
 
         // 결과가 없을 때 처리
         if (!data || data.length === 0) {
