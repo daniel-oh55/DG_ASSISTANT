@@ -743,6 +743,99 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function renderSpecialProvisionLinks(spText) {
+    const clean = String(spText || '').trim();
+
+    if (!clean || clean === '-' || clean === '—') {
+        return '-';
+    }
+
+    const matches = clean.match(/\d{1,4}/g);
+
+    if (!matches || matches.length === 0) {
+        return escapeHtml(clean);
+    }
+
+    const uniqueSpNos = [...new Set(matches)];
+
+    return uniqueSpNos.map(spNo => `
+        <button type="button" class="sp-link-btn" onclick="openSpecialProvisionModal('${escapeHtml(spNo)}')">
+            SP ${escapeHtml(spNo)}
+        </button>
+    `).join(' ');
+}
+
+async function openSpecialProvisionModal(spNo) {
+    let modal = document.getElementById('specialProvisionModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'specialProvisionModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-window sp-modal-window">
+                <div class="modal-header">
+                    <h2 id="spModalTitle">Special Provision</h2>
+                    <button class="modal-close" onclick="closeSpecialProvisionModal()">×</button>
+                </div>
+                <div class="modal-meta" id="spModalMeta"></div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <div id="spModalContent" class="modal-body sp-modal-body"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', e => {
+            if (e.target.id === 'specialProvisionModal') {
+                closeSpecialProvisionModal();
+            }
+        });
+    }
+
+    document.getElementById('spModalTitle').innerText = `SP ${spNo}`;
+    document.getElementById('spModalMeta').innerText = 'IMDG Code Special Provision';
+    document.getElementById('spModalContent').innerHTML = `
+        <div style="color:var(--accent); font-family:var(--font-mono);">
+            SPECIAL PROVISION LOADING...
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+
+    try {
+        const response = await fetch(`/api/sp-lookup?sp=${encodeURIComponent(spNo)}`);
+        const result = await readJsonResponse(response);
+
+        if (!response.ok || !result.ok) {
+            throw new Error(result.message || 'SP 정보 조회 실패');
+        }
+
+        const item = result.data;
+
+        document.getElementById('spModalTitle').innerText = `SP ${escapeHtml(item.sp_no)}`;
+        document.getElementById('spModalMeta').innerHTML = `
+            ${item.marker ? `<span class="sp-marker">${escapeHtml(item.marker)}</span>` : ''}
+            <span>Source: ${escapeHtml(item.source_name || 'SPECIAL PROVISIONS LIST')}</span>
+        `;
+
+        document.getElementById('spModalContent').innerHTML = `
+            <div class="sp-content-text">${escapeHtml(item.content || '-')}</div>
+        `;
+    } catch (err) {
+        console.error('SP 조회 오류:', err);
+        document.getElementById('spModalContent').innerHTML = `
+            <div class="error-msg">SP 조회 실패: ${escapeHtml(err.message || err)}</div>
+        `;
+    }
+}
+
+function closeSpecialProvisionModal() {
+    const modal = document.getElementById('specialProvisionModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 async function readJsonResponse(response) {
     const text = await response.text();
 

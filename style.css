@@ -863,3 +863,62 @@ header span { font-size: 14px; color: var(--muted); }
     font-size: 12px;
     font-family: var(--font-mono);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   IMDG Special Provision Modal
+   ───────────────────────────────────────────────────────────── */
+
+.sp-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 4px 3px 0;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 242, 255, 0.35);
+    background: rgba(0, 242, 255, 0.08);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.sp-link-btn:hover {
+    background: rgba(0, 242, 255, 0.18);
+    border-color: var(--accent);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.sp-modal-window {
+    max-width: 820px;
+}
+
+.sp-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.sp-content-text {
+    white-space: pre-wrap;
+    line-height: 1.75;
+    color: #e2e8f0;
+    font-size: 15px;
+}
+
+.sp-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 214, 0, 0.45);
+    background: rgba(255, 214, 0, 0.12);
+    color: var(--yellow);
+    font-family: var(--font-mono);
+    font-weight: 900;
+}
