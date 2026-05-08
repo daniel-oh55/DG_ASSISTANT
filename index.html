@@ -20,26 +20,31 @@
     </div>
 
     <ul class="menu-list">
-        <li class="menu-item active" data-target="tab-lookup">
-            <span class="menu-icon">⌕</span>
-            <span class="menu-text">IMDG 조회 (UNNO)</span>
-        </li>
+    <li class="menu-item active" data-target="tab-home">
+        <span class="menu-icon">⌂</span>
+        <span class="menu-text">HOME</span>
+    </li>
 
-        <li class="menu-item" data-target="tab-carrier-check">
-            <span class="menu-icon">▦</span>
-            <span class="menu-text">선사별 선적가부 조회</span>
-        </li>
+    <li class="menu-item" data-target="tab-lookup">
+        <span class="menu-icon">⌕</span>
+        <span class="menu-text">IMDG 조회 (UNNO)</span>
+    </li>
 
-        <li class="menu-item" data-target="tab-segregation">
-            <span class="menu-icon">☷</span>
-            <span class="menu-text">격리규정 확인</span>
-        </li>
+    <li class="menu-item" data-target="tab-carrier-check">
+        <span class="menu-icon">▦</span>
+        <span class="menu-text">선사별 선적가부 조회</span>
+    </li>
 
-        <li class="menu-item" data-target="tab-notes">
-            <span class="menu-icon">✎</span>
-            <span class="menu-text">DG 추가정보 노트</span>
-        </li>
-    </ul>
+    <li class="menu-item" data-target="tab-segregation">
+        <span class="menu-icon">☷</span>
+        <span class="menu-text">격리규정 확인</span>
+    </li>
+
+    <li class="menu-item" data-target="tab-notes">
+        <span class="menu-icon">✎</span>
+        <span class="menu-text">DG 추가정보 노트</span>
+    </li>
+</ul>
 </nav>
 
         <!-- 3. 오른쪽 메인 콘텐츠 영역 -->
@@ -67,6 +72,64 @@
                 <div id="segPanel"></div>
                 </div>
             </section>
+
+            <section id="tab-home" class="tab-content active">
+    <div class="container home-container">
+        <header class="home-header">
+            <h1>DG PROGRAM <span>| Home</span></h1>
+            <p class="subtitle">
+                DG Assistant 메인 화면입니다. 아래 카드에서 원하는 기능으로 바로 이동할 수 있습니다.
+            </p>
+        </header>
+
+        <div class="home-dashboard">
+            <button type="button" class="home-nav-card home-card-cyan" data-target="tab-lookup">
+                <div class="home-card-icon">🔎</div>
+                <div class="home-card-content">
+                    <div class="home-card-title">IMDG 조회 (UNNO)</div>
+                    <div class="home-card-desc">
+                        UN 번호 기준으로 IMDG 상세정보를 조회합니다.
+                    </div>
+                    <div class="home-card-action">Explore</div>
+                </div>
+            </button>
+
+            <button type="button" class="home-nav-card home-card-blue" data-target="tab-carrier-check">
+                <div class="home-card-icon">🚢</div>
+                <div class="home-card-content">
+                    <div class="home-card-title">선사별 선적가부 조회</div>
+                    <div class="home-card-desc">
+                        선사별 DG 금지/제한 규정을 기준으로 선적 가능 여부를 확인합니다.
+                    </div>
+                    <div class="home-card-action">Explore</div>
+                </div>
+            </button>
+
+            <button type="button" class="home-nav-card home-card-green" data-target="tab-segregation">
+                <div class="home-card-icon">📦</div>
+                <div class="home-card-content">
+                    <div class="home-card-title">격리규정 확인</div>
+                    <div class="home-card-desc">
+                        복수 UNNO 입력 후 IMDG Code 7.2 기준 격리 규정을 분석합니다.
+                    </div>
+                    <div class="home-card-action">Explore</div>
+                </div>
+            </button>
+
+            <button type="button" class="home-nav-card home-card-purple" data-target="tab-notes">
+                <div class="home-card-icon">📝</div>
+                <div class="home-card-content">
+                    <div class="home-card-title">DG 추가정보 노트</div>
+                    <div class="home-card-desc">
+                        실무 노트, 추가 정보, 내부 공유 메모를 조회하고 작성합니다.
+                    </div>
+                    <div class="home-card-action">Explore</div>
+                </div>
+            </button>
+        </div>
+    </div>
+</section>
+
 
             <!-- [탭 2] DG정보 상세조회 (신규 기능) -->
             <section id="tab-lookup" class="tab-content active">

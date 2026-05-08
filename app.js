@@ -533,19 +533,36 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 // DOM 조작: 요소를 선택하고 클릭 이벤트를 연결합니다.
 const menuItems = document.querySelectorAll('.menu-item');
 const tabs = document.querySelectorAll('.tab-content');
+const homeNavCards = document.querySelectorAll('.home-nav-card');
+
+function activateTab(targetId) {
+    if (!targetId) return;
+
+    menuItems.forEach(item => {
+        item.classList.toggle('active', item.getAttribute('data-target') === targetId);
+    });
+
+    tabs.forEach(tab => {
+        tab.classList.toggle('active', tab.id === targetId);
+    });
+
+    // 노트 탭 진입 시 목록 자동 로딩
+    if (targetId === 'tab-notes') {
+        fetchNotes();
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 menuItems.forEach(item => {
     item.addEventListener('click', () => {
-        // 1-1. 모든 메뉴와 탭의 'active' 상태를 해제합니다.
-        menuItems.forEach(mi => mi.classList.remove('active'));
-        tabs.forEach(t => t.classList.remove('active'));
+        activateTab(item.getAttribute('data-target'));
+    });
+});
 
-        // 1-2. 클릭한 메뉴에 'active' 추가
-        item.classList.add('active');
-        
-        // 1-3. 메뉴의 data-target 값을 읽어와서 해당 id를 가진 섹션을 활성화합니다.
-        const targetId = item.getAttribute('data-target');
-        document.getElementById(targetId).classList.add('active');
+homeNavCards.forEach(card => {
+    card.addEventListener('click', () => {
+        activateTab(card.getAttribute('data-target'));
     });
 });
 
@@ -1281,14 +1298,6 @@ if (noteFileInput) {
     noteFileInput.addEventListener('change', updateSelectedFileUI);
 }
 
-// 탭 클릭 시 노트 데이터 로딩
-menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-        if(item.getAttribute('data-target') === 'tab-notes') {
-            fetchNotes();
-        }
-    });
-});
 
 
 // ==========================================================================
