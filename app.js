@@ -533,7 +533,7 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 // DOM 조작: 요소를 선택하고 클릭 이벤트를 연결합니다.
 const menuItems = document.querySelectorAll('.menu-item');
 const tabs = document.querySelectorAll('.tab-content');
-const homeNavCards = document.querySelectorAll('.home-nav-card');
+const homeCards = document.querySelectorAll('.home-bento-card');
 
 function activateTab(targetId) {
     if (!targetId) return;
@@ -546,7 +546,6 @@ function activateTab(targetId) {
         tab.classList.toggle('active', tab.id === targetId);
     });
 
-    // 노트 탭 진입 시 목록 자동 로딩
     if (targetId === 'tab-notes') {
         fetchNotes();
     }
@@ -560,9 +559,12 @@ menuItems.forEach(item => {
     });
 });
 
-homeNavCards.forEach(card => {
-    card.addEventListener('click', () => {
-        activateTab(card.getAttribute('data-target'));
+homeCards.forEach(card => {
+    card.addEventListener('click', event => {
+        if (event.target.closest('.home-quick-search')) return;
+
+        const targetId = card.getAttribute('data-target');
+        activateTab(targetId);
     });
 });
 
@@ -1570,4 +1572,104 @@ if (noteSearchInput) {
 const noteSearchClearBtn = document.getElementById('noteSearchClearBtn');
 if (noteSearchClearBtn) {
     noteSearchClearBtn.addEventListener('click', clearNoteSearch);
+}
+
+// ==========================================================================
+// Home Quick Search
+// ==========================================================================
+
+function runHomeLookupQuickSearch() {
+    const homeInput = document.getElementById('homeLookupQuickInput');
+    const targetInput = document.getElementById('lookupInput');
+
+    if (!homeInput || !targetInput) return;
+
+    const value = homeInput.value.trim();
+
+    if (!value) {
+        alert('UNNO를 입력해 주세요.');
+        homeInput.focus();
+        return;
+    }
+
+    activateTab('tab-lookup');
+
+    targetInput.value = value;
+    lookupDGInfo();
+}
+
+function runHomeCarrierQuickSearch() {
+    const homeInput = document.getElementById('homeCarrierQuickInput');
+    const targetInput = document.getElementById('carrierCheckInput');
+
+    if (!homeInput || !targetInput) return;
+
+    const value = homeInput.value.trim();
+
+    if (!value) {
+        alert('UNNO를 입력해 주세요.');
+        homeInput.focus();
+        return;
+    }
+
+    activateTab('tab-carrier-check');
+
+    targetInput.value = value;
+    checkCarrierLoadingPossibility();
+}
+
+function runHomeSegQuickSearch() {
+    const homeInput = document.getElementById('homeSegQuickInput');
+    const targetInput = document.getElementById('searchInput');
+
+    if (!homeInput || !targetInput) return;
+
+    const value = homeInput.value.trim();
+
+    if (!value) {
+        alert('UNNO를 입력해 주세요.');
+        homeInput.focus();
+        return;
+    }
+
+    activateTab('tab-segregation');
+
+    targetInput.value = value;
+    addEntries();
+}
+
+const homeLookupQuickBtn = document.getElementById('homeLookupQuickBtn');
+if (homeLookupQuickBtn) {
+    homeLookupQuickBtn.addEventListener('click', runHomeLookupQuickSearch);
+}
+
+const homeLookupQuickInput = document.getElementById('homeLookupQuickInput');
+if (homeLookupQuickInput) {
+    homeLookupQuickInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') runHomeLookupQuickSearch();
+    });
+}
+
+const homeCarrierQuickBtn = document.getElementById('homeCarrierQuickBtn');
+if (homeCarrierQuickBtn) {
+    homeCarrierQuickBtn.addEventListener('click', runHomeCarrierQuickSearch);
+}
+
+const homeCarrierQuickInput = document.getElementById('homeCarrierQuickInput');
+if (homeCarrierQuickInput) {
+    homeCarrierQuickInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') runHomeCarrierQuickSearch();
+    });
+}
+
+const homeSegQuickBtn = document.getElementById('homeSegQuickBtn');
+if (homeSegQuickBtn) {
+    homeSegQuickBtn.addEventListener('click', runHomeSegQuickSearch);
+}
+
+const homeSegQuickInput = document.getElementById('homeSegQuickInput');
+if (homeSegQuickInput) {
+    homeSegQuickInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') runHomeSegQuickSearch();
+    });
 }

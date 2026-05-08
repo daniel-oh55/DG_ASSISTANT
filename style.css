@@ -2185,11 +2185,11 @@ header span {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   HOME DASHBOARD - Adaptive Bento
+   HOME DASHBOARD - Smooth Operational Bento
    ───────────────────────────────────────────────────────────── */
 
 .home-shell {
-    max-width: 1180px;
+    max-width: 1120px;
     min-height: calc(100vh - 64px);
     display: flex;
     align-items: center;
@@ -2198,78 +2198,56 @@ header span {
 
 .home-board {
     width: 100%;
-    max-width: 980px;
-    padding: 22px;
-    border-radius: 22px;
-    border: 1px solid rgba(255,255,255,0.08);
-
+    max-width: 900px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.075);
     background:
-        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012)),
-        rgba(18, 25, 36, 0.70);
-
+        radial-gradient(circle at 50% 0%, rgba(0, 191, 165, 0.10), transparent 42%),
+        linear-gradient(180deg, rgba(255,255,255,0.032), rgba(255,255,255,0.012)),
+        rgba(17, 24, 34, 0.72);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 18px 42px rgba(0,0,0,0.28);
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 18px 42px rgba(0,0,0,0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .home-board-header {
-    margin-bottom: 18px;
-}
-
-.home-board-header h1 {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 28px;
-    font-weight: 800;
-    color: #f3fbff;
-    letter-spacing: -0.3px;
-}
-
-.home-board-header h1 span {
-    color: #7dded9;
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.home-board-header .subtitle {
-    margin-top: 8px;
-    margin-left: 0;
-    color: #9fb0bc;
-    font-size: 13px;
+    display: none;
 }
 
 .home-bento-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
 }
 
-/* 카드 공통 */
 .home-bento-card {
     position: relative;
     overflow: hidden;
-    min-height: 250px;
-    padding: 24px 22px 20px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.12);
+    min-height: 270px;
+    padding: 22px 20px 18px;
+    border-radius: 19px;
+    border: 1px solid rgba(255,255,255,0.105);
     cursor: pointer;
     text-align: center;
 
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
 
     background:
-        linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)),
-        rgba(22, 30, 42, 0.88);
+        radial-gradient(circle at 18% 16%, var(--home-glow-strong), transparent 38%),
+        radial-gradient(circle at 82% 78%, var(--home-glow-soft), transparent 32%),
+        radial-gradient(circle at 50% -18%, rgba(255,255,255,0.075), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.034), rgba(255,255,255,0.010)),
+        rgba(23, 31, 43, 0.90);
 
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.06),
-        0 12px 28px rgba(0,0,0,0.24);
+        0 10px 24px rgba(0,0,0,0.22);
 
     transition:
         transform 0.22s ease,
@@ -2278,251 +2256,215 @@ header span {
         filter 0.22s ease;
 }
 
-/* 카드 상단 대각선 글래스 라이트 */
+/* 기존 대각선 절단 느낌 제거: 부드러운 유리 반사만 유지 */
 .home-bento-card::before {
     content: "";
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 55%;
-    height: 100%;
-    background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.14),
-        rgba(255,255,255,0.03) 35%,
-        transparent 70%
-    );
+    inset: 0;
     pointer-events: none;
+    background:
+        radial-gradient(circle at 72% 12%, rgba(255,255,255,0.12), transparent 24%),
+        radial-gradient(circle at 18% 92%, rgba(255,255,255,0.035), transparent 26%);
+    opacity: 0.72;
 }
 
-/* 카드 하단 glow */
 .home-bento-card::after {
     content: "";
     position: absolute;
     left: 50%;
-    bottom: -34px;
+    bottom: -28px;
     transform: translateX(-50%);
-    width: 68%;
-    height: 70px;
+    width: 64%;
+    height: 62px;
     border-radius: 50%;
     opacity: 0.16;
     filter: blur(18px);
+    background: var(--home-glow-strong);
     pointer-events: none;
 }
 
 .home-bento-card:hover {
-    transform: translateY(-6px) scale(1.01);
-    border-color: rgba(0, 191, 165, 0.35);
+    transform: translateY(-5px);
+    border-color: rgba(0, 191, 165, 0.28);
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.08),
-        0 20px 36px rgba(0,0,0,0.32),
-        0 0 22px rgba(0, 191, 165, 0.10);
+        0 18px 34px rgba(0,0,0,0.30),
+        0 0 22px rgba(0, 191, 165, 0.09);
 }
 
-/* 아이콘 */
+.home-card-top {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .home-card-icon-wrap {
-    width: 96px;
-    height: 96px;
-    border-radius: 24px;
+    width: 86px;
+    height: 86px;
+    margin-bottom: 12px;
+    border-radius: 22px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    margin-top: 2px;
-    margin-bottom: 10px;
-
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.04);
-
+    background:
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,0.12), transparent 35%),
+        rgba(255,255,255,0.038);
+    border: 1px solid rgba(255,255,255,0.12);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 10px 20px rgba(0,0,0,0.18);
-
-    transition:
-        transform 0.22s ease,
-        box-shadow 0.22s ease;
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        0 8px 18px rgba(0,0,0,0.16);
 }
 
 .home-card-icon {
-    width: auto;
-    min-width: 0;
-    height: auto;
-    border-radius: 0;
-    box-shadow: none;
-
-    display: block;
-
-    font-size: 44px;
+    font-size: 39px;
     line-height: 1;
-
-    transition:
-        transform 0.22s ease,
-        filter 0.22s ease;
 }
 
-.home-bento-card:hover .home-card-icon-wrap {
-    transform: translateY(-2px);
-}
-
-.home-bento-card:hover .home-card-icon {
-    transform: scale(1.05);
-    filter: brightness(1.12);
-}
-
-/* 제목 / 설명 */
 .home-card-title {
-    margin-top: 4px;
-    margin-bottom: 0;
+    margin: 0;
     color: #ffffff;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 850;
     line-height: 1.35;
-    letter-spacing: -0.2px;
+    letter-spacing: -0.15px;
 }
 
 .home-card-desc {
+    min-height: 42px;
     margin-top: 8px;
-    margin-bottom: 0;
-    min-height: 46px;
-    max-width: none;
-    color: #d3dde7;
+    color: #d5dfeb;
     font-size: 13px;
     line-height: 1.55;
-    white-space: normal;
 }
 
-/* 버튼 */
 .home-card-btn {
-    min-width: 160px;
+    position: relative;
+    z-index: 1;
+
+    min-width: 156px;
     min-height: 40px;
     margin-top: 18px;
     padding: 0 18px;
-    border-radius: 11px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    font-family: var(--font-main);
-    font-size: 13px;
-    font-weight: 700;
-    color: #eefcff;
+    border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.16);
     background: rgba(255,255,255,0.05);
+    color: #eefcff;
 
+    font-size: 13px;
+    font-weight: 700;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 0 rgba(0,0,0,0);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease,
-        filter 0.2s ease;
+        0 0 10px rgba(255,255,255,0.025);
 }
 
+.home-bento-card:hover .home-card-icon-wrap,
 .home-bento-card:hover .home-card-btn {
-    transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.28);
+    animation: homePulseGlowSoft 1.8s ease-in-out infinite;
 }
 
-/* 카드 컬러 시스템 */
+/* 카드별 색상 변수: 대각선 분할 대신 확산광 방식 */
 .card-cyan {
-    background:
-        linear-gradient(135deg, rgba(16, 200, 175, 0.34), rgba(22, 30, 42, 0.94) 58%),
-        rgba(22, 30, 42, 0.88);
-}
-
-.card-cyan .home-card-icon-wrap,
-.card-cyan .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 18px rgba(16, 200, 175, 0.14);
-}
-
-.card-cyan::after {
-    background: rgba(16, 200, 175, 0.42);
+    --home-glow-strong: rgba(20, 220, 190, 0.30);
+    --home-glow-soft: rgba(20, 220, 190, 0.10);
 }
 
 .card-blue {
-    background:
-        linear-gradient(135deg, rgba(56, 132, 255, 0.34), rgba(22, 30, 42, 0.94) 58%),
-        rgba(22, 30, 42, 0.88);
-}
-
-.card-blue .home-card-icon-wrap,
-.card-blue .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 18px rgba(56, 132, 255, 0.14);
-}
-
-.card-blue::after {
-    background: rgba(56, 132, 255, 0.42);
+    --home-glow-strong: rgba(70, 145, 255, 0.30);
+    --home-glow-soft: rgba(70, 145, 255, 0.10);
 }
 
 .card-green {
-    background:
-        linear-gradient(135deg, rgba(24, 196, 140, 0.34), rgba(22, 30, 42, 0.94) 58%),
-        rgba(22, 30, 42, 0.88);
-}
-
-.card-green .home-card-icon-wrap,
-.card-green .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 18px rgba(24, 196, 140, 0.14);
-}
-
-.card-green::after {
-    background: rgba(24, 196, 140, 0.40);
+    --home-glow-strong: rgba(32, 214, 150, 0.30);
+    --home-glow-soft: rgba(32, 214, 150, 0.10);
 }
 
 .card-purple {
-    background:
-        linear-gradient(135deg, rgba(136, 90, 245, 0.36), rgba(22, 30, 42, 0.94) 58%),
-        rgba(22, 30, 42, 0.88);
+    --home-glow-strong: rgba(150, 106, 255, 0.30);
+    --home-glow-soft: rgba(150, 106, 255, 0.10);
 }
 
-.card-purple .home-card-icon-wrap,
-.card-purple .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 18px rgba(136, 90, 245, 0.14);
+/* Quick Search */
+.home-quick-search {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin-top: 16px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    gap: 8px;
 }
 
-.card-purple::after {
-    background: rgba(136, 90, 245, 0.42);
+.home-quick-search input {
+    min-width: 0;
+    height: 38px;
+    padding: 0 11px;
+    outline: none;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.13);
+    background: rgba(7, 12, 20, 0.56);
+    color: #eaf2f8;
+
+    font-family: var(--font-mono);
+    font-size: 12px;
 }
 
-/* hover 시 버튼/아이콘 맥박 느낌 */
-.home-bento-card:hover .home-card-btn,
-.home-bento-card:hover .home-card-icon-wrap {
-    animation: homePulseGlow 1.8s ease-in-out infinite;
+.home-quick-search input::placeholder {
+    color: rgba(170, 185, 200, 0.62);
 }
 
-@keyframes homePulseGlow {
+.home-quick-search input:focus {
+    border-color: rgba(0, 191, 165, 0.52);
+    box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.10);
+}
+
+.home-quick-search button {
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 191, 165, 0.28);
+    background: rgba(0, 191, 165, 0.11);
+    color: #dffff9;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.home-quick-search button:hover {
+    background: rgba(0, 191, 165, 0.18);
+    border-color: rgba(0, 191, 165, 0.48);
+}
+
+@keyframes homePulseGlowSoft {
     0% {
         box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.08),
-            0 0 10px rgba(255,255,255,0.04);
+            0 0 8px rgba(255,255,255,0.03);
     }
 
     50% {
         box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.10),
-            0 0 22px rgba(0, 191, 165, 0.16);
+            0 0 18px rgba(0, 191, 165, 0.12);
     }
 
     100% {
         box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.08),
-            0 0 10px rgba(255,255,255,0.04);
+            0 0 8px rgba(255,255,255,0.03);
     }
 }
 
-/* 반응형 */
 @media (max-width: 980px) {
     .home-shell {
         min-height: auto;
@@ -2536,312 +2478,29 @@ header span {
 
 @media (max-width: 640px) {
     .home-board {
-        padding: 16px;
-        border-radius: 18px;
-    }
-
-    .home-board-header h1 {
-        font-size: 22px;
-    }
-
-    .home-board-header h1 span {
-        font-size: 16px;
-    }
-
-    .home-bento-card {
-        min-height: 220px;
-        padding: 20px 16px 18px;
-    }
-
-    .home-card-icon-wrap {
-        width: 82px;
-        height: 82px;
-        border-radius: 20px;
-    }
-
-    .home-card-icon {
-        font-size: 38px;
-    }
-
-    .home-card-title {
-        font-size: 15px;
-    }
-
-    .home-card-desc {
-        font-size: 12px;
-    }
-
-    .home-card-btn {
-        min-width: 140px;
-        min-height: 38px;
-        font-size: 12px;
-    }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   HOME DASHBOARD - Smooth Glass Override
-   기존 HOME 카드 디자인을 더 자연스럽게 보정
-   이 코드는 style.css 맨 아래에 추가
-   ───────────────────────────────────────────────────────────── */
-
-/* Home 화면에서 카드만 보이게 하고 싶으면 헤더 숨김 */
-.home-board-header {
-    display: none;
-}
-
-.home-board {
-    max-width: 940px;
-    padding: 18px;
-    border-radius: 24px;
-    background:
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012)),
-        rgba(17, 24, 34, 0.72);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 18px 42px rgba(0,0,0,0.24);
-}
-
-/* 2x2 카드 영역 */
-.home-bento-grid {
-    gap: 16px;
-}
-
-/* 카드 공통: 기존보다 더 부드러운 베이스 */
-.home-bento-card {
-    min-height: 235px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.10);
-
-    background:
-        radial-gradient(circle at 16% 14%, rgba(255,255,255,0.08), transparent 26%),
-        radial-gradient(circle at 84% 82%, rgba(255,255,255,0.03), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
-        rgba(23, 31, 43, 0.88);
-
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 10px 24px rgba(0,0,0,0.22);
-
-    transition:
-        transform 0.22s ease,
-        box-shadow 0.22s ease,
-        border-color 0.22s ease,
-        filter 0.22s ease;
-}
-
-/* 기존의 "반 갈라진 느낌"을 주는 하이라이트를 더 부드럽게 */
-.home-bento-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 82% 14%, rgba(255,255,255,0.13), transparent 26%),
-        linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
-    opacity: 0.75;
-    pointer-events: none;
-}
-
-.home-bento-card::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -26px;
-    transform: translateX(-50%);
-    width: 64%;
-    height: 56px;
-    border-radius: 50%;
-    opacity: 0.14;
-    filter: blur(18px);
-    pointer-events: none;
-}
-
-.home-bento-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(0, 191, 165, 0.22);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 18px 34px rgba(0,0,0,0.28),
-        0 0 20px rgba(0, 191, 165, 0.08);
-}
-
-/* 아이콘 박스 */
-.home-card-icon-wrap {
-    width: 92px;
-    height: 92px;
-    border-radius: 22px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        0 8px 18px rgba(0,0,0,0.16);
-}
-
-.home-card-icon {
-    font-size: 42px;
-}
-
-/* 텍스트 */
-.home-card-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #ffffff;
-}
-
-.home-card-desc {
-    min-height: 42px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #d5dfeb;
-}
-
-/* 버튼 */
-.home-card-btn {
-    min-width: 156px;
-    min-height: 40px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.16);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 0 rgba(0,0,0,0);
-}
-
-.home-bento-card:hover .home-card-btn {
-    border-color: rgba(255,255,255,0.24);
-}
-
-/* ── 카드별 컬러: '자른 느낌' 대신 부드럽게 확산 ── */
-
-.card-cyan {
-    background:
-        radial-gradient(circle at 18% 18%, rgba(20, 220, 190, 0.30), transparent 34%),
-        radial-gradient(circle at 88% 86%, rgba(20, 220, 190, 0.10), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
-        rgba(23, 31, 43, 0.88);
-}
-
-.card-cyan .home-card-icon-wrap,
-.card-cyan .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 16px rgba(20, 220, 190, 0.12);
-}
-
-.card-cyan::after {
-    background: rgba(20, 220, 190, 0.34);
-}
-
-.card-blue {
-    background:
-        radial-gradient(circle at 18% 18%, rgba(70, 145, 255, 0.32), transparent 34%),
-        radial-gradient(circle at 88% 86%, rgba(70, 145, 255, 0.10), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
-        rgba(23, 31, 43, 0.88);
-}
-
-.card-blue .home-card-icon-wrap,
-.card-blue .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 16px rgba(70, 145, 255, 0.12);
-}
-
-.card-blue::after {
-    background: rgba(70, 145, 255, 0.34);
-}
-
-.card-green {
-    background:
-        radial-gradient(circle at 18% 18%, rgba(32, 214, 150, 0.30), transparent 34%),
-        radial-gradient(circle at 88% 86%, rgba(32, 214, 150, 0.10), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
-        rgba(23, 31, 43, 0.88);
-}
-
-.card-green .home-card-icon-wrap,
-.card-green .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 16px rgba(32, 214, 150, 0.12);
-}
-
-.card-green::after {
-    background: rgba(32, 214, 150, 0.32);
-}
-
-.card-purple {
-    background:
-        radial-gradient(circle at 18% 18%, rgba(150, 106, 255, 0.32), transparent 34%),
-        radial-gradient(circle at 88% 86%, rgba(150, 106, 255, 0.10), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
-        rgba(23, 31, 43, 0.88);
-}
-
-.card-purple .home-card-icon-wrap,
-.card-purple .home-card-btn {
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 16px rgba(150, 106, 255, 0.12);
-}
-
-.card-purple::after {
-    background: rgba(150, 106, 255, 0.34);
-}
-
-/* 호버시 아이콘/버튼 은은한 반응 */
-.home-bento-card:hover .home-card-icon-wrap,
-.home-bento-card:hover .home-card-btn {
-    animation: homePulseGlowSoft 1.8s ease-in-out infinite;
-}
-
-@keyframes homePulseGlowSoft {
-    0% {
-        box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            0 0 8px rgba(255,255,255,0.03);
-    }
-    50% {
-        box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.10),
-            0 0 18px rgba(0, 191, 165, 0.12);
-    }
-    100% {
-        box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            0 0 8px rgba(255,255,255,0.03);
-    }
-}
-
-/* 모바일 */
-@media (max-width: 980px) {
-    .home-bento-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .home-board {
         padding: 14px;
     }
 
     .home-bento-card {
-        min-height: 215px;
+        min-height: 245px;
         padding: 20px 16px 18px;
     }
 
     .home-card-icon-wrap {
-        width: 78px;
-        height: 78px;
+        width: 76px;
+        height: 76px;
         border-radius: 18px;
     }
 
     .home-card-icon {
-        font-size: 36px;
+        font-size: 34px;
     }
 
-    .home-card-btn {
-        min-width: 138px;
-        min-height: 38px;
-        font-size: 12px;
+    .home-quick-search {
+        grid-template-columns: 1fr;
+    }
+
+    .home-quick-search button {
+        width: 100%;
     }
 }
