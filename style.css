@@ -2577,3 +2577,271 @@ header span {
         font-size: 12px;
     }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   HOME DASHBOARD - Smooth Glass Override
+   기존 HOME 카드 디자인을 더 자연스럽게 보정
+   이 코드는 style.css 맨 아래에 추가
+   ───────────────────────────────────────────────────────────── */
+
+/* Home 화면에서 카드만 보이게 하고 싶으면 헤더 숨김 */
+.home-board-header {
+    display: none;
+}
+
+.home-board {
+    max-width: 940px;
+    padding: 18px;
+    border-radius: 24px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012)),
+        rgba(17, 24, 34, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 18px 42px rgba(0,0,0,0.24);
+}
+
+/* 2x2 카드 영역 */
+.home-bento-grid {
+    gap: 16px;
+}
+
+/* 카드 공통: 기존보다 더 부드러운 베이스 */
+.home-bento-card {
+    min-height: 235px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.10);
+
+    background:
+        radial-gradient(circle at 16% 14%, rgba(255,255,255,0.08), transparent 26%),
+        radial-gradient(circle at 84% 82%, rgba(255,255,255,0.03), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+        rgba(23, 31, 43, 0.88);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 10px 24px rgba(0,0,0,0.22);
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease,
+        filter 0.22s ease;
+}
+
+/* 기존의 "반 갈라진 느낌"을 주는 하이라이트를 더 부드럽게 */
+.home-bento-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 82% 14%, rgba(255,255,255,0.13), transparent 26%),
+        linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.home-bento-card::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -26px;
+    transform: translateX(-50%);
+    width: 64%;
+    height: 56px;
+    border-radius: 50%;
+    opacity: 0.14;
+    filter: blur(18px);
+    pointer-events: none;
+}
+
+.home-bento-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 191, 165, 0.22);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 18px 34px rgba(0,0,0,0.28),
+        0 0 20px rgba(0, 191, 165, 0.08);
+}
+
+/* 아이콘 박스 */
+.home-card-icon-wrap {
+    width: 92px;
+    height: 92px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        0 8px 18px rgba(0,0,0,0.16);
+}
+
+.home-card-icon {
+    font-size: 42px;
+}
+
+/* 텍스트 */
+.home-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.home-card-desc {
+    min-height: 42px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #d5dfeb;
+}
+
+/* 버튼 */
+.home-card-btn {
+    min-width: 156px;
+    min-height: 40px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 0 rgba(0,0,0,0);
+}
+
+.home-bento-card:hover .home-card-btn {
+    border-color: rgba(255,255,255,0.24);
+}
+
+/* ── 카드별 컬러: '자른 느낌' 대신 부드럽게 확산 ── */
+
+.card-cyan {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(20, 220, 190, 0.30), transparent 34%),
+        radial-gradient(circle at 88% 86%, rgba(20, 220, 190, 0.10), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        rgba(23, 31, 43, 0.88);
+}
+
+.card-cyan .home-card-icon-wrap,
+.card-cyan .home-card-btn {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 16px rgba(20, 220, 190, 0.12);
+}
+
+.card-cyan::after {
+    background: rgba(20, 220, 190, 0.34);
+}
+
+.card-blue {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(70, 145, 255, 0.32), transparent 34%),
+        radial-gradient(circle at 88% 86%, rgba(70, 145, 255, 0.10), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        rgba(23, 31, 43, 0.88);
+}
+
+.card-blue .home-card-icon-wrap,
+.card-blue .home-card-btn {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 16px rgba(70, 145, 255, 0.12);
+}
+
+.card-blue::after {
+    background: rgba(70, 145, 255, 0.34);
+}
+
+.card-green {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(32, 214, 150, 0.30), transparent 34%),
+        radial-gradient(circle at 88% 86%, rgba(32, 214, 150, 0.10), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        rgba(23, 31, 43, 0.88);
+}
+
+.card-green .home-card-icon-wrap,
+.card-green .home-card-btn {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 16px rgba(32, 214, 150, 0.12);
+}
+
+.card-green::after {
+    background: rgba(32, 214, 150, 0.32);
+}
+
+.card-purple {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(150, 106, 255, 0.32), transparent 34%),
+        radial-gradient(circle at 88% 86%, rgba(150, 106, 255, 0.10), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        rgba(23, 31, 43, 0.88);
+}
+
+.card-purple .home-card-icon-wrap,
+.card-purple .home-card-btn {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 16px rgba(150, 106, 255, 0.12);
+}
+
+.card-purple::after {
+    background: rgba(150, 106, 255, 0.34);
+}
+
+/* 호버시 아이콘/버튼 은은한 반응 */
+.home-bento-card:hover .home-card-icon-wrap,
+.home-bento-card:hover .home-card-btn {
+    animation: homePulseGlowSoft 1.8s ease-in-out infinite;
+}
+
+@keyframes homePulseGlowSoft {
+    0% {
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.08),
+            0 0 8px rgba(255,255,255,0.03);
+    }
+    50% {
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.10),
+            0 0 18px rgba(0, 191, 165, 0.12);
+    }
+    100% {
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.08),
+            0 0 8px rgba(255,255,255,0.03);
+    }
+}
+
+/* 모바일 */
+@media (max-width: 980px) {
+    .home-bento-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .home-board {
+        padding: 14px;
+    }
+
+    .home-bento-card {
+        min-height: 215px;
+        padding: 20px 16px 18px;
+    }
+
+    .home-card-icon-wrap {
+        width: 78px;
+        height: 78px;
+        border-radius: 18px;
+    }
+
+    .home-card-icon {
+        font-size: 36px;
+    }
+
+    .home-card-btn {
+        min-width: 138px;
+        min-height: 38px;
+        font-size: 12px;
+    }
+}
