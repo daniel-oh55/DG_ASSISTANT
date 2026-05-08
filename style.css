@@ -2271,3 +2271,56 @@ header span {
     padding-bottom: 16px;
     line-height: 1.75 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DG DETAIL GRID - Font Size Normalization
+   조회 데이터 폰트 크기 통일
+   ───────────────────────────────────────────────────────────── */
+
+/* 전체 DG 상세조회 데이터 기본 크기를 14px로 통일 */
+.dg-detail-grid .cell-value {
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.38;
+}
+
+/* UN No / Class / Sub Hazards / EmS 같은 핵심 값만 살짝 강조 */
+.dg-detail-grid .text-accent,
+.dg-detail-grid .text-orange {
+    font-size: 15px;
+    font-weight: 850;
+}
+
+/* Packing / IBCs / Tanks / Segregation 코드값도 동일 크기로 고정 */
+.dg-detail-grid .grid-cell:nth-child(n+18):nth-child(-n+24) .cell-value,
+.dg-detail-grid .grid-cell:nth-child(27) .cell-value {
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+/* Stowage and Handling은 app.js inline font-size:13px을 덮어쓰기 */
+.dg-detail-grid .grid-cell:nth-child(26) .cell-value {
+    font-size: 14px !important;
+    font-weight: 750;
+    line-height: 1.35 !important;
+}
+
+/* Special Provision 숫자도 일반 데이터와 균형 맞춤 */
+.dg-detail-grid .sp-link-btn {
+    font-size: 14px;
+    font-weight: 750;
+}
+
+/* Properties and Observations는 긴 문장이라 예외적으로 읽기 편한 스타일 유지 */
+.dg-detail-grid .properties-text {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.7 !important;
+}
+
+/* Hazard Marks는 보조 정보이므로 작게 유지 */
+.dg-detail-grid .grid-cell:nth-child(30) .cell-value {
+    font-size: 11px !important;
+    font-weight: 600;
+}
