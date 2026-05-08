@@ -2212,3 +2212,62 @@ header span {
         grid-template-columns: 1fr;
     }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DG DETAIL GRID - Compact Rows for Packing / IBC / Tank / Stowage
+   PACKING, IBCs, TANKS, STOWAGE, SEGREGATION 행 높이 보정
+   ───────────────────────────────────────────────────────────── */
+
+/* 
+   DG 상세조회 그리드의 특정 구간만 compact 처리
+   15~27번째 셀:
+   Packing / IBCs / Tanks / Stowage and Handling / Segregation 구간
+*/
+.dg-detail-grid .grid-cell:nth-child(n+15):nth-child(-n+27) {
+    min-height: 52px;
+}
+
+/* 해당 구간의 제목 셀 */
+.dg-detail-grid .grid-cell:nth-child(n+15):nth-child(-n+27).header-sub {
+    min-height: 34px;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+}
+
+/* 해당 구간의 값 셀 */
+.dg-detail-grid .grid-cell:nth-child(n+15):nth-child(-n+27) .cell-value {
+    min-height: 52px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1.28;
+    align-items: center;
+}
+
+/* Stowage and Handling 값 셀은 app.js에 inline font-size가 있으므로 높이만 별도 보정 */
+.dg-detail-grid .grid-cell:nth-child(26) .cell-value {
+    min-height: 52px;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    line-height: 1.3 !important;
+}
+
+/* Segregation 값 셀 */
+.dg-detail-grid .grid-cell:nth-child(27) .cell-value {
+    min-height: 52px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1.3;
+}
+
+/* (17) Properties and Observations는 예외: 내용이 많으므로 기존처럼 여유 유지 */
+.dg-detail-grid .grid-cell:nth-child(28),
+.dg-detail-grid .grid-cell:nth-child(29) {
+    min-height: unset;
+}
+
+.dg-detail-grid .grid-cell:nth-child(29) .cell-value,
+.dg-detail-grid .grid-cell:nth-child(29) .properties-text {
+    padding-top: 14px;
+    padding-bottom: 16px;
+    line-height: 1.75 !important;
+}
