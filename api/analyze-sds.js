@@ -129,7 +129,7 @@ module.exports = async function handler(req, res) {
     }
 
     const approxBytes = Math.ceil(file_base64.length * 0.75);
-    const maxBytes = 6 * 1024 * 1024;
+    const maxBytes = 3 * 1024 * 1024;
 
     if (approxBytes > maxBytes) {
       return res.status(400).json({

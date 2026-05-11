@@ -2069,12 +2069,12 @@ async function analyzeSdsDocument() {
         return;
     }
 
-    const maxSize = 6 * 1024 * 1024;
+    const maxSize = 3 * 1024 * 1024;
 
-    if (file.size > maxSize) {
-        alert('PDF 파일은 6MB 이하만 분석할 수 있습니다.');
-        return;
-    }
+if (file.size > maxSize) {
+    alert('PDF 파일은 3MB 이하만 분석할 수 있습니다. 현재 Vercel 요청 용량 제한으로 인해 큰 PDF는 분석할 수 없습니다.');
+    return;
+}
 
     analyzeBtn.disabled = true;
     const originalText = analyzeBtn.innerText;
