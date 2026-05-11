@@ -28,6 +28,51 @@ const REF = {
     SGG18: "alkalis"
   },
 
+  // SW / H Code 설명
+  // 필요한 코드는 여기에서 계속 추가 관리하면 됩니다.
+  // 현재는 팝업 구조를 먼저 만들고, 데이터는 확인되는 코드부터 채우는 방식입니다.
+  swcode: {
+    SW1: { desc: 'Protected from sources of heat.' },
+    SW2: { desc: 'Clear of living quarters.' },
+    SW3: { desc: 'Shall be transported under temperature control.' },
+    SW4: { desc: 'Category A only.' },
+    SW5: { desc: 'Category B only.' },
+    SW6: { desc: 'Category C only.' },
+    SW7: { desc: 'Category D only.' },
+    SW8: { desc: 'Category E only.' },
+    SW9: { desc: 'Category A, away from sources of heat.' },
+    SW10: { desc: 'Category B, away from sources of heat.' },
+    SW11: { desc: 'Category C, away from sources of heat.' },
+    SW12: { desc: 'Category D, away from sources of heat.' },
+    SW13: { desc: 'Category E, away from sources of heat.' },
+    SW14: { desc: 'Category A, clear of living quarters.' },
+    SW15: { desc: 'Category B, clear of living quarters.' },
+    SW16: { desc: 'Category C, clear of living quarters.' },
+    SW17: { desc: 'Category D, clear of living quarters.' },
+    SW18: { desc: 'Category E, clear of living quarters.' },
+    SW19: { desc: 'Category A, protected from sources of heat.' },
+    SW20: { desc: 'Category B, protected from sources of heat.' },
+    SW21: { desc: 'Category C, protected from sources of heat.' },
+    SW22: { desc: 'Category D, protected from sources of heat.' },
+    SW23: { desc: 'Category E, protected from sources of heat.' },
+    SW24: { desc: 'Protected from sources of heat and clear of living quarters.' },
+    SW25: { desc: 'Stowage code SW25. Please verify exact wording against the current IMDG Code.' },
+    SW26: { desc: 'Stowage code SW26. Please verify exact wording against the current IMDG Code.' },
+    SW27: { desc: 'Stowage code SW27. Please verify exact wording against the current IMDG Code.' },
+    SW28: { desc: 'Stowage code SW28. Please verify exact wording against the current IMDG Code.' },
+    SW29: { desc: 'Stowage code SW29. Please verify exact wording against the current IMDG Code.' },
+    SW30: { desc: 'Stowage code SW30. Please verify exact wording against the current IMDG Code.' }
+  },
+
+  hcode: {
+    H1: { desc: 'Keep as dry as reasonably practicable.' },
+    H2: { desc: 'Keep as cool as reasonably practicable.' },
+    H3: { desc: 'Handling code H3. Please verify exact wording against the current IMDG Code.' },
+    H4: { desc: 'Handling code H4. Please verify exact wording against the current IMDG Code.' },
+    H5: { desc: 'Handling code H5. Please verify exact wording against the current IMDG Code.' }
+  },
+
+
   // SG Code 정의 (엑셀 SGCODE 시트 전체 — reqSeg 있는 항목만 격리 엔진에 사용)
   // type: 'CLASS' | 'SGG' | 'UNNO' | ''
   // SGG type의 target은 'SGGn' 형식으로 정규화
@@ -695,8 +740,8 @@ view.innerHTML = `
 
         <div class="grid-cell col-4 header-sub">(16a) Stowage and Handling</div>
         <div class="grid-cell col-2 header-sub">(16b) Segregation</div>
-        <div class="grid-cell col-4"><div class="cell-value" style="font-size:13px;">${res.stowage}</div></div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.segregation}</div></div>
+        <div class="grid-cell col-4"><div class="cell-value" style="font-size:13px;">${renderImdgCodeLinks(res.stowage)}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderImdgCodeLinks(res.segregation)}</div></div>
 
         <div class="grid-cell col-6 header-sub">(17) Properties and Observations</div>
         <div class="grid-cell col-6">
@@ -782,6 +827,165 @@ function renderSpecialProvisionLinks(spText) {
         ${escapeHtml(spNo)}
     </button>
 `).join(' ');
+}
+
+function renderImdgCodeLinks(text) {
+    const clean = String(text || '').trim();
+
+    if (!clean || clean === '-' || clean === '—') {
+        return '-';
+    }
+
+    const pattern = /\b(SGG|SG|SW|H)\s*0*(\d{1,3})\b/gi;
+    let result = '';
+    let lastIndex = 0;
+    let match;
+
+    while ((match = pattern.exec(clean)) !== null) {
+        const prefix = match[1].toUpperCase();
+        const number = String(Number(match[2]));
+        const code = `${prefix}${number}`;
+
+        result += escapeHtml(clean.slice(lastIndex, match.index));
+        result += `
+            <button type="button"
+                    class="imdg-code-link-btn imdg-code-${prefix.toLowerCase()}"
+                    onclick="openImdgCodeModal('${prefix}', '${code}')">
+                ${escapeHtml(code)}
+            </button>
+        `;
+
+        lastIndex = pattern.lastIndex;
+    }
+
+    result += escapeHtml(clean.slice(lastIndex));
+
+    return result || escapeHtml(clean);
+}
+
+function getImdgCodeInfo(prefix, code) {
+    const normalizedPrefix = String(prefix || '').toUpperCase();
+    const normalizedCode = String(code || '').toUpperCase();
+
+    if (normalizedPrefix === 'SGG') {
+        const desc = REF.sgg[normalizedCode];
+
+        return {
+            title: normalizedCode,
+            group: 'SGG Group',
+            subtitle: 'Segregation Group',
+            content: desc
+                ? `${normalizedCode}: ${desc}`
+                : `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
+        };
+    }
+
+    if (normalizedPrefix === 'SG') {
+        const sg = REF.sgcode[normalizedCode];
+
+        if (!sg) {
+            return {
+                title: normalizedCode,
+                group: 'SG Code',
+                subtitle: 'Segregation Code',
+                content: `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
+            };
+        }
+
+        const targetText = sg.target ? `Target: ${sg.target}` : '';
+        const reqSegText = sg.reqSeg !== null && sg.reqSeg !== undefined
+            ? `Required Segregation: ${sg.reqSeg}`
+            : '';
+
+        return {
+            title: normalizedCode,
+            group: 'SG Code',
+            subtitle: 'Segregation Code',
+            content: [
+                sg.desc,
+                targetText,
+                reqSegText
+            ].filter(Boolean).join('\n')
+        };
+    }
+
+    if (normalizedPrefix === 'SW') {
+        const sw = REF.swcode?.[normalizedCode];
+
+        return {
+            title: normalizedCode,
+            group: 'SW Code',
+            subtitle: 'Stowage Code',
+            content: sw?.desc || `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
+        };
+    }
+
+    if (normalizedPrefix === 'H') {
+        const h = REF.hcode?.[normalizedCode];
+
+        return {
+            title: normalizedCode,
+            group: 'H Code',
+            subtitle: 'Handling Code',
+            content: h?.desc || `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
+        };
+    }
+
+    return {
+        title: normalizedCode || '-',
+        group: 'IMDG Code',
+        subtitle: 'Code Information',
+        content: '설명이 등록되어 있지 않습니다.'
+    };
+}
+
+function openImdgCodeModal(prefix, code) {
+    const info = getImdgCodeInfo(prefix, code);
+    let modal = document.getElementById('imdgCodeModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'imdgCodeModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-window sp-modal-window">
+                <div class="modal-header">
+                    <h2 id="imdgCodeModalTitle">IMDG Code</h2>
+                    <button class="modal-close" onclick="closeImdgCodeModal()">×</button>
+                </div>
+                <div class="modal-meta" id="imdgCodeModalMeta"></div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <div id="imdgCodeModalContent" class="modal-body sp-modal-body"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', e => {
+            if (e.target.id === 'imdgCodeModal') {
+                closeImdgCodeModal();
+            }
+        });
+    }
+
+    document.getElementById('imdgCodeModalTitle').innerText = info.title;
+    document.getElementById('imdgCodeModalMeta').innerHTML = `
+        <span class="sp-marker">${escapeHtml(info.group)}</span>
+        <span>${escapeHtml(info.subtitle)}</span>
+    `;
+    document.getElementById('imdgCodeModalContent').innerHTML = `
+        <div class="sp-content-text">
+            ${formatSpecialProvisionContent(info.content)}
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function closeImdgCodeModal() {
+    const modal = document.getElementById('imdgCodeModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function formatSpecialProvisionContent(content) {

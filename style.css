@@ -2504,3 +2504,37 @@ header span {
         width: 100%;
     }
 }
+
+/* IMDG SW / SG / SGG / H 코드 링크 */
+.imdg-code-link-btn {
+    display: inline;
+    margin: 0 6px 0 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.imdg-code-link-btn:hover {
+    text-decoration: underline;
+}
+
+.imdg-code-sgg {
+    color: #00F5D4;
+}
+
+.imdg-code-sg {
+    color: #ffb86b;
+}
+
+.imdg-code-sw {
+    color: #8ab4ff;
+}
+
+.imdg-code-h {
+    color: #ffd600;
+}
