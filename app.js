@@ -1929,3 +1929,227 @@ if (homeSegQuickInput) {
         if (e.key === 'Enter') runHomeSegQuickSearch();
     });
 }
+
+// ==========================================================================
+// SDS / MSDS DG Analyzer with Gemini API
+// ==========================================================================
+
+function getSdsStatusClass(status) {
+    const s = String(status || '').toUpperCase();
+
+    if (s === 'DG') return 'sds-status-dg';
+    if (s === 'NON_DG' || s === 'NON-DG') return 'sds-status-nondg';
+    return 'sds-status-unclear';
+}
+
+function getSdsStatusLabel(status) {
+    const s = String(status || '').toUpperCase();
+
+    if (s === 'DG') return 'DG';
+    if (s === 'NON_DG' || s === 'NON-DG') return 'NON-DG';
+    return 'UNCLEAR';
+}
+
+function renderSdsField(label, value) {
+    return `
+        <div class="sds-result-field">
+            <div class="sds-result-label">${escapeHtml(label)}</div>
+            <div class="sds-result-value">${escapeHtml(value || '-')}</div>
+        </div>
+    `;
+}
+
+function renderSdsList(title, items) {
+    const list = Array.isArray(items) ? items.filter(Boolean) : [];
+
+    if (!list.length) {
+        return '';
+    }
+
+    return `
+        <div class="sds-result-list-box">
+            <div class="sds-result-list-title">${escapeHtml(title)}</div>
+            <ul>
+                ${list.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+function renderDgTableMatch(match) {
+    if (!match) {
+        return `
+            <div class="sds-dgtable-box muted">
+                기존 DG_TABLE과 매칭되는 UNNO를 찾지 못했습니다.
+            </div>
+        `;
+    }
+
+    return `
+        <div class="sds-dgtable-box">
+            <div class="sds-dgtable-title">DG_TABLE 대조 결과</div>
+            <div class="sds-dgtable-grid">
+                ${renderSdsField('UNNO', match.UNNO)}
+                ${renderSdsField('Name', match.Name)}
+                ${renderSdsField('Class', match.Class)}
+                ${renderSdsField('SUB', match.SUB)}
+                ${renderSdsField('PG', match.PG)}
+                ${renderSdsField('Segregation', match.Segregation)}
+            </div>
+        </div>
+    `;
+}
+
+function renderSdsAnalysisResult(payload) {
+    const box = document.getElementById('sdsAnalysisResult');
+    if (!box) return;
+
+    const result = payload.result || {};
+    const statusClass = getSdsStatusClass(result.dg_status);
+    const statusLabel = getSdsStatusLabel(result.dg_status);
+
+    box.className = 'sds-result-output';
+    box.innerHTML = `
+        <div class="sds-result-summary ${statusClass}">
+            <div>
+                <div class="sds-result-kicker">AI 1차 판독 결과</div>
+                <div class="sds-result-status">${statusLabel}</div>
+            </div>
+            <div class="sds-confidence-badge">
+                CONFIDENCE ${escapeHtml(result.confidence || 'LOW')}
+            </div>
+        </div>
+
+        <div class="sds-result-grid">
+            ${renderSdsField('Document Type', result.document_type)}
+            ${renderSdsField('Product Name', result.product_name)}
+            ${renderSdsField('Substance Name', result.substance_name)}
+            ${renderSdsField('UNNO', result.unno)}
+            ${renderSdsField('Proper Shipping Name', result.proper_shipping_name)}
+            ${renderSdsField('Class', result.class)}
+            ${renderSdsField('Subsidiary Risk', result.subsidiary_risk)}
+            ${renderSdsField('Packing Group', result.packing_group)}
+            ${renderSdsField('Marine Pollutant', result.marine_pollutant)}
+            ${renderSdsField('Mode Basis', result.transport_mode_basis)}
+            ${renderSdsField('Section 14 Found', result.section_14_found ? 'YES' : 'NO')}
+            ${renderSdsField('Not Regulated Text', result.not_regulated_text_found ? 'YES' : 'NO')}
+        </div>
+
+        <div class="sds-basis-box">
+            <div class="sds-result-list-title">판정 근거</div>
+            <div>${escapeHtml(result.basis || '-')}</div>
+        </div>
+
+        ${renderSdsList('문서 내 근거 문구', result.evidence_quotes)}
+        ${renderSdsList('주의사항', result.warnings)}
+        ${renderDgTableMatch(payload.dg_table_match)}
+
+        <div class="sds-disclaimer">
+            ${escapeHtml(payload.disclaimer || 'AI 1차 판독 결과이며 최종 확인은 담당자가 수행해야 합니다.')}
+        </div>
+    `;
+}
+
+async function analyzeSdsDocument() {
+    const fileInput = document.getElementById('sdsFileInput');
+    const resultBox = document.getElementById('sdsAnalysisResult');
+    const analyzeBtn = document.getElementById('sdsAnalyzeBtn');
+
+    if (!fileInput || !resultBox || !analyzeBtn) return;
+
+    const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+    if (!file) {
+        alert('분석할 PDF 파일을 선택해 주세요.');
+        return;
+    }
+
+    if (file.type !== 'application/pdf') {
+        alert('PDF 파일만 분석할 수 있습니다.');
+        return;
+    }
+
+    const maxSize = 6 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+        alert('PDF 파일은 6MB 이하만 분석할 수 있습니다.');
+        return;
+    }
+
+    analyzeBtn.disabled = true;
+    const originalText = analyzeBtn.innerText;
+    analyzeBtn.innerText = 'AI 판독 중...';
+
+    resultBox.className = 'sds-result-loading';
+    resultBox.innerHTML = `
+        <div class="loading-spinner">GEMINI ANALYZING DOCUMENT...</div>
+        <div style="margin-top:10px; color:var(--text-muted); font-size:12px;">
+            SDS/MSDS Section 14 및 IMDG 기준 정보를 판독 중입니다.
+        </div>
+    `;
+
+    try {
+        const fileBase64 = await fileToBase64(file);
+
+        const response = await fetch('/api/analyze-sds', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                file_name: file.name,
+                file_type: file.type,
+                file_base64: fileBase64
+            })
+        });
+
+        const payload = await readJsonResponse(response);
+
+        if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || 'SDS/MSDS 분석 실패');
+        }
+
+        renderSdsAnalysisResult(payload);
+    } catch (err) {
+        console.error('SDS/MSDS 분석 오류:', err);
+        resultBox.className = 'sds-result-output';
+        resultBox.innerHTML = `
+            <div class="error-msg">
+                SDS/MSDS 분석 실패: ${escapeHtml(err.message || err)}
+            </div>
+        `;
+    } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerText = originalText;
+    }
+}
+
+function updateSdsFileStatus() {
+    const fileInput = document.getElementById('sdsFileInput');
+    const status = document.getElementById('sdsFileStatus');
+
+    if (!fileInput || !status) return;
+
+    const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+    if (!file) {
+        status.innerHTML = '';
+        return;
+    }
+
+    const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+    status.innerHTML = `
+        <span>${escapeHtml(file.name)}</span>
+        <span>${sizeMb} MB</span>
+    `;
+}
+
+const sdsAnalyzeBtn = document.getElementById('sdsAnalyzeBtn');
+if (sdsAnalyzeBtn) {
+    sdsAnalyzeBtn.addEventListener('click', analyzeSdsDocument);
+}
+
+const sdsFileInput = document.getElementById('sdsFileInput');
+if (sdsFileInput) {
+    sdsFileInput.addEventListener('change', updateSdsFileStatus);
+}

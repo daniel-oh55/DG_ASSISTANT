@@ -44,6 +44,12 @@
         <span class="menu-icon">✎</span>
         <span class="menu-text">DG 추가정보 노트</span>
     </li>
+
+    <li class="menu-item" data-target="tab-sds-analyzer">
+    <span class="menu-icon">▤</span>
+    <span class="menu-text">SDS/MSDS DG 판독</span>
+</li>
+
 </ul>
 </nav>
 
@@ -295,6 +301,50 @@
     </div>
 </div>
 
+<section id="tab-sds-analyzer" class="tab-content">
+    <div class="container sds-page-container">
+        <header>
+            <h1>SDS/MSDS DG 판독 <span>Gemini AI</span></h1>
+            <p class="subtitle">PDF 문서를 업로드하여 IMDG 기준 위험물 여부를 1차 판독합니다.</p>
+        </header>
+
+        <div class="sds-workspace">
+            <section class="sds-upload-panel">
+                <div class="sds-panel-head">
+                    <h2>PDF 문서 업로드</h2>
+                    <p>SDS/MSDS PDF를 업로드하면 Gemini API가 Section 14 기준으로 DG 여부를 분석합니다.</p>
+                </div>
+
+                <div class="sds-drop-box">
+                    <div class="sds-drop-icon">▤</div>
+                    <div class="sds-drop-title">SDS / MSDS PDF</div>
+                    <div class="sds-drop-desc">PDF 1개, 최대 6MB까지 분석 가능합니다.</div>
+                    <input type="file" id="sdsFileInput" accept="application/pdf">
+                    <div id="sdsFileStatus" class="sds-file-status"></div>
+                </div>
+
+                <button class="btn accent2 sds-analyze-btn" id="sdsAnalyzeBtn">
+                    AI 판독 시작
+                </button>
+
+                <div class="sds-warning-box">
+                    본 기능은 업로드된 문서 기반 AI 1차 판독 도구입니다. 최종 선적 가능 여부는 IMDG Code, 선사별 제한, 터미널 규정, POL/POD 국가 규정 및 최신 SDS 원본을 기준으로 담당자가 확인해야 합니다.
+                </div>
+            </section>
+
+            <section class="sds-result-panel">
+                <div class="sds-panel-head">
+                    <h2>판독 결과</h2>
+                    <p>DG / NON-DG / UNCLEAR 결과와 문서 내 근거를 표시합니다.</p>
+                </div>
+
+                <div id="sdsAnalysisResult" class="sds-result-empty">
+                    PDF를 업로드하고 AI 판독을 시작하세요.
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
 
         </main>
 
