@@ -631,7 +631,20 @@ homeCards.forEach(card => {
     });
 });
 
+const sidebarHomeLogo = document.getElementById('sidebarHomeLogo');
 
+if (sidebarHomeLogo) {
+    sidebarHomeLogo.addEventListener('click', () => {
+        activateTab('tab-home');
+    });
+
+    sidebarHomeLogo.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            activateTab('tab-home');
+        }
+    });
+}
 
 
 
