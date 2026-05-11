@@ -64,6 +64,24 @@ const REF = {
     SW30: { desc: 'Stowage code SW30. Please verify exact wording against the current IMDG Code.' }
   },
 
+  stowageCategory: {
+    A: {
+      desc: 'Cargo ships or passenger ships carrying a number of passengers limited to not more than 25 or to 1 passenger per 3 m of overall length, whichever is greater: ON DECK or UNDER DECK. Other passenger ships: ON DECK or UNDER DECK.'
+    },
+    B: {
+      desc: 'Cargo ships or passenger ships carrying a number of passengers limited to not more than 25 or to 1 passenger per 3 m of overall length, whichever is greater: ON DECK or UNDER DECK. Other passenger ships: ON DECK only.'
+    },
+    C: {
+      desc: 'Cargo ships or passenger ships carrying a number of passengers limited to not more than 25 or to 1 passenger per 3 m of overall length, whichever is greater: ON DECK only. Other passenger ships: ON DECK only.'
+    },
+    D: {
+      desc: 'Cargo ships or passenger ships carrying a number of passengers limited to not more than 25 or to 1 passenger per 3 m of overall length, whichever is greater: ON DECK only. Other passenger ships: PROHIBITED.'
+    },
+    E: {
+      desc: 'Cargo ships or passenger ships carrying a number of passengers limited to not more than 25 or to 1 passenger per 3 m of overall length, whichever is greater: ON DECK or UNDER DECK. Other passenger ships: PROHIBITED.'
+    }
+  },
+
   hcode: {
     H1: { desc: 'Keep as dry as reasonably practicable.' },
     H2: { desc: 'Keep as cool as reasonably practicable.' },
@@ -830,33 +848,59 @@ function renderSpecialProvisionLinks(spText) {
 }
 
 function renderImdgCodeLinks(text) {
-    const clean = String(text || '').trim();
+    const clean = String(text || '')
+    .trim()
+    // CategoryASW1 → Category A SW1
+    .replace(/\bCategory\s*([A-E])(?=(SW|H|SG|SGG)\s*\d)/gi, 'Category $1 ')
+    // CategoryA → Category A
+    .replace(/\bCategory\s*([A-E])\b/gi, 'Category $1')
+    // 코드끼리 붙은 경우 SW1H2 → SW1 H2
+    .replace(/\b(SW|H|SG|SGG)\s*0*(\d{1,3})(?=(SW|H|SG|SGG)\s*\d)/gi, (m, p1, p2) => `${p1.toUpperCase()}${Number(p2)} `);
 
     if (!clean || clean === '-' || clean === '—') {
         return '-';
     }
 
-    const pattern = /\b(SGG|SG|SW|H)\s*0*(\d{1,3})\b/gi;
+    const pattern = /\bCategory\s*([A-E])\b|\b(SGG|SG|SW|H)\s*0*(\d{1,3})\b/gi;
     let result = '';
     let lastIndex = 0;
     let match;
 
     while ((match = pattern.exec(clean)) !== null) {
-        const prefix = match[1].toUpperCase();
-        const number = String(Number(match[2]));
-        const code = `${prefix}${number}`;
+    // Category A/B/C/D/E
+    if (match[1]) {
+        const category = match[1].toUpperCase();
+        const code = `Category ${category}`;
 
         result += escapeHtml(clean.slice(lastIndex, match.index));
         result += `
             <button type="button"
-                    class="imdg-code-link-btn imdg-code-${prefix.toLowerCase()}"
-                    onclick="openImdgCodeModal('${prefix}', '${code}')">
+                    class="imdg-code-link-btn imdg-code-category"
+                    onclick="openImdgCodeModal('CATEGORY', '${category}')">
                 ${escapeHtml(code)}
             </button>
         `;
 
         lastIndex = pattern.lastIndex;
+        continue;
     }
+
+    // SG / SGG / SW / H
+    const prefix = match[2].toUpperCase();
+    const number = String(Number(match[3]));
+    const code = `${prefix}${number}`;
+
+    result += escapeHtml(clean.slice(lastIndex, match.index));
+    result += `
+        <button type="button"
+                class="imdg-code-link-btn imdg-code-${prefix.toLowerCase()}"
+                onclick="openImdgCodeModal('${prefix}', '${code}')">
+            ${escapeHtml(code)}
+        </button>
+    `;
+
+    lastIndex = pattern.lastIndex;
+}
 
     result += escapeHtml(clean.slice(lastIndex));
 
@@ -867,6 +911,19 @@ function getImdgCodeInfo(prefix, code) {
     const normalizedPrefix = String(prefix || '').toUpperCase();
     const normalizedCode = String(code || '').toUpperCase();
 
+    if (normalizedPrefix === 'CATEGORY') {
+    const category = normalizedCode.replace(/^CATEGORY\s*/i, '').toUpperCase();
+    const item = REF.stowageCategory?.[category];
+
+    return {
+        title: `Category ${category}`,
+        group: 'Stowage Category',
+        subtitle: 'IMDG Code Stowage Category',
+        content: item?.desc || `Category ${category} 설명이 아직 등록되어 있지 않습니다.`
+    };
+   }
+
+    
     if (normalizedPrefix === 'SGG') {
         const desc = REF.sgg[normalizedCode];
 
@@ -881,33 +938,15 @@ function getImdgCodeInfo(prefix, code) {
     }
 
     if (normalizedPrefix === 'SG') {
-        const sg = REF.sgcode[normalizedCode];
+    const sg = REF.sgcode[normalizedCode];
 
-        if (!sg) {
-            return {
-                title: normalizedCode,
-                group: 'SG Code',
-                subtitle: 'Segregation Code',
-                content: `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
-            };
-        }
-
-        const targetText = sg.target ? `Target: ${sg.target}` : '';
-        const reqSegText = sg.reqSeg !== null && sg.reqSeg !== undefined
-            ? `Required Segregation: ${sg.reqSeg}`
-            : '';
-
-        return {
-            title: normalizedCode,
-            group: 'SG Code',
-            subtitle: 'Segregation Code',
-            content: [
-                sg.desc,
-                targetText,
-                reqSegText
-            ].filter(Boolean).join('\n')
-        };
-    }
+    return {
+        title: normalizedCode,
+        group: 'SG Code',
+        subtitle: 'Segregation Code',
+        content: sg?.desc || `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
+    };
+}
 
     if (normalizedPrefix === 'SW') {
         const sw = REF.swcode?.[normalizedCode];

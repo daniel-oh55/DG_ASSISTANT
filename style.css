@@ -2538,3 +2538,8 @@ header span {
 .imdg-code-h {
     color: #ffd600;
 }
+
+.imdg-code-category {
+    color: #ffffff;
+    font-weight: 900;
+}
