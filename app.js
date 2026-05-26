@@ -598,6 +598,19 @@ const menuItems = document.querySelectorAll('.menu-item');
 const tabs = document.querySelectorAll('.tab-content');
 const homeCards = document.querySelectorAll('.home-bento-card');
 
+function renderLoadingState(title, message, meta = '') {
+    return `
+        <div class="loading-state" role="status" aria-live="polite">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <div class="loading-copy">
+                <div class="loading-title">${escapeHtml(title)}</div>
+                ${message ? `<div class="loading-message">${escapeHtml(message)}</div>` : ''}
+                ${meta ? `<div class="loading-meta">${escapeHtml(meta)}</div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
 function activateTab(targetId) {
     if (!targetId) return;
 
@@ -673,12 +686,11 @@ async function lookupDGInfo() {
     }
 
     // 로딩 상태 표시
-    view.innerHTML = `
-    <div style="padding:60px; text-align:center; color:var(--accent); font-family:var(--font-mono); letter-spacing:2px;">
-        <div class="loading-spinner" style="margin-bottom:20px;">⚡ SYSTEM_ACCESSING_DATABASE...</div>
-        <div style="font-size:12px; color:var(--text-muted); opacity:0.6;">NEO-PRECISION ENGINE v3.1</div>
-    </div>
-`;
+    view.innerHTML = renderLoadingState(
+        'DG 데이터를 조회하는 중입니다',
+        `UN ${unno} 기준 IMDG 상세 정보를 불러오고 있습니다.`,
+        'NEO-PRECISION ENGINE v3.1'
+    );
     errorMsg.innerHTML = '';
 
     try {
@@ -1769,11 +1781,11 @@ async function checkCarrierLoadingPossibility() {
         return;
     }
 
-    resultBox.innerHTML = `
-        <div style="padding:40px; text-align:center; color:var(--accent); font-family:var(--font-mono);">
-            CARRIER RULE CHECKING...
-        </div>
-    `;
+    resultBox.innerHTML = renderLoadingState(
+        '선사별 조건을 확인하는 중입니다',
+        `UN ${unno} 기준 제한 및 금지 조건을 대조하고 있습니다.`,
+        'CARRIER RULE CHECK'
+    );
 
     try {
         const response = await fetch(`/api/carrier-check?unno=${encodeURIComponent(unno)}`);
@@ -2081,12 +2093,11 @@ if (file.size > maxSize) {
     analyzeBtn.innerText = 'AI 판독 중...';
 
     resultBox.className = 'sds-result-loading';
-    resultBox.innerHTML = `
-        <div class="loading-spinner">GEMINI ANALYZING DOCUMENT...</div>
-        <div style="margin-top:10px; color:var(--text-muted); font-size:12px;">
-            SDS/MSDS Section 14 및 IMDG 기준 정보를 판독 중입니다.
-        </div>
-    `;
+    resultBox.innerHTML = renderLoadingState(
+        'SDS/MSDS 문서를 판독하는 중입니다',
+        'Section 14 및 IMDG 기준 정보를 분석하고 있습니다.',
+        'GEMINI DOCUMENT ANALYSIS'
+    );
 
     try {
         const fileBase64 = await fileToBase64(file);
