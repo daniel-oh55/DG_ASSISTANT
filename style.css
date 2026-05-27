@@ -3903,3 +3903,219 @@ header span {
         padding: 14px;
     }
 }
+
+/* Bright Mode geometry must match Classic Dark Mode. Keep these layout
+   corrections after the bright color layer so only color changes differ. */
+[data-theme="bright"] .container {
+    max-width: 1100px;
+}
+
+[data-theme="bright"] .note-page-container {
+    max-width: 1420px;
+}
+
+[data-theme="bright"] .sds-page-container {
+    max-width: 1320px;
+}
+
+[data-theme="bright"] header {
+    margin-bottom: 24px;
+    padding: 24px 28px 22px;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid var(--bright-border);
+    background:
+        radial-gradient(circle at top left, rgba(0, 166, 184, 0.11), transparent 36%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.70));
+    box-shadow: 0 14px 34px rgba(36, 66, 92, 0.10);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+[data-theme="bright"] header::before {
+    display: block;
+    background: linear-gradient(180deg, var(--bright-teal), rgba(0, 166, 184, 0.14));
+    box-shadow: 0 0 18px rgba(0, 166, 184, 0.20);
+}
+
+[data-theme="bright"] header::after {
+    display: block;
+    background: radial-gradient(circle, rgba(0, 166, 184, 0.10), transparent 70%);
+}
+
+[data-theme="bright"] header h1 {
+    margin-left: 10px;
+    font-size: 30px;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
+}
+
+[data-theme="bright"] .subtitle {
+    margin-top: 8px;
+    margin-left: 10px;
+    font-size: 13px;
+    letter-spacing: 0.15px;
+}
+
+[data-theme="bright"] .search-area {
+    margin-bottom: 32px;
+    padding: 18px;
+    border-radius: 18px;
+}
+
+[data-theme="bright"] .sidebar::after {
+    left: 28px;
+    right: 28px;
+    bottom: 24px;
+    height: 1px;
+    border-radius: 0;
+    background: linear-gradient(90deg, transparent, rgba(0, 166, 184, 0.46), transparent);
+    box-shadow: 0 0 18px rgba(0, 166, 184, 0.20);
+}
+
+[data-theme="bright"] .home-shell {
+    max-width: 1120px;
+    min-height: calc(100vh - 64px);
+    align-items: center;
+    justify-content: center;
+}
+
+[data-theme="bright"] .home-board {
+    max-width: 900px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid var(--bright-border);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(0, 166, 184, 0.08), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.64));
+    box-shadow: 0 18px 42px rgba(36, 66, 92, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme="bright"] .home-bento-grid {
+    gap: 16px;
+}
+
+[data-theme="bright"] .home-bento-card {
+    min-height: 270px;
+    padding: 22px 20px 18px;
+    border-radius: 19px;
+}
+
+[data-theme="bright"] .home-bento-card:last-child:nth-child(odd) {
+    min-height: 270px;
+    width: calc((100% - 16px) / 2);
+}
+
+[data-theme="bright"] .home-card-icon-wrap {
+    width: 86px;
+    height: 86px;
+    margin-bottom: 12px;
+    border-radius: 22px;
+}
+
+[data-theme="bright"] .home-card-icon {
+    font-size: 39px;
+}
+
+[data-theme="bright"] .home-card-title {
+    font-size: 16px;
+    line-height: 1.35;
+    letter-spacing: -0.15px;
+}
+
+[data-theme="bright"] .home-card-desc {
+    min-height: 42px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+[data-theme="bright"] .home-card-btn {
+    min-width: 156px;
+    min-height: 40px;
+    margin-top: 18px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+[data-theme="bright"] .home-quick-search {
+    margin-top: 16px;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    gap: 8px;
+}
+
+[data-theme="bright"] .home-quick-search input,
+[data-theme="bright"] .home-quick-search button {
+    height: 38px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+[data-theme="bright"] .note-workspace {
+    gap: 22px;
+}
+
+[data-theme="bright"] .sds-workspace {
+    gap: 22px;
+}
+
+[data-theme="bright"] .btn-sm {
+    border-radius: 4px;
+}
+
+@media (max-width: 980px) {
+    [data-theme="bright"] .home-shell {
+        min-height: auto;
+        align-items: flex-start;
+    }
+
+    [data-theme="bright"] .home-bento-card:last-child:nth-child(odd) {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    [data-theme="bright"] header {
+        padding: 20px 18px;
+    }
+
+    [data-theme="bright"] header h1 {
+        font-size: 24px;
+    }
+
+    [data-theme="bright"] .subtitle {
+        margin-left: 10px;
+    }
+
+    [data-theme="bright"] .sidebar::after {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    [data-theme="bright"] .home-board {
+        padding: 14px;
+    }
+
+    [data-theme="bright"] .home-bento-card {
+        min-height: 245px;
+        padding: 20px 16px 18px;
+    }
+
+    [data-theme="bright"] .home-card-icon-wrap {
+        width: 76px;
+        height: 76px;
+        border-radius: 18px;
+    }
+
+    [data-theme="bright"] .home-card-icon {
+        font-size: 34px;
+    }
+
+    [data-theme="bright"] .home-quick-search {
+        grid-template-columns: 1fr;
+    }
+}
