@@ -2186,13 +2186,21 @@ function updateThemeToggleLabel(theme) {
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (!themeToggleBtn) return;
 
+    themeToggleBtn.classList.toggle('is-bright', theme === 'bright');
+    themeToggleBtn.classList.toggle('is-dark', theme === 'dark');
+
+    if (!themeToggleBtn.querySelector('.theme-toggle-option')) {
+        themeToggleBtn.innerHTML = `
+            <span class="theme-toggle-option theme-toggle-bright">BRIGHT MODE</span>
+            <span class="theme-toggle-option theme-toggle-dark">DARK MODE</span>
+        `;
+    }
+
     if (theme === 'dark') {
-        themeToggleBtn.textContent = '🌙 Classic Dark';
         themeToggleBtn.setAttribute('aria-label', 'Switch to Bright Mode');
         return;
     }
 
-    themeToggleBtn.textContent = '☀ Bright Mode';
     themeToggleBtn.setAttribute('aria-label', 'Switch to Classic Dark Mode');
 }
 
