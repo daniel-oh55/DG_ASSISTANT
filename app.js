@@ -2164,3 +2164,60 @@ const sdsFileInput = document.getElementById('sdsFileInput');
 if (sdsFileInput) {
     sdsFileInput.addEventListener('change', updateSdsFileStatus);
 }
+
+// ==========================================================================
+// Theme Manager
+// ==========================================================================
+
+const DG_THEME_STORAGE_KEY = 'dg-assistant-theme';
+const DG_ALLOWED_THEMES = ['bright', 'dark'];
+const DG_DEFAULT_THEME = 'bright';
+
+function getStoredTheme() {
+    try {
+        const storedTheme = localStorage.getItem(DG_THEME_STORAGE_KEY);
+        return DG_ALLOWED_THEMES.includes(storedTheme) ? storedTheme : DG_DEFAULT_THEME;
+    } catch (error) {
+        return DG_DEFAULT_THEME;
+    }
+}
+
+function updateThemeToggleLabel(theme) {
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (!themeToggleBtn) return;
+
+    if (theme === 'dark') {
+        themeToggleBtn.textContent = '🌙 Classic Dark';
+        themeToggleBtn.setAttribute('aria-label', 'Switch to Bright Mode');
+        return;
+    }
+
+    themeToggleBtn.textContent = '☀ Bright Mode';
+    themeToggleBtn.setAttribute('aria-label', 'Switch to Classic Dark Mode');
+}
+
+function applyTheme(theme) {
+    const safeTheme = DG_ALLOWED_THEMES.includes(theme) ? theme : DG_DEFAULT_THEME;
+    document.documentElement.setAttribute('data-theme', safeTheme);
+
+    try {
+        localStorage.setItem(DG_THEME_STORAGE_KEY, safeTheme);
+    } catch (error) {
+        // localStorage may be blocked in restricted browser contexts.
+    }
+
+    updateThemeToggleLabel(safeTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || getStoredTheme();
+    applyTheme(currentTheme === 'bright' ? 'dark' : 'bright');
+}
+
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+if (themeToggleBtn) {
+    applyTheme(getStoredTheme());
+    themeToggleBtn.addEventListener('click', toggleTheme);
+} else {
+    document.documentElement.setAttribute('data-theme', getStoredTheme());
+}
