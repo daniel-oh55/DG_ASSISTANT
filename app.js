@@ -1639,7 +1639,7 @@ function renderCarrierResultFromApi(dgItem, results) {
     const unno = escapeHtml(dgItem.UNNO || '');
     const name = escapeHtml(dgItem.Name || '-');
     const classNo = escapeHtml(dgItem.Class || '-');
-    const sub = escapeHtml(dgItem.SUB || '-');
+    const sub = escapeHtml(normalizeSubRisk(dgItem.SUB));
 
     resultBox.innerHTML = `
         <div class="carrier-summary-card">
