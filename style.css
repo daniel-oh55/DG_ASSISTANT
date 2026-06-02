@@ -4148,3 +4148,147 @@ header span {
         grid-template-columns: 1fr;
     }
 }
+
+/* ════════ FAQ + 문의 게시판 모듈 v1.0 ════════ */
+/* ═══════════════════════════════════════════════════════════════
+   FAQ + 상세문의 게시판 모듈 (v1.0)
+   — 다른 HTML/웹앱에 임베드해서 즉시 사용 가능
+   — localStorage 단일 사용자 / Supabase 다중 사용자 (선택)
+   — 의존성: 없음 (Excel 내보내기 필요 시 SheetJS CDN)
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --fq-primary:    #0F2952;
+  --fq-accent:     #2EC4B6;
+  --fq-accent-2:   #21998E;
+  --fq-bg:         #F8FAFC;
+  --fq-card:       #FFFFFF;
+  --fq-text:       #1F2937;
+  --fq-muted:      #6B7280;
+  --fq-border:     #E5E7EB;
+  --fq-border-s:   #D1D5DB;
+  --fq-warn:       #F59E0B;
+  --fq-warn-bg:    #FEF3C7;
+  --fq-ok:         #10B981;
+  --fq-ok-bg:      #D1FAE5;
+  --fq-red:        #DC2626;
+  --fq-red-bg:     #FEE2E2;
+  --fq-shadow:     0 1px 3px rgba(15,41,82,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --fq-shadow-lg:  0 10px 24px -10px rgba(15,41,82,0.18), 0 4px 8px -4px rgba(0,0,0,0.06);
+  --fq-radius:     10px;
+  --fq-radius-sm:  6px;
+}
+
+.fq-module { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif; color: var(--fq-text); }
+.fq-module * { box-sizing: border-box; }
+
+/* ─── 탭 ─── */
+.fq-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--fq-border); margin-bottom: 18px; }
+.fq-tab { background: none; border: none; padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--fq-muted); cursor: pointer; font-family: inherit; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .15s; }
+.fq-tab:hover { color: var(--fq-primary); }
+.fq-tab.active { color: var(--fq-primary); border-bottom-color: var(--fq-accent); }
+
+.fq-panel { display: none; }
+.fq-panel.active { display: block; animation: fqFade .25s ease-out; }
+@keyframes fqFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── 컨트롤 ─── */
+.fq-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.fq-search { flex: 1; min-width: 200px; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; background: white; }
+.fq-search:focus { outline: none; border-color: var(--fq-accent); box-shadow: 0 0 0 3px rgba(46,196,182,0.12); }
+.fq-btn { padding: 8px 14px; border-radius: var(--fq-radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; border: 1px solid var(--fq-border-s); background: white; color: var(--fq-text); }
+.fq-btn:hover { border-color: var(--fq-primary); }
+.fq-btn.primary { background: var(--fq-primary); color: white; border-color: var(--fq-primary); }
+.fq-btn.primary:hover { background: #1B3B6F; }
+.fq-btn.accent { background: var(--fq-accent); color: white; border-color: var(--fq-accent); }
+.fq-btn.accent:hover { background: var(--fq-accent-2); border-color: var(--fq-accent-2); }
+.fq-btn.danger { color: var(--fq-red); border-color: #FCA5A5; }
+.fq-btn.danger:hover { background: var(--fq-red-bg); }
+.fq-btn.ghost { background: transparent; }
+
+/* ─── FAQ 아코디언 ─── */
+.fq-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--fq-border); }
+.fq-cat-chip { padding: 5px 12px; background: white; border: 1px solid var(--fq-border-s); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; }
+.fq-cat-chip:hover { color: var(--fq-accent); border-color: var(--fq-accent); }
+.fq-cat-chip.active { background: var(--fq-primary); color: white; border-color: var(--fq-primary); }
+
+.fq-list { display: flex; flex-direction: column; gap: 8px; }
+.fq-item { background: white; border: 1px solid var(--fq-border); border-radius: var(--fq-radius); overflow: hidden; }
+.fq-q { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.fq-q:hover { background: var(--fq-bg); }
+.fq-q-text { font-size: 14px; font-weight: 600; color: var(--fq-primary); }
+.fq-q-tag { font-size: 10px; background: var(--fq-bg); color: var(--fq-muted); padding: 2px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.04em; }
+.fq-q-arrow { color: var(--fq-muted); transition: transform .2s; flex-shrink: 0; }
+.fq-item.open .fq-q-arrow { transform: rotate(180deg); }
+.fq-a { padding: 0 16px; max-height: 0; overflow: hidden; transition: max-height .25s, padding .25s; font-size: 13px; line-height: 1.65; color: var(--fq-text); }
+.fq-item.open .fq-a { padding: 0 16px 16px; max-height: 1500px; border-top: 1px solid var(--fq-border); padding-top: 14px; }
+.fq-a strong { color: var(--fq-primary); }
+.fq-a code { background: var(--fq-bg); padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+
+/* ─── 게시판 ─── */
+.fq-board-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+.fq-stats { font-size: 12px; color: var(--fq-muted); }
+.fq-spacer { flex: 1; }
+.fq-admin-badge { background: var(--fq-warn-bg); color: #92400E; font-size: 11px; padding: 4px 10px; border-radius: 10px; font-weight: 700; letter-spacing: 0.04em; }
+
+/* 새 글 폼 */
+.fq-new-form { background: var(--fq-bg); border: 1px solid var(--fq-border); border-radius: var(--fq-radius); padding: 18px; margin-bottom: 14px; }
+.fq-new-row { display: grid; gap: 12px; margin-bottom: 12px; }
+.fq-new-row.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 600px) { .fq-new-row.two { grid-template-columns: 1fr; } }
+.fq-field-label { display: block; font-size: 11px; font-weight: 700; color: var(--fq-muted); margin-bottom: 4px; letter-spacing: 0.04em; }
+.fq-req { color: var(--fq-red); }
+.fq-new-form input[type="text"], .fq-new-form input[type="password"], .fq-new-form textarea, .fq-new-form select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; background: white;
+}
+.fq-new-form input:focus, .fq-new-form textarea:focus, .fq-new-form select:focus {
+  outline: none; border-color: var(--fq-accent); box-shadow: 0 0 0 3px rgba(46,196,182,0.12);
+}
+.fq-new-form textarea { resize: vertical; min-height: 90px; }
+.fq-private-wrap { padding: 12px; background: white; border: 1px dashed var(--fq-border-s); border-radius: var(--fq-radius-sm); margin-bottom: 12px; }
+.fq-private-label { display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; }
+.fq-new-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.fq-hint { font-size: 11px; color: var(--fq-muted); margin-top: 8px; }
+
+/* 게시글 */
+.fq-posts { display: flex; flex-direction: column; gap: 8px; }
+.fq-post { background: white; border: 1px solid var(--fq-border); border-radius: var(--fq-radius); overflow: hidden; }
+.fq-post-head { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.fq-post-head:hover { background: var(--fq-bg); }
+.fq-post-info { flex: 1; min-width: 0; }
+.fq-post-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--fq-muted); margin-bottom: 4px; flex-wrap: wrap; }
+.fq-post-author { font-weight: 700; color: var(--fq-primary); }
+.fq-post-date { color: var(--fq-muted); }
+.fq-post-subject { font-size: 14px; font-weight: 600; color: var(--fq-text); }
+.fq-post-private-icon { color: var(--fq-warn); }
+.fq-post-status { font-size: 10px; padding: 3px 9px; border-radius: 10px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+.fq-post-status.unanswered { background: var(--fq-warn-bg); color: #92400E; }
+.fq-post-status.answered { background: var(--fq-ok-bg); color: #065F46; }
+.fq-post-body { padding: 0 16px 16px; border-top: 1px solid var(--fq-border); padding-top: 14px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; display: none; }
+.fq-post.open .fq-post-body { display: block; }
+.fq-post-answer { padding: 14px 16px; background: var(--fq-ok-bg); border-top: 1px solid var(--fq-border); font-size: 13px; line-height: 1.65; white-space: pre-wrap; display: none; }
+.fq-post-answer-head { font-size: 11px; font-weight: 700; color: var(--fq-ok); margin-bottom: 6px; letter-spacing: 0.04em; }
+.fq-post.open .fq-post-answer { display: block; }
+.fq-post-actions { padding: 12px 16px; display: flex; gap: 6px; border-top: 1px solid var(--fq-border); display: none; flex-wrap: wrap; }
+.fq-post.open .fq-post-actions { display: flex; }
+.fq-answer-form { padding: 14px 16px; background: var(--fq-bg); border-top: 1px solid var(--fq-border); display: none; }
+.fq-answer-form.open { display: block; }
+.fq-answer-form textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; min-height: 80px; margin-bottom: 8px; }
+
+.fq-empty { text-align: center; padding: 40px 20px; color: var(--fq-muted); background: white; border: 1px dashed var(--fq-border); border-radius: var(--fq-radius); }
+
+/* 관리자 도구 */
+.fq-admin-tools { margin-top: 16px; padding: 14px; background: var(--fq-warn-bg); border: 1px solid var(--fq-warn); border-radius: var(--fq-radius); display: none; }
+.fq-admin-tools.show { display: block; }
+.fq-admin-tools h4 { font-size: 12px; color: #92400E; margin-bottom: 8px; }
+.fq-admin-tools textarea { width: 100%; min-height: 120px; padding: 8px; font-family: 'Consolas', monospace; font-size: 11px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); background: white; margin-bottom: 8px; }
+
+/* 토스트 */
+.fq-toast { position: fixed; bottom: 24px; right: 24px; background: var(--fq-primary); color: white; padding: 10px 18px; border-radius: 22px; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 200; box-shadow: var(--fq-shadow-lg); }
+.fq-toast.show { opacity: 1; }
+.fq-toast.success { background: var(--fq-ok); }
+.fq-toast.warn { background: var(--fq-warn); color: #78350F; }
+
+@media (prefers-color-scheme: dark) {
+  /* 다크 모드 자동 대응 — 임베드한 페이지의 prefers-color-scheme에 자동 적응 */
+  /* (선택 — 필요 시 별도 색 정의) */
+}
