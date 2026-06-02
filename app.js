@@ -2229,3 +2229,442 @@ if (themeToggleBtn) {
 } else {
     document.documentElement.setAttribute('data-theme', getStoredTheme());
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FAQ + 문의 게시판 모듈 v1.0 — DG_ASSISTANT 통합 (2026-06-02)
+   ═══════════════════════════════════════════════════════════════ */
+const FQ_CONFIG = {
+  FAQ_KEY:    'dg_assistant_faq_v1',
+  BOARD_KEY:  'dg_assistant_board_v1',
+  ADMIN_SESSION_KEY: 'dg_assistant_admin_v1',
+  // 비밀번호 'admin1234' SHA-256 해시
+  ADMIN_PWD_HASH: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270',
+  EXPORT_FILENAME: 'dg_assistant_inquiry_export'
+};
+
+// ───── DG 관련 시드 FAQ (사이트 분석 기반) ─────
+let FQ_FAQ_DATA = {
+  categories: ['전체', 'IMDG/UNNO', '선사 규정', '격리/혼적', 'SDS/AI 판독', '시스템 사용'],
+  items: [
+    { id: 'faq1', cat: 'IMDG/UNNO', q: 'UNNO 번호로 위험물 정보를 어떻게 조회하나요?',
+      a: '사이드바의 **IMDG 조회 (UNNO)** 메뉴에서 UNNO 번호를 입력하면 IMDG 기준 상세 정보(Proper Shipping Name, Class, Subsidiary Risk, PG, EmS, 격리 코드 등)를 확인할 수 있습니다.',
+      tags: ['UNNO', 'IMDG', '조회'] },
+    { id: 'faq2', cat: '선사 규정', q: '선사별 선적 제한 규정은 어디서 확인하나요?',
+      a: '**선사별 선적가부 조회** 메뉴에서 SKR, HAL, NSS, DYS 등 선사별 금지·제한 조건을 한 번에 비교 가능합니다. "선적 가능한 선사만 보기" 필터로 조건을 만족하는 선사만 추릴 수도 있습니다.',
+      tags: ['선사', '선적', '제한'] },
+    { id: 'faq3', cat: '격리/혼적', q: '두 가지 이상의 위험물을 함께 선적할 수 있나요?',
+      a: '**격리규정 확인** 메뉴에서 복수 위험물의 혼적 가능 여부와 격리(Segregation) 요구사항(Away from, Separated from, Separated by complete compartment, Separated longitudinally)을 분석할 수 있습니다.',
+      tags: ['격리', '혼적', 'Segregation'] },
+    { id: 'faq4', cat: 'SDS/AI 판독', q: 'SDS/MSDS 문서에서 위험물 판정은 어떻게 하나요?',
+      a: '**SDS/MSDS DG 판독** 메뉴에서 PDF를 업로드(최대 3MB)하면 Gemini AI가 Section 14를 기준으로 DG/NON-DG/UNCLEAR로 1차 판독합니다.',
+      tags: ['SDS', 'MSDS', 'AI'] },
+    { id: 'faq5', cat: 'SDS/AI 판독', q: 'AI 판독 결과는 그대로 신뢰해도 되나요?',
+      a: '**아닙니다.** AI는 1차 보조 도구이며, 최종 선적 가능 여부는 IMDG Code, 선사 제한, 터미널 규정, POL/POD 국가 규정, **원본 SDS 최신본**을 기준으로 담당자가 반드시 재확인해야 합니다.',
+      tags: ['AI', '신뢰도', '주의'] },
+    { id: 'faq6', cat: '시스템 사용', q: '첨부파일 업로드 용량 제한이 있나요?',
+      a: '**DG 정보노트**는 최대 4MB, **SDS/MSDS PDF**는 최대 3MB까지 가능합니다.',
+      tags: ['첨부', '용량'] },
+    { id: 'faq7', cat: '시스템 사용', q: '기존 선적 노트는 어떻게 찾나요?',
+      a: '**DG 추가정보 노트** 메뉴의 라이브러리에서 제목·내용 키워드로 검색할 수 있습니다.',
+      tags: ['노트', '검색'] },
+    { id: 'faq8', cat: '선사 규정', q: '선사별 추가 규정은 어디에 기록하나요?',
+      a: '**DG 추가정보 노트**에 선사별 제한 조건, 터미널 요청사항 등을 자유롭게 기록·관리할 수 있습니다. 팀원과 노트를 공유하면 동일 케이스 반복 처리가 빨라집니다.',
+      tags: ['선사', '노트', '규정'] },
+    { id: 'faq9', cat: 'IMDG/UNNO', q: '위험물 부킹 전 필수 확인사항은?',
+      a: '권장 순서: **① UNNO 조회 → ② 선사별 선적가부 → ③ 격리규정 확인 → ④ SDS 재검증 → ⑤ POL/POD 국가 규정 확인** 입니다.',
+      tags: ['부킹', '체크리스트'] },
+    { id: 'faq10', cat: '시스템 사용', q: '터미널별 추가 규정은 어떻게 관리하나요?',
+      a: 'DG 정보노트에 "터미널 규정, POL/POD 요청사항" 등을 메모로 기록하고 팀원과 공유하세요. 자주 가는 터미널은 별도 노트로 분류해 두면 효율적입니다.',
+      tags: ['터미널', '노트'] },
+    { id: 'faq11', cat: '시스템 사용', q: 'DARK MODE는 어떻게 켜나요?',
+      a: '왼쪽 사이드바 하단의 **DARK MODE / BRIGHT MODE** 버튼으로 전환합니다. 선택값은 브라우저에 자동 저장됩니다.',
+      tags: ['UI', '테마'] },
+    { id: 'faq12', cat: '선사 규정', q: '여러 선사의 선적 가능 정보를 한 번에 비교할 수 있나요?',
+      a: '**선사별 선적가부 조회** 메뉴에서 가능합니다. "선적 가능한 선사만 보기" 필터를 켜면 해당 UNNO 기준으로 OK 선사만 즉시 추려져 표시됩니다.',
+      tags: ['선사', '비교'] },
+    { id: 'faq13', cat: '시스템 사용', q: '위험물 클레임이 발생했을 때 기록은 어떻게 남기나요?',
+      a: 'DG 정보노트에 **클레임 상황, 선사 대응, 터미널 이슈, 후속 조치** 등을 시간순으로 메모로 남기세요. 비슷한 케이스 재발 시 참고 자료가 됩니다.',
+      tags: ['클레임', '기록'] },
+    { id: 'faq14', cat: 'IMDG/UNNO', q: '신규 IMDG 개정 사항은 어떻게 반영되나요?',
+      a: '마스터 데이터는 IMDG Code 정기 개정을 기준으로 관리됩니다. 선사별 추가 규정은 노트로 계속 업데이트해 주세요.',
+      tags: ['IMDG', '개정', '업데이트'] },
+    { id: 'faq15', cat: '시스템 사용', q: '민감한 정보가 들어간 노트는 보호할 수 있나요?',
+      a: '노트 작성 시 **비밀번호**를 설정하면 본인 외에는 열람할 수 없습니다. 분실 시 복구가 불가하므로 별도 보관 필수입니다.',
+      tags: ['보안', '비밀번호'] }
+  ]
+};
+
+// ───── 상태 ─────
+let fqAdminMode = sessionStorage.getItem(FQ_CONFIG.ADMIN_SESSION_KEY) === '1';
+let fqPosts = [];
+let fqCurrentCat = '전체';
+let fqOpenPostId = null;
+
+
+// ═══════════════════════════════════════════════════════════════
+// 초기화
+// ═══════════════════════════════════════════════════════════════
+function fqInit(scope) {
+  scope = scope || document;
+  fqLoadFaq();
+  fqLoadPosts();
+  fqBindTabs(scope);
+  fqBindFaq(scope);
+  fqBindBoard(scope);
+  fqRenderFaq();
+  fqRenderPosts();
+  fqUpdateAdminUI();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 탭 전환
+// ═══════════════════════════════════════════════════════════════
+function fqBindTabs(scope) {
+  scope.querySelectorAll('[data-fq-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.fqTab;
+      scope.querySelectorAll('[data-fq-tab]').forEach(b => b.classList.toggle('active', b.dataset.fqTab === tab));
+      scope.querySelectorAll('[data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === tab));
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FAQ
+// ═══════════════════════════════════════════════════════════════
+function fqLoadFaq() {
+  try {
+    const saved = localStorage.getItem(FQ_CONFIG.FAQ_KEY);
+    if (saved) { FQ_FAQ_DATA = JSON.parse(saved); }
+  } catch (e) { console.warn('FAQ load 실패:', e); }
+}
+
+function fqSaveFaq() {
+  try { localStorage.setItem(FQ_CONFIG.FAQ_KEY, JSON.stringify(FQ_FAQ_DATA)); }
+  catch (e) { console.error('FAQ save 실패:', e); }
+}
+
+function fqBindFaq(scope) {
+  scope.querySelector('#fqSearch').addEventListener('input', fqRenderFaq);
+  scope.querySelector('#fqExpandAll').addEventListener('click', () => {
+    scope.querySelectorAll('.fq-item').forEach(i => i.classList.add('open'));
+  });
+  scope.querySelector('#fqCollapseAll').addEventListener('click', () => {
+    scope.querySelectorAll('.fq-item').forEach(i => i.classList.remove('open'));
+  });
+  scope.querySelector('#fqAdminBtn').addEventListener('click', fqToggleAdmin);
+  scope.querySelector('#fqAdminSave').addEventListener('click', () => {
+    try {
+      const txt = scope.querySelector('#fqAdminEditor').value;
+      const parsed = JSON.parse(txt);
+      if (!parsed.items || !Array.isArray(parsed.items)) throw new Error('items 배열 필요');
+      FQ_FAQ_DATA = parsed;
+      fqSaveFaq();
+      fqRenderFaq();
+      fqToast('✓ FAQ 저장 완료', 'success');
+    } catch (e) { alert('JSON 파싱 오류: ' + e.message); }
+  });
+  scope.querySelector('#fqAdminReset').addEventListener('click', () => {
+    if (!confirm('FAQ를 초기 상태로 되돌리시겠습니까?')) return;
+    localStorage.removeItem(FQ_CONFIG.FAQ_KEY);
+    location.reload();
+  });
+}
+
+function fqRenderFaq() {
+  const search = (document.getElementById('fqSearch').value || '').toLowerCase().trim();
+  const cats = ['전체', ...(FQ_FAQ_DATA.categories || []).filter(c => c !== '전체')];
+
+  // 카테고리 칩
+  document.getElementById('fqCats').innerHTML = cats.map(c =>
+    `<button class="fq-cat-chip ${c === fqCurrentCat ? 'active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+  document.querySelectorAll('.fq-cat-chip').forEach(chip => chip.addEventListener('click', () => {
+    fqCurrentCat = chip.dataset.cat;
+    fqRenderFaq();
+  }));
+
+  // 목록
+  let items = FQ_FAQ_DATA.items || [];
+  if (fqCurrentCat !== '전체') items = items.filter(i => i.cat === fqCurrentCat);
+  if (search) {
+    items = items.filter(i => {
+      const hay = (i.q + ' ' + (i.a || '') + ' ' + ((i.tags || []).join(' '))).toLowerCase();
+      return hay.includes(search);
+    });
+  }
+  document.getElementById('fqList').innerHTML = items.length === 0
+    ? '<div class="fq-empty">해당 조건의 FAQ가 없습니다.</div>'
+    : items.map(i => `
+      <div class="fq-item" data-id="${i.id}">
+        <div class="fq-q" onclick="fqToggleFaqItem('${i.id}')">
+          <div style="flex:1;">
+            <div class="fq-q-text">${fqEsc(i.q)}</div>
+          </div>
+          <span class="fq-q-tag">${fqEsc(i.cat || '')}</span>
+          <span class="fq-q-arrow">▼</span>
+        </div>
+        <div class="fq-a">${fqRenderText(i.a || '')}</div>
+      </div>`).join('');
+
+  // 관리자 도구 JSON 동기화
+  const editor = document.getElementById('fqAdminEditor');
+  if (editor) editor.value = JSON.stringify(FQ_FAQ_DATA, null, 2);
+}
+
+function fqToggleFaqItem(id) {
+  const el = document.querySelector(`.fq-item[data-id="${id}"]`);
+  if (el) el.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 관리자
+// ═══════════════════════════════════════════════════════════════
+async function fqHash(str) {
+  const buf = new TextEncoder().encode(str);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function fqToggleAdmin() {
+  if (fqAdminMode) {
+    sessionStorage.removeItem(FQ_CONFIG.ADMIN_SESSION_KEY);
+    fqAdminMode = false;
+    fqToast('🚪 관리자 모드 종료', 'warn');
+  } else {
+    const pwd = prompt('관리자 비밀번호:');
+    if (!pwd) return;
+    const hash = await fqHash(pwd);
+    if (hash === FQ_CONFIG.ADMIN_PWD_HASH) {
+      sessionStorage.setItem(FQ_CONFIG.ADMIN_SESSION_KEY, '1');
+      fqAdminMode = true;
+      fqToast('✓ 관리자 로그인 성공', 'success');
+    } else {
+      fqToast('✗ 비밀번호 불일치', 'warn');
+      return;
+    }
+  }
+  fqUpdateAdminUI();
+}
+
+function fqUpdateAdminUI() {
+  document.getElementById('fqAdminBadge').hidden = !fqAdminMode;
+  document.getElementById('fqAdminTools').classList.toggle('show', fqAdminMode);
+  fqRenderPosts();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 게시판
+// ═══════════════════════════════════════════════════════════════
+function fqLoadPosts() {
+  try {
+    const saved = localStorage.getItem(FQ_CONFIG.BOARD_KEY);
+    fqPosts = saved ? JSON.parse(saved) : [];
+  } catch (e) { fqPosts = []; }
+}
+
+function fqSavePosts() {
+  try { localStorage.setItem(FQ_CONFIG.BOARD_KEY, JSON.stringify(fqPosts)); }
+  catch (e) { console.error('게시판 save 실패:', e); }
+}
+
+function fqBindBoard(scope) {
+  scope.querySelector('#fqNewPostBtn').addEventListener('click', () => {
+    const form = scope.querySelector('#fqNewPostForm');
+    form.hidden = !form.hidden;
+  });
+  scope.querySelector('#fqCancelPostBtn').addEventListener('click', () => {
+    scope.querySelector('#fqNewPostForm').hidden = true;
+    fqResetNewForm();
+  });
+  scope.querySelector('#fqNpPrivate').addEventListener('change', (e) => {
+    scope.querySelector('#fqNpPwdWrap').style.display = e.target.checked ? 'block' : 'none';
+  });
+  scope.querySelector('#fqSubmitPostBtn').addEventListener('click', fqSubmitPost);
+}
+
+function fqResetNewForm() {
+  ['fqNpAuthor','fqNpCompany','fqNpRef','fqNpSubject','fqNpBody','fqNpPwd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('fqNpPrivate').checked = false;
+  document.getElementById('fqNpPwdWrap').style.display = 'none';
+  document.getElementById('fqNpCategory').value = '일반';
+}
+
+async function fqSubmitPost() {
+  const author = document.getElementById('fqNpAuthor').value.trim();
+  const subject = document.getElementById('fqNpSubject').value.trim();
+  const body = document.getElementById('fqNpBody').value.trim();
+  if (!author || !subject || !body) {
+    fqToast('이름·제목·내용 필수', 'warn'); return;
+  }
+  const isPrivate = document.getElementById('fqNpPrivate').checked;
+  const pwd = document.getElementById('fqNpPwd').value;
+  if (isPrivate && (!pwd || pwd.length < 4)) {
+    fqToast('비밀글: 비밀번호 4자 이상', 'warn'); return;
+  }
+  const post = {
+    id: 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+    author,
+    company: document.getElementById('fqNpCompany').value.trim(),
+    ref: document.getElementById('fqNpRef').value.trim(),
+    category: document.getElementById('fqNpCategory').value,
+    subject, body,
+    isPrivate,
+    pwdHash: isPrivate ? await fqHash(pwd) : null,
+    status: 'unanswered',
+    createdAt: new Date().toISOString(),
+    answer: null,
+    answeredAt: null,
+    answerBy: null
+  };
+  fqPosts.unshift(post);
+  fqSavePosts();
+  fqResetNewForm();
+  document.getElementById('fqNewPostForm').hidden = true;
+  fqRenderPosts();
+  fqToast('✓ 문의 등록됨', 'success');
+}
+
+function fqRenderPosts() {
+  const total = fqPosts.length;
+  const answered = fqPosts.filter(p => p.status === 'answered').length;
+  document.getElementById('fqBoardStats').textContent = total > 0 ? `${total}개 문의 · ${answered}개 답변 완료` : '';
+
+  document.getElementById('fqPostsList').innerHTML = total === 0
+    ? '<div class="fq-empty">등록된 문의가 없습니다. 새 문의를 작성해보세요.</div>'
+    : fqPosts.map(p => {
+      const isOpen = fqOpenPostId === p.id;
+      const canSeeBody = !p.isPrivate || fqAdminMode || (sessionStorage.getItem('fq_unlocked_' + p.id) === '1');
+      return `
+        <div class="fq-post ${isOpen ? 'open' : ''}" data-id="${p.id}">
+          <div class="fq-post-head" onclick="fqTogglePost('${p.id}')">
+            <div class="fq-post-info">
+              <div class="fq-post-meta">
+                <span class="fq-post-author">${fqEsc(p.author)}</span>
+                ${p.company ? `<span>· ${fqEsc(p.company)}</span>` : ''}
+                <span>·</span>
+                <span class="fq-post-date">${new Date(p.createdAt).toLocaleString('ko')}</span>
+                ${p.category ? `<span>· ${fqEsc(p.category)}</span>` : ''}
+                ${p.isPrivate ? '<span class="fq-post-private-icon">🔒</span>' : ''}
+              </div>
+              <div class="fq-post-subject">${fqEsc(p.subject)}</div>
+            </div>
+            <span class="fq-post-status ${p.status}">${p.status === 'answered' ? '✓ 답변완료' : '대기'}</span>
+          </div>
+          <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <button class="fq-btn" onclick="fqUnlockPost(event,\'' + p.id + '\')">비밀번호 입력</button>'}</div>
+          ${p.answer ? `
+            <div class="fq-post-answer">
+              <div class="fq-post-answer-head">✓ 답변 — ${p.answerBy || '관리자'} · ${new Date(p.answeredAt).toLocaleString('ko')}</div>
+              ${fqRenderText(p.answer)}
+            </div>` : ''}
+          ${fqAdminMode ? `
+            <div class="fq-post-actions">
+              <button class="fq-btn accent" onclick="fqOpenAnswerForm('${p.id}')">${p.answer ? '답변 수정' : '✏️ 답변 작성'}</button>
+              <button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>
+            </div>
+            <div class="fq-answer-form" id="fqAnsForm-${p.id}">
+              <textarea id="fqAnsText-${p.id}" placeholder="답변 내용 입력...">${fqEsc(p.answer || '')}</textarea>
+              <div style="display: flex; justify-content: flex-end; gap: 6px;">
+                <button class="fq-btn ghost" onclick="fqCloseAnswerForm('${p.id}')">취소</button>
+                <button class="fq-btn primary" onclick="fqSaveAnswer('${p.id}')">저장</button>
+              </div>
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function fqTogglePost(id) {
+  fqOpenPostId = (fqOpenPostId === id) ? null : id;
+  fqRenderPosts();
+}
+
+async function fqUnlockPost(evt, id) {
+  evt.stopPropagation();
+  const post = fqPosts.find(p => p.id === id);
+  if (!post) return;
+  const pwd = prompt('이 글의 비밀번호:');
+  if (!pwd) return;
+  const hash = await fqHash(pwd);
+  if (hash === post.pwdHash) {
+    sessionStorage.setItem('fq_unlocked_' + id, '1');
+    fqRenderPosts();
+    fqToast('✓ 잠금 해제됨', 'success');
+  } else {
+    fqToast('✗ 비밀번호 불일치', 'warn');
+  }
+}
+
+function fqOpenAnswerForm(id) {
+  document.getElementById('fqAnsForm-' + id).classList.add('open');
+}
+function fqCloseAnswerForm(id) {
+  document.getElementById('fqAnsForm-' + id).classList.remove('open');
+}
+function fqSaveAnswer(id) {
+  const text = document.getElementById('fqAnsText-' + id).value.trim();
+  if (!text) { fqToast('답변 내용 필요', 'warn'); return; }
+  const post = fqPosts.find(p => p.id === id);
+  if (!post) return;
+  post.answer = text;
+  post.answeredAt = new Date().toISOString();
+  post.answerBy = prompt('답변자 (예: 관리자, 운항팀장):', post.answerBy || '관리자') || '관리자';
+  post.status = 'answered';
+  fqSavePosts();
+  fqRenderPosts();
+  fqToast('✓ 답변 등록됨', 'success');
+}
+
+function fqDeletePost(id) {
+  if (!confirm('이 문의를 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
+  fqPosts = fqPosts.filter(p => p.id !== id);
+  fqSavePosts();
+  fqRenderPosts();
+  fqToast('🗑 삭제됨', 'warn');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 유틸
+// ═══════════════════════════════════════════════════════════════
+function fqEsc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function fqRenderText(str) {
+  // 간단 마크다운: **bold**, `code`, 줄바꿈
+  return fqEsc(str)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+}
+function fqToast(msg, type) {
+  const t = document.getElementById('fqToast');
+  t.textContent = msg;
+  t.className = 'fq-toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._fqToastTimer);
+  window._fqToastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// 자동 초기화 + 사이드바 메뉴 → 모듈 내부 탭 연동
+function fqBootstrap() {
+  fqInit();
+  // 사이드바 메뉴 (data-fq-init-tab) 클릭 시 module 내부 탭 자동 활성화
+  document.querySelectorAll('.menu-item[data-fq-init-tab]').forEach(item => {
+    item.addEventListener('click', () => {
+      const target = item.dataset.fqInitTab; // 'faq' | 'board'
+      setTimeout(() => {
+        document.querySelectorAll('#fqModule [data-fq-tab]').forEach(b =>
+          b.classList.toggle('active', b.dataset.fqTab === target));
+        document.querySelectorAll('#fqModule [data-fq-panel]').forEach(p =>
+          p.classList.toggle('active', p.dataset.fqPanel === target));
+      }, 30);
+    });
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fqBootstrap);
+} else {
+  fqBootstrap();
+}
