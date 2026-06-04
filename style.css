@@ -4220,9 +4220,25 @@ header span {
 .fq-q-arrow { color: var(--fq-muted); transition: transform .2s; flex-shrink: 0; }
 .fq-item.open .fq-q-arrow { transform: rotate(180deg); }
 .fq-a { padding: 0 16px; max-height: 0; overflow: hidden; transition: max-height .25s, padding .25s; font-size: 13px; line-height: 1.65; color: var(--fq-text); }
-.fq-item.open .fq-a { padding: 0 16px 16px; max-height: 1500px; border-top: 1px solid var(--fq-border); padding-top: 14px; }
+.fq-item.open .fq-a { padding: 0 16px 16px; max-height: 8000px; border-top: 1px solid var(--fq-border); padding-top: 14px; }
 .fq-a strong { color: var(--fq-primary); }
 .fq-a code { background: var(--fq-bg); padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+.fq-a p { margin: 0 0 9px; }
+.fq-a p:last-child { margin-bottom: 0; }
+.fq-a a { color: var(--fq-accent-2); font-weight: 600; }
+/* 목록 */
+.fq-a .fq-ul, .fq-a .fq-ol { margin: 4px 0 11px; padding-left: 20px; }
+.fq-a .fq-ul li, .fq-a .fq-ol li { margin: 3px 0; padding-left: 2px; }
+.fq-a .fq-ul li::marker { color: var(--fq-accent); }
+.fq-a .fq-ol li::marker { color: var(--fq-accent-2); font-weight: 700; }
+/* 인용문 (표준 답신 등) */
+.fq-a .fq-quote { margin: 6px 0 12px; padding: 10px 14px; border-left: 3px solid var(--fq-accent); background: var(--fq-bg); border-radius: 0 6px 6px 0; color: var(--fq-text); font-size: 12.5px; }
+/* 표 */
+.fq-a .fq-table { width: 100%; border-collapse: collapse; margin: 6px 0 13px; font-size: 12.5px; border: 1px solid var(--fq-border); border-radius: 6px; overflow: hidden; }
+.fq-a .fq-table th { background: var(--fq-primary); color: #fff; font-weight: 700; text-align: left; padding: 8px 10px; white-space: nowrap; }
+.fq-a .fq-table td { padding: 7px 10px; border-top: 1px solid var(--fq-border); vertical-align: top; }
+.fq-a .fq-table tbody tr:nth-child(even) { background: var(--fq-bg); }
+.fq-a .fq-table tbody tr:hover { background: rgba(46,196,182,0.08); }
 
 /* ─── 게시판 ─── */
 .fq-board-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }

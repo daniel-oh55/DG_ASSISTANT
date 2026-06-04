@@ -2234,7 +2234,7 @@ if (themeToggleBtn) {
    FAQ + 문의 게시판 모듈 v1.0 — DG_ASSISTANT 통합 (2026-06-02)
    ═══════════════════════════════════════════════════════════════ */
 const FQ_CONFIG = {
-  FAQ_KEY:    'dg_assistant_faq_v1',
+  FAQ_KEY:    'dg_assistant_faq_v2',
   BOARD_KEY:  'dg_assistant_board_v1',
   ADMIN_SESSION_KEY: 'dg_assistant_admin_v1',
   // 비밀번호 'admin1234' SHA-256 해시
@@ -2244,53 +2244,635 @@ const FQ_CONFIG = {
 
 // ───── DG 관련 시드 FAQ (사이트 분석 기반) ─────
 let FQ_FAQ_DATA = {
-  categories: ['전체', 'IMDG/UNNO', '선사 규정', '격리/혼적', 'SDS/AI 판독', '시스템 사용'],
-  items: [
-    { id: 'faq1', cat: 'IMDG/UNNO', q: 'UNNO 번호로 위험물 정보를 어떻게 조회하나요?',
-      a: '사이드바의 **IMDG 조회 (UNNO)** 메뉴에서 UNNO 번호를 입력하면 IMDG 기준 상세 정보(Proper Shipping Name, Class, Subsidiary Risk, PG, EmS, 격리 코드 등)를 확인할 수 있습니다.',
-      tags: ['UNNO', 'IMDG', '조회'] },
-    { id: 'faq2', cat: '선사 규정', q: '선사별 선적 제한 규정은 어디서 확인하나요?',
-      a: '**선사별 선적가부 조회** 메뉴에서 SKR, HAL, NSS, DYS 등 선사별 금지·제한 조건을 한 번에 비교 가능합니다. "선적 가능한 선사만 보기" 필터로 조건을 만족하는 선사만 추릴 수도 있습니다.',
-      tags: ['선사', '선적', '제한'] },
-    { id: 'faq3', cat: '격리/혼적', q: '두 가지 이상의 위험물을 함께 선적할 수 있나요?',
-      a: '**격리규정 확인** 메뉴에서 복수 위험물의 혼적 가능 여부와 격리(Segregation) 요구사항(Away from, Separated from, Separated by complete compartment, Separated longitudinally)을 분석할 수 있습니다.',
-      tags: ['격리', '혼적', 'Segregation'] },
-    { id: 'faq4', cat: 'SDS/AI 판독', q: 'SDS/MSDS 문서에서 위험물 판정은 어떻게 하나요?',
-      a: '**SDS/MSDS DG 판독** 메뉴에서 PDF를 업로드(최대 3MB)하면 Gemini AI가 Section 14를 기준으로 DG/NON-DG/UNCLEAR로 1차 판독합니다.',
-      tags: ['SDS', 'MSDS', 'AI'] },
-    { id: 'faq5', cat: 'SDS/AI 판독', q: 'AI 판독 결과는 그대로 신뢰해도 되나요?',
-      a: '**아닙니다.** AI는 1차 보조 도구이며, 최종 선적 가능 여부는 IMDG Code, 선사 제한, 터미널 규정, POL/POD 국가 규정, **원본 SDS 최신본**을 기준으로 담당자가 반드시 재확인해야 합니다.',
-      tags: ['AI', '신뢰도', '주의'] },
-    { id: 'faq6', cat: '시스템 사용', q: '첨부파일 업로드 용량 제한이 있나요?',
-      a: '**DG 정보노트**는 최대 4MB, **SDS/MSDS PDF**는 최대 3MB까지 가능합니다.',
-      tags: ['첨부', '용량'] },
-    { id: 'faq7', cat: '시스템 사용', q: '기존 선적 노트는 어떻게 찾나요?',
-      a: '**DG 추가정보 노트** 메뉴의 라이브러리에서 제목·내용 키워드로 검색할 수 있습니다.',
-      tags: ['노트', '검색'] },
-    { id: 'faq8', cat: '선사 규정', q: '선사별 추가 규정은 어디에 기록하나요?',
-      a: '**DG 추가정보 노트**에 선사별 제한 조건, 터미널 요청사항 등을 자유롭게 기록·관리할 수 있습니다. 팀원과 노트를 공유하면 동일 케이스 반복 처리가 빨라집니다.',
-      tags: ['선사', '노트', '규정'] },
-    { id: 'faq9', cat: 'IMDG/UNNO', q: '위험물 부킹 전 필수 확인사항은?',
-      a: '권장 순서: **① UNNO 조회 → ② 선사별 선적가부 → ③ 격리규정 확인 → ④ SDS 재검증 → ⑤ POL/POD 국가 규정 확인** 입니다.',
-      tags: ['부킹', '체크리스트'] },
-    { id: 'faq10', cat: '시스템 사용', q: '터미널별 추가 규정은 어떻게 관리하나요?',
-      a: 'DG 정보노트에 "터미널 규정, POL/POD 요청사항" 등을 메모로 기록하고 팀원과 공유하세요. 자주 가는 터미널은 별도 노트로 분류해 두면 효율적입니다.',
-      tags: ['터미널', '노트'] },
-    { id: 'faq11', cat: '시스템 사용', q: 'DARK MODE는 어떻게 켜나요?',
-      a: '왼쪽 사이드바 하단의 **DARK MODE / BRIGHT MODE** 버튼으로 전환합니다. 선택값은 브라우저에 자동 저장됩니다.',
-      tags: ['UI', '테마'] },
-    { id: 'faq12', cat: '선사 규정', q: '여러 선사의 선적 가능 정보를 한 번에 비교할 수 있나요?',
-      a: '**선사별 선적가부 조회** 메뉴에서 가능합니다. "선적 가능한 선사만 보기" 필터를 켜면 해당 UNNO 기준으로 OK 선사만 즉시 추려져 표시됩니다.',
-      tags: ['선사', '비교'] },
-    { id: 'faq13', cat: '시스템 사용', q: '위험물 클레임이 발생했을 때 기록은 어떻게 남기나요?',
-      a: 'DG 정보노트에 **클레임 상황, 선사 대응, 터미널 이슈, 후속 조치** 등을 시간순으로 메모로 남기세요. 비슷한 케이스 재발 시 참고 자료가 됩니다.',
-      tags: ['클레임', '기록'] },
-    { id: 'faq14', cat: 'IMDG/UNNO', q: '신규 IMDG 개정 사항은 어떻게 반영되나요?',
-      a: '마스터 데이터는 IMDG Code 정기 개정을 기준으로 관리됩니다. 선사별 추가 규정은 노트로 계속 업데이트해 주세요.',
-      tags: ['IMDG', '개정', '업데이트'] },
-    { id: 'faq15', cat: '시스템 사용', q: '민감한 정보가 들어간 노트는 보호할 수 있나요?',
-      a: '노트 작성 시 **비밀번호**를 설정하면 본인 외에는 열람할 수 없습니다. 분실 시 복구가 불가하므로 별도 보관 필수입니다.',
-      tags: ['보안', '비밀번호'] }
+  "categories": [
+    "🧭 위험물 판정 기준",
+    "🚫 전면 금지 화물",
+    "🔋 리튬 배터리",
+    "🚗 차량 / EV",
+    "🔥 인화성 (Cl.3)",
+    "⚗️ 부식성 (Cl.8)",
+    "💥 산화/자연발화",
+    "🌊 해양 오염 물질",
+    "💨 에어로졸 / 가스",
+    "🧴 Flexitank / IBC",
+    "❄️ RFDG (Reefer DG)",
+    "📐 OOG / Heavy / Coil",
+    "📋 절차 / PRE-CHECK",
+    "📄 서류 (MSDS/DGD)",
+    "📦 적재 / 격리",
+    "🏗️ 항만별 제한",
+    "🚢 선사별 비교",
+    "⚠️ 특별 규정 / LQ",
+    "📘 IMDG 전문지식",
+    "🧪 Class별 세부 규정",
+    "🚨 사고 / 손상 대응"
+  ],
+  "items": [
+    {
+      "id": "gen-msds-decide",
+      "cat": "🧭 위험물 판정 기준",
+      "q": "위험물인지 아닌지 어떻게 판단하나요? (MSDS 어디를 봐야 하나요?)",
+      "a": "안녕하세요. 위험물 여부는 화주께서 받으신 **MSDS의 14번 운송정보** 섹션을 먼저 확인해 주시면 가장 정확하게 판단할 수 있습니다.\n\n**1. CLASS / UN No. 기재 여부 확인**\n- MSDS 14번에 IMDG / Class / UN번호가 적혀 있다면 위험물에 해당합니다.\n- 운송방식(해상·육상·항공) 구분이 없더라도 CLASS·UN번호가 표기되어 있으면 위험물로 분류하고 있습니다.\n\n**2. 인화점도 함께 확인 부탁드립니다 (MSDS 9번)**\n- Flash Point가 **60°C 이하**라면 인화성 위험물(Class 3)일 가능성이 매우 높습니다.\n- 60°C를 초과하더라도 독성·부식성 등 다른 위험성으로 인해 위험물에 해당할 수 있으니, 전체 MSDS를 함께 검토해 주시기 바랍니다.\n\n**3. 독성·환경유해성 확인 (MSDS 12번)**\n- LC50 / EC50 / NOEC 수치를 확인해 주시기 바랍니다 (48~96h 노출 기준).\n- 어느 하나라도 **0.1 mg/L 이하** 반응이 있다면 환경유해성 물질에 해당하며, 액체는 **UN3082**, 고체는 **UN3077**로 운송하게 됩니다.\n- 예: 어류 LC50 0.12 mg/72h 등급은 UN3082/3077에 해당합니다.\n\n**4. 배터리 화물의 경우**\n- MSDS에 SPxx (예: SP188, SP230) 기재 시 추가 확인이 필요합니다.\n- UN 38.3 시험 통과 + 100Wh / 2g 이하 조건을 충족하시면 비위험물 취급도 가능합니다.\n\n판단이 어려우신 경우에는 MSDS 전체 PDF를 첨부해 DG Center로 문의 주시면 신속하게 확인 도와드리겠습니다.",
+      "tags": [
+        "MSDS",
+        "판정",
+        "인화점",
+        "환경유해성",
+        "기본"
+      ]
+    },
+    {
+      "id": "gen-flashpoint",
+      "cat": "🧭 위험물 판정 기준",
+      "q": "인화점(Flash Point)이 몇 도 이하면 위험물인가요?",
+      "a": "MSDS 9번 섹션의 Flash Point가 **60°C 이하**이면 인화성 위험물(Class 3)로 분류하고 있습니다.\n\n**Packing Group 세분류**\n- **PG I** : 인화점 < 23°C **이면서** 초기 끓는점 ≤ 35°C\n- **PG II** : 인화점 < 23°C, 끓는점 > 35°C\n- **PG III** : 인화점 23~60°C\n\n**자주 문의주시는 경계 사례**\n- 인화점이 60.5°C 등 60°C 근접한 경우, IMDG 기준상 60°C를 초과하면 비위험에 해당합니다. 다만 측정 오차 가능성이 있어 화주께 정확한 인화점 재확인을 권장드립니다.\n- 100% 농도와 희석 농도에서 인화점이 다르게 나타날 수 있으니, 실제 출하 상태 기준의 값을 확인해 주시기 바랍니다.\n- 알코올류(에탄올·메탄올 등)는 대부분 PG II에 해당합니다.\n\n자세한 분류 기준은 IMDG Code 2.3장(Class 3)을 참조해 주시기 바랍니다.",
+      "tags": [
+        "인화점",
+        "Class 3",
+        "PG",
+        "MSDS"
+      ]
+    },
+    {
+      "id": "pro-charcoal",
+      "cat": "🚫 전면 금지 화물",
+      "q": "숯(Charcoal, UN1361)은 선적 가능한가요?",
+      "a": "죄송합니다만, 숯(UN1361)은 장금상선 및 흥아라인에서 **전면 선적 금지**로 운영하고 있습니다. 위험물뿐 아니라 SP925·SP978 비위험물 취급 건도 모두 포함됩니다.\n\n**금지 사유 (자사 화재 사고)**\n저희도 안전상의 사유로 부득이 금지 결정을 유지하고 있으며, 다음과 같은 사고 사례가 있었습니다.\n\n1. **2018 CHARLIE호** — 싱가폴 양적하 작업 중 치타공발 숯 컨테이너에서 화재가 발생하였고, 처리 지연으로 거액의 컨테이너 장치료가 발생한 사례가 있습니다.\n2. **2022.05 MANILA VOYAGER호** — 호치민→광양 항해 중 자카르타발 숯(비위험물 취급 건)에서 발화가 발생하였습니다. 5/7 1차 진압 후 5/9 잔불이 재발화되어 5/10 광양 도착 후 최종 진압되었으며, 진압 과정에서 선원 1명이 연기 흡입으로 병원 이송된 안타까운 사고였습니다.\n\n**규정 변경 사항 (2026.01.01 이후)**\n- IMDG 개정으로 4G BOX 골판지 용기(낙하·겹침선적 시험 통과품) 사용이 의무화되었습니다.\n- 기존 진공포장 방식은 불가능하게 되었습니다.\n- KMTC도 2025년 12월부터 숯 선적을 금지하고 있으며, 머스크 등 타 선사도 선적 제한을 검토 중입니다.\n\n**대체 정보 안내**\n- 활성탄(Activated Carbon, UN1362) 역시 동일한 사유로 금지되고 있습니다.\n- 카본 블랙(Carbon Black, 일반 산업용 INK/RUBBER/TIRE/PAINT/PLASTIC 원료)은 비위험물 건에 한해 선적이 가능하니, 별도 카본블랙 FAQ를 참고해 주시면 감사하겠습니다.\n\n양해 부탁드리며, 추가 문의 사항 있으시면 운항팀으로 연락 주시기 바랍니다.",
+      "tags": [
+        "숯",
+        "Charcoal",
+        "활성탄",
+        "전면 금지",
+        "화재 사고"
+      ]
+    },
+    {
+      "id": "pro-carbon-black",
+      "cat": "🚫 전면 금지 화물",
+      "q": "Carbon Black(카본블랙)은 선적 가능한가요?",
+      "a": "Carbon Black은 원료와 용도에 따라 선적 가부가 달라집니다. 아래 내용 참고해 주시면 도움이 되실 듯합니다.\n\n**선적 가능 (비위험물)**\n다음 용도의 카본블랙은 정상 선적이 가능합니다.\n- INK · RUBBER · TIRE · PAINT · PLASTIC 원료용 카본블랙\n- Mineral Origin(석유·타르)으로부터 화학적 공정으로 생산된 인공 카본블랙\n- 국내 대표 제조사: OCI, 비를라(Birla), Carbon Tech 등\n\n**선적 금지**\n다음 케이스는 안전상의 사유로 선적이 어려운 점 양해 부탁드립니다.\n- CHARCOAL을 잘게 쪼갠 형태 (인도네시아·베트남산 숯 부산물)\n- **4.2 / 1361 CARBON animal or vegetable origin** 표기 건\n→ 위 두 가지는 위험물·비위험물 모두 금지 대상이며, 숯 규정이 동일하게 적용됩니다.\n\n**판단을 도와드리는 절차**\n1. 생산자(제조사) 정보를 먼저 확인 부탁드립니다.\n2. MSDS 상의 원재료와 생산 공정 내용을 살펴봐 주시기 바랍니다.\n3. 형태가 POWDER/PELLET이라 하더라도 4.2/1361 표기가 있으면 금지에 해당합니다.\n4. 모호한 경우 화주께 원재료를 한 번 더 확인 요청 부탁드립니다.\n\n**2026.01.01 이후 유의 사항**\n- 4.2/1361 비위험물 취급 규정이 삭제되었습니다.\n- MSDS상 비위험물로 표기되어 있더라도 4.2/1361 표기가 있으면 선적이 어려우니, 화주께 다시 한 번 확인을 요청 부탁드립니다.",
+      "tags": [
+        "Carbon Black",
+        "카본블랙",
+        "조건부",
+        "원재료 확인"
+      ]
+    },
+    {
+      "id": "pro-3378",
+      "cat": "🚫 전면 금지 화물",
+      "q": "과탄산나트륨(UN3378) 선적 가능한가요?",
+      "a": "과탄산나트륨(UN3378)은 현재 장금/흥아에서 **선적 금지** 화물로 운영하고 있습니다(DRY DG 기준). 안전상의 사유로 운영 중인 점 양해 부탁드립니다.\n\n**제품 특성 안내**\n- Class 5.1 (산화성 물질) / UN 3378\n- 별칭: 과탄산소다, Sodium Percarbonate\n- 발열분해온도 **+60°C** — 물·산류 접촉 시 열분해 + 발화 위험이 있습니다.\n\n**사고 사례**\n- **2017.08.13 의왕시 오봉역 화재** — 노후 컨테이너에 빗물이 침투된 상태에서 하절기 고온으로 열분해 반응이 일어나 내부 포장재가 발화한 사례가 있습니다.\n\n**참고: 선사별 정책 비교**\n| 선사 | 정책 |\n|---|---|\n| 장금/흥아 / 남성·동영 / 고려 | 금지 |\n| 팬오션 / 동진 | 일본구간 허용 |\n| HMM / 천경 | 일본구간 허용 |\n| 완하이 / TSL | 금지 |\n| SM / ONE / 머스크 / 양밍 | 허용 |\n\n**RFDG 검토 진행 중**\n현재 일본구간(TYO/HKT/NGO/MOJ/OSA/UKB) 출하 OCI 측 요청에 따라, RFDG(냉동) 컨테이너로 온도 통제 시 안정성 확보가 가능한지 검토하고 있습니다. 월 60대 / 운임 $1,000 수준으로 예상하고 있으며, 진행 시 별도 안내드리겠습니다.",
+      "tags": [
+        "과탄산나트륨",
+        "Sodium Percarbonate",
+        "Class 5.1",
+        "금지",
+        "RFDG 검토"
+      ]
+    },
+    {
+      "id": "li-3480",
+      "cat": "🔋 리튬 배터리",
+      "q": "UN3480 (Lithium Ion Battery, 단독) 선적 가능한가요?",
+      "a": "UN3480 리튬이온 배터리는 제조사·SOC·서류 조건을 모두 충족하시면 선적이 가능합니다. 다만 안전상 RFDG 진행 등 몇 가지 필수 조건이 있어 사전 확인 부탁드립니다.\n\n**1. 위험물 취급 (RFDG 진행)**\n- ✅ **삼성 SDI / LG에너지솔루션 / SK On** — 3사 제조 건에 한해 RFDG 진행이 가능합니다.\n- ❌ 그 외 제조사(중국 BYD·CATL 등)는 진행이 어려운 점 양해 부탁드립니다.\n- **모든 위험물 건은 RFDG가 필수**이며, DRY DG로는 진행이 불가합니다.\n\n**2. 비위험물 취급 (SP188 적용)**\n- 셀 **20Wh 이하** 또는 배터리 **100Wh 이하**이신 경우 NON-DG DRY 컨테이너로 진행 가능합니다.\n- MSDS 1.5 항목의 Wh rating을 확인 부탁드립니다.\n\n**3. 공통적으로 확인 부탁드리는 사항**\n- UN 38.3 시험성적서(제조사 발급) 첨부 부탁드립니다.\n- MSDS 14번에 UN3480이 명시되어 있어야 합니다.\n- 손상·리콜·리퍼브 배터리는 선적이 어려운 점 양해 바랍니다.\n- 위험물 건은 DGD에 SOC ≤ 30%를 명시해 주시기 바랍니다.\n- 외부 포장의 단락 방지(양극 단자 절연)를 확인해 주시면 감사하겠습니다.\n\n**적용 Remark 코드**\n- SP188 (소형 배터리 비위험물 취급)\n- SP230 (운송 일반 조건)\n- SP310 (시제품 / 소량 생산 추가 조건)",
+      "tags": [
+        "리튬배터리",
+        "Lithium Ion",
+        "Class 9",
+        "RFDG",
+        "삼성 LG SK"
+      ]
+    },
+    {
+      "id": "li-3090-3091",
+      "cat": "🔋 리튬 배터리",
+      "q": "UN3090 / UN3091 (리튬 금속 배터리) 선적 가능한가요?",
+      "a": "리튬 금속 배터리(UN3090·UN3091)는 현재 장금/흥아에서 **전면 선적 금지**로 운영하고 있습니다. SP188 비위험물 취급 건도 포함되며, 안전상의 사유로 부득이 운영 중인 점 양해 부탁드립니다.\n\n**제품 특성 (위험성)**\n- 1차 전지(충전 불가) — 100% 완충 상태로 출고됩니다.\n- 음극재가 리튬 금속이라 수분 접촉 시 폭발 위험이 있습니다.\n- 2차 전지(리튬이온) 대비 **열폭주 위험성이 훨씬 높습니다.**\n\n**1차 / 2차 전지 구분**\n| 항목 | 1차 전지 (3090/3091) | 2차 전지 (3480/3481) |\n|---|---|---|\n| 충전 | 불가 | 가능 |\n| 음극재 | 리튬 금속 | 흑연 |\n| 출하 충전율 | 100% | 30% 미만 |\n\n**SP388 (혼합 장비 처리)**\n1차 전지(9/3090)와 2차 전지(9/3480)가 동시에 장착된 장비의 경우, 더 위험한 1차 기준으로 **9/3091**로 분류됩니다.\n\n**금지 결정의 배경 (사고 사례)**\n- **2024.06.24 아리셀 화성공장 화재** — 비의 영향으로 불량 배터리가 수분과 반응하여 열폭주가 발생하였고, 대형 화재로 번지며 인명 피해까지 이어진 사고가 있었습니다. 배터리 화재는 소화가 불가능하고 유독가스가 발생하여 매우 위험합니다.\n\n**참고: 선사별 정책**\n| 선사 | 9/3090 위험물 | 9/3091 SP188 비위험물 |\n|---|---|---|\n| 장금/흥아 / HMM / 고려 / 남성·동영 / 천경 | 금지 | 금지 |\n| 동진 | 금지 | 허용 |\n| 완하이 (해외) | 9/3090, 3480, 3481 모두 금지 | - |\n| 그 외 해외선사 | 허용 | 허용 |\n\n파나소닉 코인 배터리 등 일상용 1차 전지도 동일하게 적용되니 참고 부탁드립니다.",
+      "tags": [
+        "리튬금속",
+        "Class 9",
+        "전면 금지",
+        "1차전지",
+        "아리셀"
+      ]
+    },
+    {
+      "id": "li-ev-cell",
+      "cat": "🔋 리튬 배터리",
+      "q": "EV 배터리 셀(전기차용) 선적 시 승인 제조사는?",
+      "a": "EV 배터리 셀 중 위험물 취급 건은 안전 검증을 거친 승인 제조사 제품에 한해 선적이 가능합니다.\n\n**✅ 승인 제조사 (MSDS 'Manufacture' 정보 기준)**\n- 삼성 SDI\n- LG 에너지솔루션 (LG Chem 포함)\n- SK On\n\n**❌ 거절 안내**\n- 중국·기타 해외 제조사(BYD, CATL, EVE, Gotion 등)는 현재 선적이 어려운 점 양해 부탁드립니다.\n- 신규 거래 시 제조사 정보를 사전에 확인해 주시면 신속한 검토가 가능합니다.\n\n**제조사 확인 방법**\n1. MSDS 1번(제품 식별) — 제조사명, 주소 확인\n2. 배터리 본체 라벨 사진 첨부 부탁드립니다.\n3. UN 38.3 시험성적서 발행처도 함께 확인 부탁드립니다.\n\n**모든 위험물 건 RFDG 필수**\n- DRY DG로는 진행이 어려운 점 양해 바랍니다 (예외 없음).\n- 닝보 입항 시 6시간 간격 온도 모니터링이 요구되니 사전 안내 드립니다.\n\n신규 제조사 추가는 별도 협의가 필요합니다 (사고 발생 시 책임 및 제품 신뢰성 검증 후 진행).",
+      "tags": [
+        "EV 배터리",
+        "삼성 LG SK",
+        "승인 제조사",
+        "RFDG"
+      ]
+    },
+    {
+      "id": "li-3481",
+      "cat": "🔋 리튬 배터리",
+      "q": "UN3481 (장비에 포함/패킹된 리튬이온 배터리) 절차는?",
+      "a": "UN3481은 UN3480 대비 완화된 조건으로 선적이 가능한 화물입니다. 다만 위험물 취급 시에는 동일하게 승인 제조사 조건이 적용되니 참고 부탁드립니다.\n\n**1. 비위험물 (SP188)**\n- 100Wh 이하 / 셀 20Wh 이하의 경우 NON-DG DRY 진행이 가능합니다.\n- 4개 셀 이하 / 배터리 2개 이하가 동봉된 장비(장비 내장형)는 SP188 적용 검토가 가능합니다.\n\n**2. 위험물 (RFDG)**\n- 100Wh 초과 시 위험물로 분류됩니다.\n- ✅ **삼성/LG/SK 3사 제조 건에 한해 RFDG 진행 가능**\n- 위험물 건은 예외 없이 RFDG가 필수인 점 양해 부탁드립니다.\n\n**3. 9/3481 + 9/3480 동시 (장비 + 별도 동봉 배터리)**\n- SP188 조건 미충족 시에는 더 위험한 쪽 기준으로 분류됩니다.\n- 9/3091 (1차 전지 동봉) 시: 1차 전지가 주 위험물이 되어 **9/3091**로 처리됩니다.\n\n**4. 공통 확인 사항**\n- UN 38.3 시험성적서는 필수입니다.\n- 장비 구동 시험 및 단락 방지 확인 부탁드립니다.\n- 손상·리콜 배터리는 선적이 어려운 점 양해 바랍니다.",
+      "tags": [
+        "리튬배터리",
+        "장비 내장",
+        "SP188",
+        "RFDG"
+      ]
+    },
+    {
+      "id": "veh-3166",
+      "cat": "🚗 차량 / EV",
+      "q": "UN3166 (가스/액체 연료 차량) 선적 절차는?",
+      "a": "UN3166 차량은 연료 잔량 및 안전 조치를 충족하시면 선적이 가능합니다. 아래 사항 확인 후 진행 부탁드립니다.\n\n**가솔린·디젤 차량**\n- 연료탱크는 **1/4 미만** 충전 부탁드립니다.\n- 연료 캡과 밸브의 누유 방지를 확인해 주시기 바랍니다.\n- 배터리 단자는 절연 처리해 주시면 감사하겠습니다.\n\n**LPG / CNG 차량**\n- 가스 잔량은 **1/4 미만**이어야 합니다.\n- 밸브 폐쇄 상태를 꼭 확인 부탁드립니다.\n- 압력 시험 기록도 함께 준비해 주시면 좋습니다.\n\n**필요 서류**\n- MSDS\n- 차량등록증 (또는 동등 서류)\n- 차량 사진 (외관·연료 상태가 확인되는 사진)\n- 보험증명\n\n**선적이 어려운 경우**\n다음 케이스는 안전상 사유로 선적이 어려운 점 양해 부탁드립니다.\n- 누유 흔적이 있는 경우\n- 사고 이력 / 외관 손상이 확인되는 경우\n- 일부 항만의 차량 사전 승인을 받지 못한 경우\n\n**적용 Remark**\n- SP240 (차량 일반 조건)\n- SP312 (가스 연료 차량)\n- SP385 (전기차 — 별도 UN3556으로 분류)",
+      "tags": [
+        "차량",
+        "Vehicle",
+        "Class 9"
+      ]
+    },
+    {
+      "id": "veh-3556",
+      "cat": "🚗 차량 / EV",
+      "q": "UN3556 (배터리 구동 차량 / EV) 선적 가능한가요?",
+      "a": "현재 UN3556(리튬 배터리 구동 차량)은 장금/흥아에서 **\"Prohibited DG\"로 분류 추진 중**입니다(Ver.12 반영 예정). 선적을 검토하시는 경우 사전에 운항팀으로 문의 부탁드립니다.\n\n**현재 상황 안내**\n- 전기차, 전동 휠체어, 전기 자전거 등 리튬 배터리 구동 차량이 해당됩니다.\n- 시미즈항(일본 야마하 모터) 등 일부 출하 사례에서 사전 등록이 요구되고 있습니다.\n- 안전성 검토 결과 Prohibited DG로 전환 추진 중입니다.\n\n**전환 전 가능 조건 (참고)**\n- 장착 배터리의 UN 38.3 시험성적서가 필요합니다.\n- SOC ≤ 30%를 유지해 주시기 바랍니다.\n- 외부 충전기는 분리 후 별도 포장해 주시면 감사하겠습니다.\n- 단락 방지 및 차량 간 최소 거리 확보를 부탁드립니다.\n\n**해외 일부 노선**\n- Shimizu 항: 사전 위험화물 등록(Hazardous Cargo Registration)이 필요합니다.\n- 그 외 항만은 출하지·도착지별로 별도 확인 부탁드립니다.",
+      "tags": [
+        "전기차",
+        "EV",
+        "Prohibited 예정"
+      ]
+    },
+    {
+      "id": "fl-1263",
+      "cat": "🔥 인화성 (Cl.3)",
+      "q": "UN1263 (페인트 / 래커) 선적 가능한가요?",
+      "a": "UN1263 페인트류는 Class 3에 해당하며, 포장등급(PG)에 따라 조건을 충족하시면 선적이 가능합니다.\n\n**PG별 안내**\n- **PG I** (인화점 < 23°C, 끓는점 ≤ 35°C) — 일부 노선 제한이 있으며 갑판 적재로 진행됩니다.\n- **PG II / III** — 정상 선적 가능, UN 인증 포장재가 필요합니다.\n\n**Limited Quantity (LQ) 적용 시**\n- 5L 이하 내포장의 경우\n- 외부 박스에 LQ 마크를 부착해 주시기 바랍니다.\n- 일부 규정 완화가 가능합니다.\n\n**필요 서류**\n- MSDS (인화점·끓는점·SP163/SP223 확인)\n- DGD\n- UN 인증 포장재 마킹 사진\n\n**Marine Pollutant 동반 시 추가 조치**\n- DGD에 MP를 명시해 주시기 바랍니다.\n- 외부에 Marine Pollutant Mark 부착이 필요합니다.\n- SP335가 적용됩니다.",
+      "tags": [
+        "페인트",
+        "Class 3",
+        "Paint"
+      ]
+    },
+    {
+      "id": "co-1790",
+      "cat": "⚗️ 부식성 (Cl.8)",
+      "q": "UN1790 (불산 / Hydrofluoric Acid) 운송 절차는?",
+      "a": "불산은 고위험 부식성 물질이라 **사전 PRE-CHECK가 필수**입니다. 선적 검토 시 미리 운항팀으로 연락 부탁드립니다.\n\n**분류 / 포장 안내**\n- 농도에 따라 **PG I 또는 PG II**로 분류됩니다.\n- **PTFE 라이닝** 내산 용기 또는 UN 인증 IBC를 사용해 주셔야 합니다.\n- 50% 이상 농도의 경우 PG I (특별 관리 대상)으로 처리됩니다.\n\n**필요 서류 / 라벨**\n- MSDS (영문 + 한글) 모두 준비 부탁드립니다.\n- DGD\n- 외부 라벨 + 응급 처치 카드 부착이 필요합니다.\n- 비상연락처를 함께 명시해 주시면 감사하겠습니다.\n\n**적재 및 격리 안내**\n- Segregation Group **18 (Acids)** — 식품·유기물과는 \"Separated from\" 격리가 필요합니다.\n- 알칼리·시안화물과도 격리해 주셔야 합니다 (반응성).\n- 갑판 적재를 권장드립니다.\n\n**항만 제한 안내**\n- 부산 신항: 특정 부두에서만 가능합니다.\n- 일부 중국 항만은 사전 승인이 필요합니다.\n\n응급 대응 SOP를 사전에 합의해 주셔야 하며, 누출 시 즉시 통제가 가능한 체계가 갖춰져야 합니다.",
+      "tags": [
+        "부식성",
+        "불산",
+        "Hydrofluoric",
+        "PRE-CHECK 필수"
+      ]
+    },
+    {
+      "id": "co-1789",
+      "cat": "⚗️ 부식성 (Cl.8)",
+      "q": "UN1789 (염산 / Hydrochloric Acid) 선적 요건?",
+      "a": "염산은 일반 부식성 물질에 해당하며, 표준 절차로 선적이 가능합니다.\n\n**기본 요건**\n- PG II/III, 농도별로 분류됩니다.\n- UN 인증 IBC 또는 드럼(HDPE 권장)을 사용해 주시기 바랍니다.\n- MSDS와 DGD를 함께 제출 부탁드립니다.\n- **Segregation Group 1 (Acids)** — 알칼리·시안화물과 격리가 필요합니다.\n- 일부 노선의 환적 시에는 추가 승인이 필요할 수 있습니다.\n\n**자주 문의주시는 사항**\n- 농도 37% 이상의 경우 발연 시 추가 안전 조치를 권장드립니다.\n- IBC 사용 시 1년 이내 재인증 여부를 확인 부탁드립니다.\n- 식품 컨테이너와는 \"Separated from\" 격리가 적용됩니다.",
+      "tags": [
+        "부식성",
+        "염산",
+        "Class 8"
+      ]
+    },
+    {
+      "id": "oxi-3378-detail",
+      "cat": "💥 산화/자연발화",
+      "q": "산화성 물질(Class 5) 일반 절차는?",
+      "a": "산화성 물질은 분해온도와 격리 조건을 잘 관리해 주시면 정상 진행이 가능한 화물군입니다.\n\n**Class 분류**\n- **Class 5.1** — 산화성 물질\n- **Class 5.2** — 유기 과산화물\n\n**핵심 위험성**\n- 다른 가연물과 접촉 시 발화 / 폭발 위험이 있습니다.\n- 열·물·산류 접촉 시 분해되어 발화 가능성이 있습니다.\n\n**적재 안내**\n- Class 3 (인화성)과는 \"Separated from\" 격리가 필요합니다.\n- Class 4.x (가연성 고체)와는 \"Away from\" 격리가 필요합니다.\n- 5.2 (유기 과산화물)는 온도 통제가 필요합니다 (특정 SADT 기준 적용).\n\n**필요 서류**\n- MSDS (분해 온도 / SADT 명시)\n- DGD (UN No, Class, PG, 분해온도 부기)\n- 일부 항만은 사전 승인이 필요합니다.\n\n**자사 사례 안내 — UN3378 과탄산나트륨**\n- 발열분해온도 +60°C로 하절기 위험이 증가합니다.\n- 의왕 오봉역 사고(2017.08) 이후 장금/흥아는 금지로 운영하고 있습니다.\n- RFDG(냉동 컨테이너) 진행 시 온도 통제 안정성 확보가 가능한지 일본구간에서 검토 중입니다.\n\n**자사 사례 — UN3377 / UN1942 등**\n- 정책은 별도로 확인이 필요합니다 (대부분 PRE-CHECK 후 결정).",
+      "tags": [
+        "산화성",
+        "Class 5",
+        "분해온도",
+        "SADT"
+      ]
+    },
+    {
+      "id": "gen-marine-decide",
+      "cat": "🌊 해양 오염 물질",
+      "q": "Marine Pollutant(해양오염) 판정 기준은?",
+      "a": "Marine Pollutant 여부는 MSDS 12번 환경 유해성 섹션에서 다음 수치를 확인하시면 판단 가능합니다.\n\n**확인해 주실 수치**\n- **LC50** (Lethal Concentration 50%) — 어류 96h 시험 기준\n- **EC50** (Effect Concentration 50%) — 갑각류 48h, 조류 72h 시험\n- **NOEC** (No Observed Effect Concentration) — 만성 노출 시험\n\n**판정 기준 (IMDG 2.10)**\n- 위 수치 중 **어느 하나라도 0.1 mg/L 이하**일 경우 Marine Pollutant에 해당합니다.\n- 액체 → **UN3082** (Environmentally Hazardous Substance, Liquid, N.O.S.) Class 9\n- 고체 → **UN3077** (Environmentally Hazardous Substance, Solid, N.O.S.) Class 9\n\n**의무 사항 안내**\n- Marine Pollutant Mark를 외부에 부착해 주셔야 합니다.\n- DGD에 \"Marine Pollutant\"를 명시해 주시기 바랍니다.\n- SP274 / SP335가 적용되며, 정확한 성분명을 부기해 주셔야 합니다.\n- 적재는 갑판(데크)을 권장드리며, 누출 시 환경 영향 최소화 및 점검 용이성을 고려한 조치입니다.\n\n* 일부 항만(상해·닝보)은 CAS No. 기반으로 추가 확인이 필요한 점 참고 부탁드립니다.",
+      "tags": [
+        "Marine Pollutant",
+        "환경유해성",
+        "LC50",
+        "Class 9"
+      ]
+    },
+    {
+      "id": "ma-3082",
+      "cat": "🌊 해양 오염 물질",
+      "q": "UN3082 (해양 오염 물질, 액체) 선적 절차는?",
+      "a": "UN3082는 적절한 표기와 서류를 충족하시면 선적이 가능합니다. 아래 사항 참고 부탁드립니다.\n\n**표준 답신 (해외 파트너 대응 시)**\n> \"We would accept your DG application subject to your slot allocation and provided that the DG cargo is properly packed, labeled and documented in accordance with IMO regulations and the laws or regulations in force at the port of shipment, the port of discharge and any scheduled port of call.\"\n\n**필수 확인 사항**\n1. **Marine Pollutant Mark**를 외부에 부착해 주시고 DGD에도 명시 부탁드립니다.\n2. MSDS 상의 정확한 성분이 기재되어 있는지 확인 부탁드립니다.\n3. 일반 화학물질에 Marine Pollutant 표기가 추가되는 경우, Class 9 신고가 필수입니다.\n4. IMDG 2.10 / SP274 (정확한 성분명 부기)에 따라 처리됩니다.\n5. **SHA / NGB 항만의 local restriction을 추가로 확인해 주시기 바랍니다** (CAS No. 기준).\n6. 본 금지 리스트에 없는 application은 자동 취소되니, 사전 확인 부탁드립니다.\n\n**적재 안내**\n- 갑판 적재를 권장드립니다 (누출 시 환경 보호 + 점검 용이성 확보).\n- Stowage Category A/B에 해당합니다.",
+      "tags": [
+        "해양오염",
+        "Marine Pollutant",
+        "UN3082"
+      ]
+    },
+    {
+      "id": "ma-3077",
+      "cat": "🌊 해양 오염 물질",
+      "q": "UN3077 (해양 오염 물질, 고체) 절차는?",
+      "a": "UN3077은 UN3082(액체)와 동일한 원칙으로 처리하며, Marine Pollutant 표기와 서류만 충족하시면 선적 가능합니다.\n\n**주요 확인 사항**\n- 포장의 견고성을 확인해 주시기 바랍니다 (포장재 내수성 포함).\n- DGD에 정확한 PSN과 MP를 함께 부기 부탁드립니다.\n- 환경 영향 평가 보고 시에는 갑판 위치를 우선해 적재합니다.\n\n**자주 문의주시는 사례**\n- CLASS 9 / UN3077 / PG III 일반 acceptance는 슬롯 확보 + 표준 IMO 표기를 충족하시면 가능합니다.\n- 일부 노선(특히 러시아 VVO·SHA·NGB)은 local restriction을 추가로 확인 부탁드립니다.\n- Reefer 컨테이너 사용도 가능합니다 (RFDG 진행 시 비용은 별도입니다).",
+      "tags": [
+        "해양오염",
+        "Marine Pollutant",
+        "Solid",
+        "UN3077"
+      ]
+    },
+    {
+      "id": "fl-1950",
+      "cat": "💨 에어로졸 / 가스",
+      "q": "UN1950 (에어로졸) 선적 시 주의사항은?",
+      "a": "에어로졸은 인화성 여부에 따라 분류가 달라지며, 포장·적재 조건만 충족하시면 정상 선적이 가능합니다.\n\n**분류 구분**\n- **인화성 에어로졸 (Class 2.1)** — 화염 분사 시험 양성\n- **비인화성 에어로졸 (Class 2.2)** — 음성\n\n**포장 권장 사항**\n- 캔당 1L 이하 + 박스당 30kg 이하를 권장드립니다.\n- UN 인증 포장재를 사용하시고 누설 시험을 완료해 주시기 바랍니다.\n- 안전 밸브 작동 여부도 함께 확인 부탁드립니다.\n\n**적재 시 유의 사항**\n- **온도 50°C 이상 노출은 피해 주시기 바랍니다** → 데크 적재 시 위치 제한이 있을 수 있습니다.\n- 직사광선과 충격을 피해 주시기 바랍니다.\n\n**필요 서류**\n- MSDS + DGD\n- 누설 시험 인증서 (요청 시)\n\n**LQ 적용**\n- 캔당 1L 이하이신 경우 LQ 적용이 가능합니다 (외부 마크 부착 필요).\n\n**관련 Remark**\n- SP63, SP190 (소형 에어로졸 일반 조건)\n- SP277 (특정 가스 함유 시)",
+      "tags": [
+        "에어로졸",
+        "Aerosol",
+        "Class 2"
+      ]
+    },
+    {
+      "id": "fx-flexitank",
+      "cat": "🧴 Flexitank / IBC",
+      "q": "Flexitank (플렉시 탱크) 선적 시 규정은?",
+      "a": "Flexitank 화물은 COA 권장 절차와 자사 적재 규정을 준수하시면 선적이 가능합니다.\n\n**표준 답신 (영문 파트너 대응)**\n> \"The shipment is acceptable provided that all documents reflect actual condition of container/cargo/flexi tank, and the shipper shall comply with the COA Recommended Code of Practice for the Manufacture of Flexi tanks and Operation of Flexi tank/Container Combinations.\"\n\n**필수 요건 안내**\n1. **20' Dry Van 컨테이너에 Flexitank 1개**로 진행해 주시기 바랍니다 (다중 적입은 불가합니다).\n2. **갑판 적재만 가능합니다** (Underdeck stowage는 금지입니다).\n3. **Booking List / CBF에 \"flexi-tank\"를 표기**해 주시기 바랍니다.\n4. 선박 Stowage 제한으로 Restow가 발생할 경우, 비용은 box operator 측 부담입니다.\n\n**Flexitank 자체 요건**\n- COA Test Criteria를 충족하는 설계여야 합니다.\n- 제조사 권장 적입 절차를 준수해 주시기 바랍니다.\n- 적입 후 누설 시험을 완료해 주시면 감사하겠습니다.\n\n**선적이 어려운 사례 (참고)**\n다음 케이스는 안전·운영상의 사유로 선적이 어려우니 양해 부탁드립니다.\n- 40ft 등 23ft 이상 컨테이너 사용 (20ft만 가능)\n- Underdeck 적재 요청\n- 다중 flexitank (2개 이상)\n- 식품·의약품 등 청결도 요구 화물과 동일 위치 적재",
+      "tags": [
+        "Flexitank",
+        "플렉시탱크",
+        "Underdeck 금지",
+        "20ft 1개"
+      ]
+    },
+    {
+      "id": "rf-rfdg",
+      "cat": "❄️ RFDG (Reefer DG)",
+      "q": "RFDG (Reefer DG) 진행 시 요건은?",
+      "a": "RFDG는 Reefer 컨테이너에 위험물을 적재하여 온도 통제로 안정성을 확보하는 방식입니다.\n\n**진행 대상 화물**\n- 위험물 취급 배터리(UN3480/3481 위험물 건)는 **RFDG가 필수**입니다.\n- 일부 산화성 물질(UN3378 검토 중)\n- 온도 통제로 안정성 확보가 필요한 화물\n\n**닝보(NGB) MSA 규정 안내**\n> Ningbo MSA requires temperature monitoring records at **4-6 hour intervals** for RFDG on board (including through cargo).\n\n- 본선 적재 후 **최소 6시간 간격**으로 온도 기록을 남겨주셔야 합니다.\n- 선장 책임 하에 모니터링 + 기록이 유지됩니다.\n- 닝보 출입항 시 기록 제출을 요구할 수 있습니다.\n\n**기타 RFDG 진행 사항**\n- 설정 온도를 사전 확정하여 MSDS / DGD에 기재 부탁드립니다.\n- 전원은 24시간 유지해 주셔야 하며, 양적하 시에도 가능한 한 연결 상태를 유지해 주시기 바랍니다.\n- 알람 발생 시 선장과 본사 운항팀 간 대응 절차를 사전 합의해 주시면 좋습니다.\n\n**RFDG 요금**\n- Reefer 추가 비용이 별도로 발생합니다 (운임 + 모니터링 비용).\n- 환적 시 전원 재연결 비용이 추가될 수 있습니다.",
+      "tags": [
+        "RFDG",
+        "Reefer DG",
+        "닝보",
+        "온도 모니터링"
+      ]
+    },
+    {
+      "id": "container-spec",
+      "cat": "📐 OOG / Heavy / Coil",
+      "q": "장금상선 컨테이너 종류별 규격(스펙)은?",
+      "a": "Sinokor 공식 컨테이너 규격을 한눈에 확인하실 수 있도록 정리해 드렸습니다. (출처: sinokor.co.kr/kr/Container.html)\n\n| Type | 종류 | 외부 L×W×H (mm) | 내부 L×W×H (mm) | MGW (kg) | Tare (kg) | Payload (kg) | 용적 (m³) |\n|---|---|---|---|---|---|---|---|\n| **20DC** | Dry | 6058×2438×2591 | 5898×2352×2393 | 30,480 | 2,180 | 28,300 | 33.2 |\n| **40DC** | Dry | 12192×2438×2591 | 12032×2352×2393 | 32,500 | 3,550 | 28,950 | 67.8 |\n| **40HC** | Dry HighCube | 12192×2438×2896 | 12032×2352×2698 | 32,500 | 3,700 | 28,800 | 76.4 |\n| **20RF** | Reefer | 6058×2438×2591 | 5454×2290×2266 | 30,480 | 2,800 | 27,680 | 28.3 |\n| **40HRF** | Reefer HighCube | 12192×2438×2896 | 11590×2290×2547.5 | 35,000 | 4,460 | 30,540 | 67.6 |\n| **20OT** | Open Top | 6058×2438×2591 | 5898×2352×2348 | 30,480 | 2,350 | 28,130 | 32.5 |\n| **40OT** | Open Top | 12192×2438×2591 | 12032×2352×2393 | 30,480 | 3,740 | 26,740 | 65.9 |\n| **20FR** | Flat Rack | 6058×2438×2591 | 5644×2198×2231 | 34,000 | 2,800 | 31,200 | - |\n| **40FR** | Flat Rack | 12192×2438×2591 | 11658×2224×1953 | 45,000 | 4,950 | 40,050 | - |\n| **SUPER RACK** | 확장 FR | 12202×2438×2896~4115* | 12172×2374×2264~3483* | 55,800 | 5,800 | 50,000 | - |\n| **SUPERCON** | 확장 FR | 12192×2438×2896~4115* | 12172×2374×2264~3483* | 59,980 | 5,980 | 54,000 | - |\n\n**도어 개구부 안내 (Door Opening, W×H mm)**\n- 20DC / 40DC / 20OT / 40OT: 2340×2280\n- 40HC: 2340×2585\n- 20RF: 2294×2224\n- 40HRF: 2294×2505.5\n- FR / Super Rack / Supercon: 도어 없음 (개방형)\n\n**활용 시 참고 사항**\n- 위험물 적재 시 **Payload 한도를 엄수해 주시고 VGM 신고를 정확히** 부탁드립니다.\n- **40HC** : 부피 화물 최대 (76.4m³)이므로 부피가 큰 화물에 권장드립니다.\n- **20RF** : RFDG 진행 시 사용하며, 용적이 28.3m³로 적은 편입니다.\n- **40HRF** : Payload 30,540kg — DC 대비 약 1.7톤 적습니다 (단열재·기계실 차지).\n- **40FR** : 도어 없는 화물 / 길이 11.66m 이내 화물에 적합합니다.\n- **SUPERCON** : 최대 중량(54톤) — Heavy Cargo / Coil / 강재 운송에 활용하실 수 있습니다.\n- **확장형 FR** : 높이 4.1m까지 가능해 Crane·발전기 등 대형 화물에 적합합니다.\n\n* 표기: 확장형은 확장 전/후 범위이며, 일반 운송 시 확장 전 기준이고 화물 특성에 따라 확장 운영합니다.\n\n📊 엑셀 다운로드: [container-spec.xlsx](./container-spec.xlsx)",
+      "tags": [
+        "컨테이너 스펙",
+        "규격",
+        "20GP",
+        "40GP",
+        "40HC",
+        "Reefer",
+        "FR",
+        "OT",
+        "Supercon",
+        "Sinokor"
+      ]
+    },
+    {
+      "id": "oog-fr-ot",
+      "cat": "📐 OOG / Heavy / Coil",
+      "q": "OOG 화물 (FR/OT 컨테이너) 진행 시 확인사항은?",
+      "a": "OOG(Out of Gauge) 화물은 컨테이너 규격을 초과하는 화물로, 사전 도면·중량 검토가 필요합니다. 진행 절차 아래와 같이 안내드립니다.\n\n**컨테이너 종류 (장금상선 공식 스펙)**\n- **20FR** (Flat Rack) — 내부 5644×2198×2231mm / MGW 34,000kg / Payload 31,200kg\n- **40FR** (Flat Rack) — 내부 11658×2224×1953mm / MGW 45,000kg / Payload 40,050kg\n- **20OT** (Open Top) — 내부 5898×2352×2348mm / MGW 30,480kg / Payload 28,130kg\n- **40OT** (Open Top) — 내부 12032×2352×2393mm / MGW 30,480kg / Payload 26,740kg\n- **SUPER RACK** (확장형) — Payload 50,000kg, 높이 2896~4115mm 확장 가능\n- **SUPERCON** (확장형) — Payload **54,000kg** (최대 중량 화물용)\n\n**허용 적재 한계 참고 자료**\n- 별첨 PDF: allowable load-flat rack - 22FR / allow load-40FR\n- 초과 시 LOI(Letter of Indemnity) 또는 특수 승인이 필요합니다.\n\n**터미널별 임계중량 확인 부탁드립니다**\n- BPT / 신선대 / 감만 / HBCT 등 터미널별 임계중량과 와이어 작업 가능 여부를 사전에 확인해 주시기 바랍니다.\n- 별첨 안내문을 참고하시면 도움이 되실 듯합니다.\n\n**필요 서류**\n- 화물 도면 (정면·측면·평면, 치수 기재)\n- 무게 / 무게 중심 (Center of Gravity)\n- 래싱 / 쇼링 계획 (Lashing Plan)\n- LOI (필요 시)\n\n**진행 절차 안내**\n1. OOG Check List (장금상선 양식) 작성 부탁드립니다.\n2. 운항팀 사전 승인을 받아 주시기 바랍니다.\n3. 부킹 확정\n4. 출고 24h 전 최종 도면 확정 부탁드립니다.\n\n📊 전체 스펙은 별첨 [container-spec.xlsx](./container-spec.xlsx)를 참고해 주시기 바랍니다.",
+      "tags": [
+        "OOG",
+        "FR",
+        "OT",
+        "Flat Rack",
+        "Open Top",
+        "Heavy Cargo",
+        "Super Rack",
+        "Supercon"
+      ]
+    },
+    {
+      "id": "oog-coil",
+      "cat": "📐 OOG / Heavy / Coil",
+      "q": "Coil(코일) / Heavy Cargo / Steel Pipe 선적 가이드라인?",
+      "a": "Coil 등 강재 화물은 별도 가이드라인이 적용됩니다. 적재 무게·중심·래싱 계획을 사전에 검토해 주시기 바랍니다.\n\n**참조 문서 (사내 자료)**\n- COIL Shipping Guideline (ENG)\n- COIL 선적 Guideline (한국어)\n- General Guide on Coil Shipment\n- Guide for Heavy & risky cargo\n- Guideline for Steel product shipment (HMM 기준 참고)\n- Heavy cargo 및 데미지 고위험 내품 진행 시 가이드\n- LOI - HEAVY CARGOES (SKR) 양식\n- Quick Handling Lashing Guide\n\n**핵심 확인 사항**\n1. 컨테이너 1대 적재 무게 한도를 확인 부탁드립니다 (20GP: 28톤 / 40GP: 30톤 권장).\n2. 무게 중심은 컨테이너 중심선에 맞춰 주시기 바랍니다.\n3. **Cradle (코일 받침대)** 사용 — 적정 강도가 확보되어야 합니다.\n4. Lashing — 코일의 양옆 + 전후 고정을 부탁드립니다.\n5. 데미지 고위험 화물은 LOI 징구가 필요합니다.\n\n**Steel Pipe 진행 시 안내**\n- 길이 / 직경 / 다발 단위를 사전 확인 부탁드립니다.\n- 끝단 손상 방지를 위한 패딩 처리를 부탁드립니다.\n- 별첨 \"장금 PIPE.xls\", \"흥아 PIPE.xls\" 양식을 참고해 주시면 좋습니다.\n\n코일·파이프·강재류는 OOG가 아니더라도 운항팀의 사전 검토가 필요한 점 양해 부탁드립니다.",
+      "tags": [
+        "Coil",
+        "코일",
+        "Heavy Cargo",
+        "Steel Pipe",
+        "LOI"
+      ]
+    },
+    {
+      "id": "proc-precheck",
+      "cat": "📋 절차 / PRE-CHECK",
+      "q": "DG PRE-CHECK 절차는 어떻게 되나요?",
+      "a": "DG PRE-CHECK는 부킹 확정 전 위험물 적재 가능 여부를 사전 검토하는 절차입니다. 선적 14일 전까지 요청 부탁드립니다 (긴급 건은 별도 협의).\n\n**1단계: 사전 준비 서류**\n- MSDS (영문 + 한글)\n- 위험물 신고서(DGD) 또는 임시 정보 (UN No, Class, PG, 수량)\n- UN 38.3 시험성적서 (배터리류)\n- 포장재 UN 마킹 사진\n\n**2단계: 정보 입력**\n- 운항팀에서 직접 대응하고 있습니다 (고지팀을 거치지 않습니다).\n- 웹 양식 또는 메일로 PRE-CHECK를 요청해 주시기 바랍니다.\n- 항만/노선별로 각각 확인이 필요합니다 (출발지·도착지·환적지).\n\n**3단계: 운항팀 검토**\n- 통상 **1~3 영업일** 내로 회신드리고 있습니다.\n- 동일 화주의 반복 화물은 일괄 승인이 가능합니다.\n- 거절 사유는 명시하여 회신드리오니 참고해 주시기 바랍니다.\n\n**4단계: 부킹 확정**\n- PRE-CHECK 승인 후 부킹을 진행 부탁드립니다.\n- **승인 없는 적입은 거절될 수 있으며**, 현장 발견 시 비용은 화주께서 부담하시게 되니 사전 절차를 꼭 지켜주시기 바랍니다.\n\n**개선 진행 사항 (2025.08 기준)**\n- 스페셜 전담파트 운영을 검토 중입니다.\n- 부킹 전 PRE-CHECK와 어플리케이션 최종 승인 사이의 업무 간소화를 추진하고 있습니다.\n- 화주께 실시간 승인 상태를 안내드리는 TAG 시스템 도입도 검토 중입니다.",
+      "tags": [
+        "PRE-CHECK",
+        "절차",
+        "승인",
+        "운항팀"
+      ]
+    },
+    {
+      "id": "gen-msds-sections",
+      "cat": "📄 서류 (MSDS/DGD)",
+      "q": "MSDS의 각 섹션은 무엇을 의미하나요?",
+      "a": "MSDS는 16개 섹션으로 구성되어 있으며, 위험물 판정에는 아래 섹션들을 주로 참조하고 있습니다.\n\n**자주 참조하는 섹션 안내**\n- **1번** — 제품 식별 (제품명·제조사·CAS No.)\n- **2번** — 유해성 분류 (GHS, 신호어)\n- **3번** — 성분/조성 (구성성분 · CAS No.)\n- **9번** — 물리·화학적 성질 (**Flash Point**, 끓는점, 증기압)\n- **12번** — 환경 유해성 (**LC50, EC50, NOEC** — Marine Pollutant 판정)\n- **14번** — **운송 정보** ⭐ (UN No., Proper Shipping Name, Class, PG, EmS, Marine Pollutant)\n\n**확인 부탁드리는 사항**\n- 14번에 운송방식별(IMDG/IATA/ADR) UN번호가 다르게 기재되어 있는 경우, 해상 운송은 **IMDG 기준**으로 판단합니다.\n- 14번이 \"Not regulated\"로 표기되어 있더라도 9번 인화점과 12번 독성을 한 번 더 살펴봐 주시기 바랍니다.\n- 한글·영문 MSDS 모두 확보해 두시면 출하지 세관 요청 시 유연하게 대응하실 수 있습니다.\n\n**유효성**\n- MSDS는 **3년 이내 최신본**이 필요하며, 16개 섹션이 모두 작성된 정상 문서여야 합니다.",
+      "tags": [
+        "MSDS",
+        "GHS",
+        "섹션 가이드"
+      ]
+    },
+    {
+      "id": "doc-dgd",
+      "cat": "📄 서류 (MSDS/DGD)",
+      "q": "DGD (위험물 신고서) 작성 시 필수 항목은?",
+      "a": "DGD 작성 시 아래 항목을 빠짐없이 기재해 주시면 신속한 검토가 가능합니다.\n\n**필수 기재 항목**\n1. **UN No.** (4자리)\n2. **PSN** (Proper Shipping Name) — IMDG Dangerous Goods List 기준 정확히\n3. **Class / Sub-class** (예: 3 / 8 / 5.1 / 9)\n4. **Packing Group** (I / II / III 또는 N/A)\n5. **Marine Pollutant 여부** (Y/N + 표기)\n6. **EmS** (Emergency Schedule, F-x / S-x)\n7. **Net / Gross 중량 (kg)**\n8. **포장 형태 + 수량** (예: 200L Drum × 4)\n9. **송하인 / 수하인 정보**\n10. **선적 컨테이너 정보** (Container No., Seal No.)\n11. **서명 / 날인** (송하인 책임자)\n\n**자주 발생하는 작성 오류**\n- PSN 약자 사용 (예: \"Lithium Battery\" → 정확히 \"LITHIUM ION BATTERIES\")\n- PG 누락 (N/A인 경우도 명시 부탁드립니다)\n- Marine Pollutant Y/N 미기재\n- 송하인 서명 누락\n\n**제출 시점 안내**\n- 부킹 확정 후 **출고 48h 전**까지 사전 송부 부탁드립니다.\n- VGM 신고와는 별도로 진행됩니다.\n\nDGD는 1건당 1 UN 번호가 원칙이며, 복수 UN인 경우 별도 line을 추가해 주시면 됩니다.",
+      "tags": [
+        "DGD",
+        "위험물 신고서",
+        "서류",
+        "작성 가이드"
+      ]
+    },
+    {
+      "id": "doc-acceptance",
+      "cat": "📄 서류 (MSDS/DGD)",
+      "q": "위험물 application 표준 회신 문구는?",
+      "a": "해외 거래선·파트너 응대 시 사용하는 표준 답신 문구를 참고용으로 안내드립니다. 상황에 맞춰 활용해 주시면 도움이 되실 듯합니다.\n\n**Acceptance (수락 답신)**\n> \"Dear Partner,\n> \n> We would accept your DG application subject to your slot allocation and provided that the DG cargo is properly packed, labeled and documented in accordance with IMO regulations and the laws or regulations in force at the port of shipment, the port of discharge and any scheduled port of call.\n> \n> Please note that it is the box operator's responsibility to check and ensure whether the DG cargo obtains all the necessary approvals required by IMO regulations and the above-mentioned laws or regulations prior the DG cargo being loaded on board our vessel, in failing which the box operator shall indemnify and hold the vessel operator harmless in respect of any liability, loss, damage and expenses of whatsoever nature which the vessel operator may sustain by reason of such failure.\n> \n> * Any extra cost may occur when it re-handles at any port because of lack of base cargo or restricted space for DG cargo, it should be under the box operator's account.\n> * You also have to check SHA/NGB port local restriction especially CAS NO.\n> * All applications not followed by our prohibited item list will be cancelled even we accept as below.\"\n\n**Flexitank 표준 답신**\n> \"The shipment is acceptable and provided that all the documents reflect actual condition of container/cargo/flexi tank and confirmation that the shipper warrants and agrees that he shall comply in all respects with the COA Recommended Code of Practice for the Manufacture of Flexi tanks and Operation of Flexi tank/Container Combinations and Flexitank manufacturer recommendations for stowage, handling and care of the Flexi tank(s), that the Flexitank design shall comply with the Flexitank Test Criteria and a maximum of one Flexi tank shall be stuffed in a 20' dry-van container.\n> \n> Reminder:\n> - Underdeck stowage is prohibited\n> - Please put either 'flexi-tank' as remarks on the booking list/CBF\n> - Restow, if applicable due to vessel's stowage restriction, shall be under box operator's account\"\n\n**Reject (거절 답신)**\n> \"We are sorry to inform you that the subject cargo cannot be accepted on our vessels due to [reason: e.g., not approved manufacturer / on prohibited list / SP188 not applicable].\"",
+      "tags": [
+        "응대 문구",
+        "Acceptance",
+        "Reject",
+        "표준 답신",
+        "영문"
+      ]
+    },
+    {
+      "id": "bl-manifest-dg",
+      "cat": "📄 서류 (MSDS/DGD)",
+      "q": "B/L과 Manifest에 위험물 정보 기재 방법은?",
+      "a": "B/L과 Manifest 위험물 기재는 IMDG 5.4.1을 기준으로 작성됩니다.\n\n**B/L (Bill of Lading) 필수 항목 (해상 운송)**\n1. UN No.\n2. PSN (Proper Shipping Name)\n3. Class / Sub-class\n4. Packing Group\n5. Net / Gross 중량\n6. 포장 수량 (예: 200L Drum × 4)\n7. Marine Pollutant 여부\n8. EmS 코드\n9. Flash Point (인화성 액체)\n10. \"Limited Quantity\" 표기 (LQ 적용 시)\n\n**기재 형식 예시**\n> UN1170 ETHANOL SOLUTION, 3, II, 800L (4 × 200L Steel Drum), Flash Point 13°C, EmS F-E S-D\n\n**Manifest (적하목록) 안내**\n- 항만 당국 / 세관 / 본선 적재 계획용입니다.\n- B/L 정보 + Stowage 위치 + 컨테이너 번호가 포함됩니다.\n- 위험물은 별도의 DG Manifest(선장용)도 작성됩니다.\n\n**복수 UN번호 (한 컨테이너 내)**\n- 각 UN별로 별도 line을 작성해 주시기 바랍니다.\n- 격리 호환성을 확인 후 적입해 주시기 바랍니다.\n- 컨테이너 전체 위험물 총 수량을 표기해 주시면 좋습니다.\n\n**자주 발생하는 오류**\n- PSN 약어 사용 → IMDG 정확 명칭 필요\n- PG 누락 (N/A인 경우도 \"N/A\" 명시 부탁드립니다)\n- Marine Pollutant Y/N 미기재\n- EmS 코드 미기재 → 본선 응급 대응이 곤란해질 수 있습니다",
+      "tags": [
+        "B/L",
+        "Bill of Lading",
+        "Manifest",
+        "IMDG 5.4.1"
+      ]
+    },
+    {
+      "id": "vgm-dg",
+      "cat": "📄 서류 (MSDS/DGD)",
+      "q": "VGM(검증 중량 신고)과 위험물 신고는 어떻게 다른가요?",
+      "a": "VGM(Verified Gross Mass)은 컨테이너 + 화물 + 포장의 총 중량을 의미하며, 위험물 신고(DGD)와는 별도로 진행됩니다.\n\n**SOLAS 협약 (2016년 이후)**\n- 출항 24시간 전 송하인이 캐리어에 신고하실 의무가 있습니다.\n- 미신고 시 적재가 거부될 수 있는 점 참고 부탁드립니다.\n\n**DGD vs VGM 비교**\n| 구분 | DGD | VGM |\n|---|---|---|\n| 목적 | 위험물 정보 | 컨테이너 중량 확인 |\n| 기준 | IMDG Code | SOLAS Ch.VI Reg.2 |\n| 작성 | 송하인 + 포워더 | 송하인 |\n| 시점 | 부킹 + 출고 전 | 출항 24h 전 |\n| 정보 | UN, Class, PG, 수량, 격리 | Net+Tare+포장 중량 |\n\n**위험물 컨테이너 VGM 특이사항 안내**\n- 무게 정확성이 더욱 중요합니다 (Stowage 계획 / 격리 위치 결정).\n- RFDG 컨테이너 Tare(자체 중량)는 일반보다 무거운 편입니다 (3톤 내외).\n- LOI 화물(Coil 등)은 정확한 무게가 특히 중요합니다.\n\n**측정 방식**\n- **Method 1**: 적입 후 컨테이너 전체를 계량합니다.\n- **Method 2**: 화물·포장을 각각 계량 후 컨테이너 Tare를 합산합니다.\n\n**누락·부정확 시 영향**\n- 적재가 거부될 수 있습니다.\n- 추후 적발 시 모든 비용이 송하인 부담으로 처리됩니다.\n- 사고 발생 시 책임이 가중될 수 있으니 정확한 신고를 부탁드립니다.",
+      "tags": [
+        "VGM",
+        "Verified Gross Mass",
+        "SOLAS",
+        "중량 신고"
+      ]
+    },
+    {
+      "id": "stow-seg",
+      "cat": "📦 적재 / 격리",
+      "q": "적재 / 격리 규정(Stowage & Segregation)은?",
+      "a": "위험물의 적재 및 격리는 IMDG Code 7장 기준을 따르고 있습니다. 아래 내용을 참고해 주시면 도움이 되실 듯합니다.\n\n**Stowage Category 분류**\n- **A** — 데크 / 언더데크 모두 가능\n- **B / C** — 일반 적재\n- **D** — 갑판 적재만 가능\n- **E** — 갑판 적재 (관계자만 접근)\n\n**Segregation (격리) — IMDG 7.2.4**\n| 코드 | 의미 |\n|---|---|\n| 1 | \"Away from\" — 같은 컨테이너 적재 불가, 최소 3m |\n| 2 | \"Separated from\" — 1 컨테이너 거리 |\n| 3 | \"Separated by complete compartment\" — 격벽 분리 |\n| 4 | \"Separated longitudinally by intervening complete compartment\" — 종방향 격벽 + 거리 |\n| X | 같은 컨테이너 가능 |\n\n**Segregation Group**\n- Group 1: Acids (산)\n- Group 18: Other Strong Acids (강산 — HF 등)\n- Group 11: Bases (염기)\n- 식품·식수와의 격리는 별도 규정이 있습니다 (IMDG 7.3.4).\n\n**자주 문의주시는 사례**\n- CLASS 9 + CLASS 4.1 혼적은 격리 문제가 없어 같은 컨테이너에 적재 가능합니다.\n- CLASS 8 산 + CLASS 8 염기는 Segregation Group 1 vs 11로 \"Separated from\" 격리가 적용됩니다.\n- 인화성 + 산화성 (Class 3 + 5.1)도 \"Separated from\" 격리가 필요합니다.",
+      "tags": [
+        "적재",
+        "격리",
+        "Stowage",
+        "Segregation",
+        "IMDG 7장"
+      ]
+    },
+    {
+      "id": "port-shanghai",
+      "cat": "🏗️ 항만별 제한",
+      "q": "상해(SHA) / 닝보(NGB) 항만 위험물 추가 제한은?",
+      "a": "상해(SHA)와 닝보(NGB) 항만은 CAS No. 기준으로 별도 제한 리스트를 운영하고 있습니다. 사전 조회를 부탁드립니다.\n\n**확인 절차**\n1. MSDS에서 주 성분 CAS No.를 확인 부탁드립니다.\n2. 상해항·닝보항 금지·제한 리스트를 조회해 주시기 바랍니다.\n3. 매월 업데이트되어 변동이 잦으니 최신본 확인을 권장드립니다.\n\n**참조 사내 자료**\n- SHA DG prohibit Y2021 (CAS NO.) 조회\n- NGB DG prohibit Y2021 (CAS NO.) 조회\n- BANNED AND RESTRICTED UNNO, CAS NUMBER LIST (NINGBO / SHANGHAI)\n- 상해 The maximum acceptable units of DGs at shanghai terminals\n- 상해 외고교 위험물 장치가능수량\n\n**NGB 특이사항**\n- **RFDG 6시간 간격 온도 모니터링 의무** (NGB MSA 규정)\n- 통과 화물(through cargo)도 동일하게 적용됩니다.\n\n**SHA 특이사항**\n- 외고교 / 양산항별로 장치 가능 수량 제한이 있습니다.\n- Marine Pollutant 추가 신고가 필요합니다.\n\n화주께 정확한 CAS No.를 요청하신 후 조회하시면 가장 정확한 검토가 가능합니다.",
+      "tags": [
+        "상해",
+        "닝보",
+        "CAS No",
+        "항만 제한",
+        "SHA",
+        "NGB"
+      ]
+    },
+    {
+      "id": "port-others",
+      "cat": "🏗️ 항만별 제한",
+      "q": "기타 중국 항만 / 일본 / 동남아 위험물 제한은?",
+      "a": "지역별 항만 제한 자료는 사내 \"포트별 제한규정\" 폴더에 보관되어 있습니다. 아래 자료를 참고해 주시면 도움이 되실 듯합니다.\n\n**중국**\n- **칭다오(TAO)**: PROHIBIT & PICK UP FROM VSL DIRECTLY 리스트\n- **천진(TSN)**: 금지 위험물 리스트 + 취급 가능 위험물(Class 2-6)\n- **샤먼(XMN)**: DG Limitation Table 危险品作业表 (2024.01)\n- **장가항(ZJG)**: 위험물 하역 가능 리스트\n- **남경/난강(NKG)**: 위험물 하역 불가 리스트 (2019)\n- **셔코우(SHK)**: 招商局港口深圳西部港区危险货物集装箱操作分类表\n- **대련(DLC)**: 剧毒及易制爆化学品名录\n- **연태 / 영구**: 별도 확인 부탁드립니다.\n\n**일본**\n- JP-DG RESTRICTION CHECK (2024.02)를 참조해 주시기 바랍니다.\n- 도쿄·요코하마·고베·오사카·나고야 별도 항만 규정을 확인해 주시면 좋습니다.\n\n**동남아 / 기타**\n- 말레이시아: Prohibited DG Cargo List\n- 홍콩(HK): 위험물 하역 제한 PROHIBITED DG IN HK (2024.01)\n- 인천(BDCGP) restricted DG list\n- UTCT (DG Regulations 2023)\n\n**조회 우선순위 안내**\n1. 출항지 + 환적지 + 도착지를 모두 확인 부탁드립니다.\n2. CAS No. 기반 조회를 권장드립니다 (특히 중국).\n3. 변동이 잦으므로 분기별 갱신본을 확인해 주시면 좋습니다.",
+      "tags": [
+        "항만",
+        "중국",
+        "일본",
+        "동남아",
+        "CAS No"
+      ]
+    },
+    {
+      "id": "car-compare",
+      "cat": "🚢 선사별 비교",
+      "q": "타 선사의 위험물 정책은 어디서 확인하나요?",
+      "a": "타 선사 정책은 본 사이트 \"다른 선사 규정\" 탭에서 PDF/XLS로 통합 조회하실 수 있습니다.\n\n**선사별 금지 리스트 (사내 보유)**\n| 선사 | 자료 |\n|---|---|\n| HMM | HMM2023, HMM2024 Prohibited and Restricted List |\n| KMTC | DG in-house policy (2026.01) + Restricted Item & Special Stowage List |\n| 동진 | (DONGJIN) Updated Prohibited DG List 2024.06.28 |\n| CK Line | DG Prohibited / Restricted list (2024.06.28) + DG Prohibition List XLSX |\n| 양밍 | DG Prohibited list R20 |\n| TSL | Restricted-Prohibited DG 2026 Rev.29 |\n| 에버그린 | DG 제한 리스트 |\n| 팬오션 | PanOcean DG prohibition list (2023.03) |\n| 남성 / 동영 (NSS&DYS) | DG prohibition list 2024.06.28 |\n| SML | DG Prohibited/Restricted Cargo List 검토 |\n| MEXAMXSMX | contact info OPR code DG list (2025.07) |\n\n**핵심 비교 사례 안내**\n- **숯 (UN1361)** : 장금/흥아/KMTC/머스크 금지 / 일부 해외선사 허용\n- **리튬메탈 (3090/3091)** : 국적선사 대부분 금지 / 해외선사 일부 허용\n- **과탄산나트륨 (3378)** : 장금/흥아/완하이/TSL 금지 / HMM·머스크 허용\n\n정책 변경이 잦으므로 \"다른 선사 규정\" 탭의 PDF 최신본을 직접 확인하시는 것을 권장드립니다.",
+      "tags": [
+        "선사 비교",
+        "타사",
+        "HMM",
+        "KMTC"
+      ]
+    },
+    {
+      "id": "sp-lq",
+      "cat": "⚠️ 특별 규정 / LQ",
+      "q": "Limited Quantity (LQ) / Excepted Quantity (EQ) 적용은?",
+      "a": "소량 포장 위험물은 LQ 또는 EQ 적용을 통해 일부 규정 완화가 가능합니다.\n\n**LQ (Limited Quantity)**\n- 소량 포장 기준입니다 (예: 5L 이하 액체, 5kg 이하 고체).\n- 외부 박스에 **LQ 마크**를 부착해 주시면 일부 규정이 완화됩니다.\n- DGD 작성 의무는 유지되며, 간소화는 가능합니다.\n- 적용 한도는 IMDG Code Column 7a에서 확인 부탁드립니다.\n\n**EQ (Excepted Quantity)**\n- LQ보다 더 소량 기준입니다 (보통 30mL 이하).\n- **EQ 마크** 부착 시 거의 일반 화물로 취급됩니다.\n- MSDS는 보유를 권장드립니다.\n- 적용은 IMDG Code Column 7b를 참조해 주시기 바랍니다.\n\n**SP188 (소형 배터리)**\n- 리튬이온: 100Wh 이하 / 셀 20Wh 이하\n- 리튬메탈: 2g 이하 / 셀 1g 이하\n- UN 38.3 시험 통과 시 비위험물 취급이 가능합니다.\n- ⚠️ 장금/흥아는 3090/3091은 SP188 적용 건도 금지하고 있는 점 양해 부탁드립니다 (사고 사례 기반).\n\n**자주 문의주시는 사례**\n- 모바일 배터리 36.96 Wh → SP188 적용 → NON-DG DRY 가능합니다.\n- 노트북 배터리 100Wh 초과 → 위험물로 처리됩니다.\n- 카메라 배터리 일반: SP188이 적용됩니다.",
+      "tags": [
+        "LQ",
+        "EQ",
+        "SP188",
+        "소형 배터리",
+        "Limited Quantity"
+      ]
+    },
+    {
+      "id": "ma-1044",
+      "cat": "⚠️ 특별 규정 / LQ",
+      "q": "UN1044 (소화기) 선적 가능한가요?",
+      "a": "소화기는 비교적 간단한 절차로 선적이 가능합니다.\n\n**주요 조건**\n- Class 2.2 (비인화성 압축가스)에 해당합니다.\n- 작동 압력 확인과 안전핀 고정을 부탁드립니다.\n- SP225 적용이 가능합니다 (LQ 완화).\n- 일반 적재가 가능하나 충격·낙하 방지에 유의해 주시기 바랍니다.\n- 외부 손상이나 누설이 있는 경우 선적이 어려우니 양해 바랍니다.",
+      "tags": [
+        "소화기",
+        "Class 2.2"
+      ]
+    },
+    {
+      "id": "un38-3",
+      "cat": "📘 IMDG 전문지식",
+      "q": "UN 38.3 시험은 무엇이고 어떤 항목으로 구성되나요?",
+      "a": "UN 38.3은 리튬 배터리의 운송 안전성을 검증하는 시험 기준입니다 (UN Manual of Tests and Criteria, Part III).\n\n**8가지 시험 (T.1 ~ T.8)**\n| 시험 | 내용 | 목적 |\n|---|---|---|\n| **T.1** | 고도 시뮬레이션 (Altitude) | 항공 환경 (저기압) |\n| **T.2** | 열 사이클 (Thermal) | -40°C ↔ +75°C 반복 |\n| **T.3** | 진동 (Vibration) | 7Hz~200Hz |\n| **T.4** | 충격 (Shock) | 150g × 6ms |\n| **T.5** | 외부 단락 (External Short Circuit) | 표면 55°C 노출 |\n| **T.6** | 충돌 (Impact) | 9.1kg 추 낙하 (단일 셀만) |\n| **T.7** | 과충전 (Overcharge) | 정격 2배 전류 |\n| **T.8** | 강제 방전 (Forced Discharge) | 0V까지 강제 |\n\n**합격 기준**\n- 분해 / 파열 / 누액 / 발화 / 폭발이 없어야 합니다.\n- 전압 강하 10% 이내여야 합니다.\n- 외부 표면 온도가 170°C 이하여야 합니다.\n\n**시험성적서 (UN 38.3 Test Summary) 포함 사항**\n시험성적서는 제조사 또는 공인 시험기관에서 발행되며, 다음 정보가 포함되어야 합니다.\n1. 제조사 / 모델 / 셀 화학 조성\n2. 정격 용량 (Wh)\n3. 시험 일자 / 기관\n4. 시험 결과 요약\n5. 책임자 서명\n\n**부킹 단계 확인 사항**\n- UN 38.3 시험성적서 PDF 첨부 부탁드립니다 (필수).\n- 시험 일자가 너무 오래된 경우(>3년) 재발행을 요청 부탁드립니다.\n- 제조사 변경 시(포장·셀·화학 조성 변경 포함)에는 시험성적서를 재발행해 주셔야 합니다.",
+      "tags": [
+        "UN 38.3",
+        "리튬배터리 시험",
+        "Test Summary"
+      ]
+    },
+    {
+      "id": "packing-instr",
+      "cat": "📘 IMDG 전문지식",
+      "q": "Packing Instruction (P001 등) 코드는 어떻게 읽나요?",
+      "a": "IMDG Column 8의 Packing Instructions는 포장 지침 코드를 의미합니다. 자주 사용되는 코드를 정리해 드렸습니다.\n\n**P 코드 (Single Packagings + Combination)**\n| 코드 | 의미 |\n|---|---|\n| **P001** | 액체 위험물 일반 포장 (드럼·캐니스터·박스+내포장) |\n| **P002** | 고체 위험물 일반 포장 |\n| **P003** | 일반 다용도 (큰 단위 포장) |\n| **P200** | 압축 가스 (실린더 표) |\n| **P301** | 자기반응성 액체 |\n| **P403** | 자연 발화성 고체 |\n| **P404** | 자연 발화성 액체 |\n| **P410** | Class 4.1 고체 |\n| **P504** | 산화성 액체 (5.1) |\n| **P902** | 위험물 함유 물품 (소화기 등) |\n| **P903** | 리튬 이온 배터리 |\n| **P903a/b** | 리튬 배터리 장비 / 동봉 |\n| **P906** | PCBs 함유 폐기물 |\n| **P911** | 손상/결함 리튬 배터리 |\n\n**IBC 코드**\n- **IBC01~IBC08** — 다양한 IBC(중간 벌크 컨테이너) 사용 조건\n\n**LP 코드 (Large Packagings)**\n- LP01, LP02 등 대형 포장 사용\n\n**활용 절차 안내**\n1. IMDG DGL Column 8에서 해당 UN의 Packing Instruction을 확인 부탁드립니다.\n2. IMDG 본문 4.1.4장에서 코드별 상세 절차를 확인하실 수 있습니다.\n3. UN 인증 포장재(UN 마킹 확인)를 사용해 주시기 바랍니다.\n4. PG(Packing Group)에 따라 시험 강도가 다르니 참고 부탁드립니다.\n\n**자주 문의주시는 사례**\n- P001 + PG II → 액체 200L 드럼, UN 1A1 또는 1H1 인증\n- P903 + 배터리 → 박스 내부 절연 + 외부 충격 보호\n- P911 (손상 배터리) → 별도 Salvage Packaging 필요 (대부분 운송이 어려운 점 양해 부탁드립니다)",
+      "tags": [
+        "Packing Instruction",
+        "P001",
+        "P903",
+        "IBC",
+        "포장 지침"
+      ]
+    },
+    {
+      "id": "nos-entry",
+      "cat": "📘 IMDG 전문지식",
+      "q": "N.O.S. (Not Otherwise Specified) 엔트리는 어떻게 처리하나요?",
+      "a": "N.O.S.는 \"Not Otherwise Specified\"의 약자로, IMDG DGL에 정확한 명칭이 없는 일반 분류 항목을 말합니다.\n\n**대표 N.O.S. UN번호**\n- UN1992 — FLAMMABLE LIQUID, TOXIC, N.O.S.\n- UN1993 — FLAMMABLE LIQUID, N.O.S.\n- UN3077 — ENV. HAZARDOUS SUBSTANCE, SOLID, N.O.S.\n- UN3082 — ENV. HAZARDOUS SUBSTANCE, LIQUID, N.O.S.\n- UN3175 — SOLIDS CONTAINING FLAMMABLE LIQUID, N.O.S.\n\n**SP274 (Technical Name 부기 의무)**\nN.O.S. entry는 PSN 뒤에 **괄호로 정확한 화학명/기술명을 부기**해 주셔야 합니다.\n- 예: \"UN1993, FLAMMABLE LIQUID, N.O.S. (Acetone solution)\"\n\n**SP318**\n- 식별이 까다로운 미생물·바이오 제품 등은 추가 표기가 필요합니다.\n\n**기재 예시 안내**\n* 잘못된 기재: UN1993 FLAMMABLE LIQUID\n* 올바른 기재: UN1993 FLAMMABLE LIQUID, N.O.S. (Toluene, Methanol mixture), 3, II\n\n**B/L / Manifest에도 동일 적용**\n- 송하인께서 부킹 시 정확한 기술명을 제공해 주셔야 합니다.\n- 미기재 시 출항이 거절될 수 있으니 양해 부탁드립니다 (PSC 검사 적발 사유).\n\n**자주 발생하는 거절 사유**\n- N.O.S. entry에 기술명 누락\n- MSDS와 기재 기술명 불일치\n- Marine Pollutant 표기 누락 (3077/3082)",
+      "tags": [
+        "N.O.S.",
+        "Technical Name",
+        "SP274",
+        "기술명 부기"
+      ]
+    },
+    {
+      "id": "tank-container",
+      "cat": "📘 IMDG 전문지식",
+      "q": "Tank Container (탱크 컨테이너) 사용 규정은?",
+      "a": "Portable Tank는 IMDG 6.7 / Column 10-11(T-code, TP-code)에서 기준이 안내됩니다.\n\n**T-code (T1~T75) — Portable Tank Instruction**\n화물에 맞는 탱크 설계·시험 기준이 정의되어 있습니다.\n- **T1**: 일반 액체 (PG III)\n- **T11**: 인화성 액체 PG II\n- **T14**: 부식성 (8) PG II\n- **T22**: 일부 산화성 액체\n- **T50**: 액화 가스 (Class 2)\n\n**TP-code (TP1~TP41) — Tank Special Provisions**\n- TP1: 비례 충전 80% 이하\n- TP2: 충전율 화물별 상이\n- TP9: 가열 / 냉각 시스템\n- TP33: 단일 격실만 사용\n\n**Tank Container 종류**\n- ISO Tank: 20ft 표준 탱크 컨테이너 (24,000~26,000L)\n- Cryogenic Tank: 액화가스 (LNG / 액화질소)\n- Coiled Tank: 가열·냉각 코일 부착\n- Lined Tank: 화학물질 내화학성 (PTFE 등)\n\n**필수 확인 부탁드리는 사항**\n1. 탱크 검사 인증서 (CSC, 2년 유효)\n2. 시험 압력 (Test Pressure)\n3. 자재 적합성 (화물 ↔ 탱크 재질)\n4. **충전율 (Filling Degree)** — TP-code 준수 부탁드립니다.\n5. 잔류 가스 / 청결 확인 (이전 화물 잔류 시 거절될 수 있습니다).\n\n**Flexitank와 비교**\n| 항목 | Tank Container | Flexitank |\n|---|---|---|\n| 형태 | 강철 탱크 | 일회용 가방형 |\n| 용량 | ~26,000L | ~24,000L |\n| 사용 횟수 | 반복 사용 | 1회용 |\n| 위험물 | 가능 (UN 인증) | 제한적 (비위험물 위주) |\n| 적재 | 갑판·언더데크 | **갑판만 (Underdeck 금지)** |\n\n**자사 정책**\n- ISO Tank 위험물 진행이 가능합니다 (PRE-CHECK 필요).\n- 인증서 / 청결 / 충전율을 사전에 확인 부탁드립니다.",
+      "tags": [
+        "Tank Container",
+        "Portable Tank",
+        "ISO Tank",
+        "T-code"
+      ]
+    },
+    {
+      "id": "ctu-cpc",
+      "cat": "📘 IMDG 전문지식",
+      "q": "CTU Packing Certificate(컨테이너 적입 증명서)는 무엇인가요?",
+      "a": "CTU(Cargo Transport Unit)는 컨테이너·트레일러 등을 의미하며, 위험물 적입 시 안전 기준이 적용됩니다.\n\n**CTU Code (IMO/ILO/UN ECE)**\n- 위험물 컨테이너 적입 시 안전 기준 가이드입니다.\n- 적입 절차 / 단단히 고정 / 라벨 / 표기 등을 다룹니다.\n\n**Container Packing Certificate (CPC) — IMDG 5.4.2**\n\n**필수 기재 사항**\n1. 컨테이너 번호 / Seal No.\n2. 적입 위험물 정보 (UN, PSN, Class, PG, 수량)\n3. 적입 검사 항목 (모두 \"확인됨\"이 되어야 합니다):\n   - 외부 손상 없음\n   - 청결 / 건조 상태\n   - 모든 위험물 양호 상태\n   - 충돌 방지 적입\n   - 라벨 부착\n   - 적입자 정보 (성명·서명·날인)\n4. 검사일\n5. 적입 책임자 서명\n\n**누락 시 영향**\n- 본선 적재가 거부될 수 있습니다.\n- PSC 검사 적발 시 출항 거절이 가능하니 양해 부탁드립니다.\n- 손해배상 책임이 발생할 수 있습니다.\n\n**송하인 / 포워더 책임 안내**\n- CPC 작성은 송하인·포워더 측 책임입니다.\n- 캐리어는 검토만 수행하며, 책임 회피 조항(Indemnity)이 적용됩니다.\n\n**RFDG 추가 확인 사항**\n- 전원 연결 상태 확인\n- 설정 온도 기록\n- 알람 기능 정상 작동 확인",
+      "tags": [
+        "CTU",
+        "CPC",
+        "Container Packing Certificate",
+        "IMDG 5.4.2"
+      ]
+    },
+    {
+      "id": "sadt-5-2",
+      "cat": "📘 IMDG 전문지식",
+      "q": "SADT(자기가속분해온도)는 무엇이고 왜 중요한가요?",
+      "a": "SADT는 Self-Accelerating Decomposition Temperature의 약자로, 화학물질이 외부 에너지 없이 자체적으로 분해를 가속화하는 최저 온도를 말합니다.\n\n**중요성**\n- 주로 **Class 5.2 (유기 과산화물)** 및 일부 자기반응성 물질(Class 4.1)에 적용됩니다.\n- SADT 미달 = 안전 / SADT 초과 = 폭주 분해 → 화재·폭발 위험으로 이어질 수 있습니다.\n- 따라서 운송 중 화물 온도는 SADT 이하로 반드시 유지되어야 합니다.\n\n**Control Temperature / Emergency Temperature**\n| 항목 | 정의 |\n|---|---|\n| **TC (Control Temp)** | 정상 운송 시 유지해야 하는 최대 온도 |\n| **TE (Emergency Temp)** | 이 온도 초과 시 비상 절차 발동 |\n\n* 일반적으로 TC = SADT - 10°C, TE = SADT - 5°C로 계산합니다.\n\n**예시**\n- UN3110 Organic Peroxide Type F, Solid, Temp Control: SADT 60°C → TC 50°C / TE 55°C\n- 운송 컨테이너는 RFDG (Reefer)를 사용하시고 50°C 이하 유지가 필요합니다.\n\n**자사 사례 안내**\n- UN3378 과탄산나트륨: 발열분해온도 60°C → RFDG로 온도 통제 시 안전 확보가 가능한지 검토 중입니다.\n- 일본구간 OCI 측 요청으로 RFDG 진행 가능성을 평가하고 있습니다.\n\n**DGD 기재 안내**\n- 14번 컬럼에 \"Temperature Controlled\"를 표기 부탁드립니다.\n- TC / TE를 명시해 주시기 바랍니다.\n- RFDG 컨테이너 사용이 필수입니다.",
+      "tags": [
+        "SADT",
+        "자기가속분해",
+        "Class 5.2",
+        "Temperature Control",
+        "RFDG"
+      ]
+    },
+    {
+      "id": "overpack",
+      "cat": "📘 IMDG 전문지식",
+      "q": "Overpack(오버팩) 사용 규정은?",
+      "a": "Overpack은 IMDG 1.2.1 및 5.1.2에 정의되어 있는 포장 방식입니다.\n\n**정의**\n- 한 송하인이 한 컨테이너 내에서 운반을 쉽게 하기 위해 **여러 포장재를 하나의 외부 포장으로 묶은 것**을 말합니다.\n- 컨테이너 자체는 Overpack에 해당하지 않습니다 (그것은 CTU).\n\n**예시**\n- 4개의 25L 드럼 → 팔레트 + 슈링크 랩으로 묶은 1개 Overpack\n- 박스 12개 → 큰 박스 1개로 묶은 형태\n\n**필수 표기 (외부)**\n1. **\"OVERPACK\" 단어 명시** 부탁드립니다.\n2. 내부의 모든 UN No / PSN / Class를 표기해 주셔야 합니다.\n3. UN 라벨 (가장 강한 위험성 기준)\n4. Orientation Arrows (위 방향 표시, 액체 시)\n5. Marine Pollutant (해당 시)\n\n**제한 사항**\n- 내부 포장재가 모두 UN 인증품이어야 합니다.\n- 호환성 그룹(격리)을 사전에 검토해 주시기 바랍니다.\n- 위험물 + 비위험물 혼합 시 표기를 명확히 해 주셔야 합니다.\n\n**장점**\n- 핸들링이 용이합니다 (적입·하역).\n- 동일 송하인의 다양한 위험물 통합 관리가 가능합니다.\n- 라벨 가시성이 향상됩니다.\n\n**단점**\n- 사고 시 내부 화물 식별이 어려울 수 있습니다.\n- 검사 시 분해가 필요합니다.\n- 일부 항만에서 거절될 가능성이 있어 사전 확인을 권장드립니다.",
+      "tags": [
+        "Overpack",
+        "오버팩",
+        "포장",
+        "IMDG 5.1.2"
+      ]
+    },
+    {
+      "id": "imdg-list-cols",
+      "cat": "📘 IMDG 전문지식",
+      "q": "IMDG Code Dangerous Goods List(제2권) 컬럼별 의미는?",
+      "a": "IMDG DGL(Volume 2)은 18개 컬럼으로 구성되어 있습니다. 각 컬럼의 의미를 정리해 드리오니 참고해 주시기 바랍니다.\n\n| 컬럼 | 항목 | 설명 |\n|---|---|---|\n| **1** | UN No | 4자리 식별 번호 |\n| **2** | PSN | Proper Shipping Name (정확 명칭) |\n| **3** | Class / Sub-class | 1차 위험성 |\n| **4** | Subsidiary Risk | 2차 위험성 (예: 6.1+8) |\n| **5** | Packing Group | I / II / III |\n| **6** | Special Provisions | SP-xxx (개별 예외/조건) |\n| **7a** | Limited Quantity | LQ 한도 |\n| **7b** | Excepted Quantity | EQ 코드 (E0~E5) |\n| **8** | Packing Instructions | P001, P002, IBC02 등 |\n| **9** | Packing IBC | IBC 사용 가능 여부 |\n| **10** | Tank Instructions | T-code (T1~T75) |\n| **11** | Tank Special Provisions | TP-code |\n| **12** | EmS | F-x / S-x 응급 대응 |\n| **13** | Stowage Category | A~E |\n| **14** | Stowage Handling | SW-xxx |\n| **15** | Segregation | SG-xxx |\n| **16** | Properties / Observations | 추가 특성 |\n\n**자주 활용하시는 컬럼**\n- 6번 SP → 비위험물 취급 가능 여부 (예: SP188)\n- 7a/7b → LQ/EQ 적용\n- 12번 EmS → 사고 시 응급 절차\n- 13~15번 → 적재·격리 결정\n\nIMDG 본문(38-16)은 사내에 보유 중이며, 모호한 경우 직접 조회를 권장드립니다.",
+      "tags": [
+        "IMDG",
+        "DGL",
+        "Dangerous Goods List",
+        "Volume 2"
+      ]
+    },
+    {
+      "id": "ems-codes",
+      "cat": "📘 IMDG 전문지식",
+      "q": "EmS 코드(F-x / S-x)는 무엇인가요?",
+      "a": "EmS는 Emergency Schedule의 약자로, 사고 발생 시 본선 대응 절차를 정리한 코드입니다.\n\n**Fire 화재 절차 (F-A ~ F-J)**\n| 코드 | 적용 |\n|---|---|\n| F-A | 일반 화재 절차 |\n| F-B | 인화성 액체 (Class 3) |\n| F-C | 인화성 고체 (Class 4.1) |\n| F-D | 자연 발화성 (Class 4.2) |\n| F-E | 물 반응성 (Class 4.3) — 물 사용 금지 |\n| F-F | 산화성 / 유기과산화물 (5.1/5.2) |\n| F-G | 가스 (Class 2) |\n| F-H | 폭발물 (Class 1) |\n| F-I | 방사성 (Class 7) |\n| F-J | 부식성 (Class 8) |\n\n**Spillage 누출 절차 (S-A ~ S-Z)**\n| 코드 | 적용 |\n|---|---|\n| S-A | 일반 누출 절차 |\n| S-B | 독성 가스 누출 |\n| S-C | 인화성 액체 누출 |\n| S-D | 자연발화성 누출 |\n| S-E | 물반응성 누출 |\n| S-F | 산화성 누출 |\n| S-G | 산 누출 |\n| S-H | 염기 누출 |\n\n**활용 예시**\n- UN1170 (에탄올) → F-E + S-D\n- UN3480 (리튬이온) → F-A + S-I\n- UN1790 (불산) → F-A + S-B\n\n**DGD 작성 시**\n- IMDG 14번 컬럼에서 EmS 코드를 확인 후 DGD에 기재해 주시기 바랍니다.\n- 본선 안전관리책임자(STO)에게도 사전 공유해 주시면 좋습니다.\n- IMDG 보충판(Supplement) — EmS Guide에 상세 절차가 안내되어 있습니다.\n\n사고 발생 시 즉시 EmS 코드를 확인하시고, 절차서를 펼쳐 대응해 주시기 바랍니다.",
+      "tags": [
+        "EmS",
+        "응급 대응",
+        "Fire",
+        "Spillage",
+        "본선 안전"
+      ]
+    },
+    {
+      "id": "class4-sub",
+      "cat": "🧪 Class별 세부 규정",
+      "q": "Class 4 세분류 (4.1 / 4.2 / 4.3) 차이는?",
+      "a": "Class 4는 가연성 고체류로 3개 sub-class로 세분됩니다.\n\n**Class 4.1 — 가연성 고체 (Flammable Solid)**\n- 외부 화염원 접촉 시 쉽게 발화됩니다.\n- 마찰 / 충격에도 발화가 가능합니다.\n- 자기반응성 물질(Self-Reactive)이 포함됩니다.\n- 예: 황(Sulphur, UN1350), 나프탈렌(UN1334)\n- **자기반응성 + 온도 통제** 필요 시 RFDG로 진행합니다.\n\n**Class 4.2 — 자연 발화성 (Spontaneously Combustible)**\n- 공기 접촉만으로 가열·발화될 수 있습니다 (Pyrophoric).\n- 화학물질 자체의 산화 반응입니다.\n- 예: 백린(White Phosphorus, UN1381), 활성탄(UN1362), **숯(UN1361)**\n- ⚠️ **자사 정책: UN1361/1362 전면 금지**입니다.\n- 운송 시 산소 차단(질소 충전 등) 조치가 필요합니다.\n\n**Class 4.3 — 물 반응성 (Dangerous When Wet)**\n- 물 접촉 시 가연성 가스가 발생하며 발화 위험이 있습니다.\n- 예: 알루미늄 분말(UN1396), 칼슘(UN1401), 나트륨(UN1428)\n- 외부 라벨에 \"X\" (물 사용 금지)가 표기됩니다.\n- 화재 시 **물 사용 절대 금지** → EmS F-G (특수 소화제)\n- 적재 시 습기 차단(방수 포장)이 필수입니다.\n\n**자주 문의주시는 사례**\n- 황(UN1350) PG III: 정상 선적 가능\n- 활성탄(UN1362): 비위험물 취급(SP223)이지만 자사는 금지\n- 마그네슘 분말: 화재 시 물 사용 절대 금지\n\n**격리 안내**\n- 4.1 + 5.1 (산화성) → \"Separated from\"\n- 4.2 + Class 3 → \"Separated from\"\n- 4.3 + 물반응성 → 같은 격벽 적재 가능",
+      "tags": [
+        "Class 4",
+        "가연성 고체",
+        "Pyrophoric",
+        "Water-Reactive"
+      ]
+    },
+    {
+      "id": "class6-toxic",
+      "cat": "🧪 Class별 세부 규정",
+      "q": "Class 6.1 독성 / 6.2 감염성 물질 운송 가능한가요?",
+      "a": "Class 6은 독성 / 감염성 물질로 구분되며, 자사 정책에 따라 진행 여부가 다릅니다.\n\n**Class 6.1 — 독성 물질 (Toxic Substances)**\n\nPacking Group은 경구 독성 LD50을 기준으로 분류됩니다.\n- PG I: LD50 ≤ 5 mg/kg (매우 독성)\n- PG II: 5 < LD50 ≤ 50 mg/kg\n- PG III: 50 < LD50 ≤ 300 mg/kg\n\n**예시**\n- UN1654, NICOTINE (PG II)\n- UN1888, CHLOROFORM (PG III)\n- UN2588, PESTICIDES, SOLID, TOXIC, N.O.S. (PG I/II/III)\n\n**Toxic Inhalation Hazard (TIH) / Poison Inhalation Hazard (PIH)**\n- 증기 흡입 시 매우 독성이 강합니다.\n- 격리가 강화됩니다 (식품·식수와 \"Separated by complete compartment\").\n- 일부 항만은 추가 사전 승인이 필요합니다.\n\n**Class 6.2 — 감염성 물질 (Infectious Substances)**\n- Category A: UN2814 (인체 영향), UN2900 (동물만)\n- Category B: UN3373 (Biological Substance Category B)\n\n**Category A (생명 위협 가능)**\n- 예: 에볼라, 결핵균, 광견병 등\n- 매우 제한적으로 운송됩니다 (대부분 항공·군용·의료기관).\n- 자사 해상 운송은 거의 없습니다.\n\n**Category B (의료 검체)**\n- 의료기관 간 검체 운송에 해당합니다.\n- P650 포장이 필요합니다 (3중 포장: 1차 용기 + 2차 용기 + 외부).\n- 대부분 항공·특수 차량으로 운송됩니다.\n\n**자사 정책**\n- Class 6.1: PRE-CHECK 후 진행 (PG I은 별도 협의 부탁드립니다).\n- Class 6.2: 원칙적으로 해상 운송 미진행 (사례가 거의 없습니다).\n\n**자주 문의주시는 사례**\n- 살충제(PESTICIDES): MSDS 확인 후 정상 선적 가능 (PG에 따라).\n- 의약품 원료: Class 6.1 해당 시 PG별 검토가 필요합니다.",
+      "tags": [
+        "Class 6.1",
+        "Class 6.2",
+        "독성",
+        "감염성",
+        "TIH",
+        "P650"
+      ]
+    },
+    {
+      "id": "class1-explosive",
+      "cat": "🧪 Class별 세부 규정",
+      "q": "Class 1 폭발물 — Compatibility Group이란?",
+      "a": "Class 1 폭발물은 6개 Sub-class와 Compatibility Group(호환성 그룹)으로 세분류됩니다.\n\n**Sub-class (1.1 ~ 1.6)**\n| 분류 | 위험성 |\n|---|---|\n| **1.1** | 대량 폭발 위험 (Mass Explosion) |\n| **1.2** | 비산 위험 (분열 / 파편) |\n| **1.3** | 화재 / 미약 폭풍 / 비산 |\n| **1.4** | 미약한 폭발 위험 (포장 한정) |\n| **1.5** | 매우 둔감하나 대량 폭발 가능 (Insensitive) |\n| **1.6** | 극도로 둔감 |\n\n**Compatibility Group (A~S) — IMDG 2.1.2.1.4**\n| 그룹 | 의미 |\n|---|---|\n| A | Primary Explosive Substance |\n| B | 폭약 함유 물품 (Detonator) |\n| C | Propellant Explosive (추진제) |\n| D | Secondary Detonating Explosive (TNT 등) |\n| E | 폭약 함유 + 추진제 |\n| F | 폭약 함유 + 자체 폭발 수단 |\n| G | 신호용 / 폭죽 / 조명탄 |\n| H | 폭약 + 백린 |\n| J | 폭약 + 인화성 액체/가스 |\n| K | 폭약 + 독성 |\n| L | 다른 위험 동반 |\n| N | 극도로 둔감한 폭약 |\n| S | 우발 작동 시 영향 최소 (소형 폭죽 등) |\n\n**기재 예시**\n- UN0027, BLACK POWDER, **1.1D**\n- UN0335, FIREWORKS, **1.3G**\n- UN0432, ARTICLES, PYROTECHNIC, **1.4S**\n\n**격리 규칙**\n- Sub-class + Compatibility Group 조합으로 격리가 결정됩니다.\n- 같은 Compatibility Group이라도 Sub-class가 다르면 별도 격리가 필요합니다.\n\n**자사 정책 안내**\n- Class 1 폭발물은 **사전 PRE-CHECK가 필수**입니다.\n- 일부 항만 / 노선별로 추가 승인이 필요합니다.\n- 군용 / 산업용 구분이 있으며, 자사는 산업용 위주(불꽃놀이 / 산업폭발물)로 진행하고 있습니다.",
+      "tags": [
+        "Class 1",
+        "폭발물",
+        "Compatibility Group"
+      ]
+    },
+    {
+      "id": "damaged-salvage",
+      "cat": "🚨 사고 / 손상 대응",
+      "q": "손상된 위험물 / Salvage Packaging은 어떻게 처리하나요?",
+      "a": "손상·결함 위험물은 안전상 사유로 **원칙적 선적 거절**로 운영하고 있습니다. 양해 부탁드립니다.\n\n**손상 사례 안내**\n- 누설 / 외부 손상 / 부풀어 오름 / 발열\n- 손상된 리튬 배터리 (UN3480/3481 → UN3171)\n- 사고 차량 (UN3171 등)\n\n**Salvage Packaging (회수 포장)**\n- **P911** (리튬 배터리 손상) / **P903** (일반)\n- **LP905** (대형 손상 배터리)\n- 외부 견고한 포장 + 흡수재가 필요합니다.\n- 명시 라벨: \"SALVAGE\" 또는 \"DAMAGED\"\n- 사용 가능 운송 수단이 제한적입니다 (대부분 도로/철도, 해상 거절).\n\n**자사 정책 안내**\n- **손상 위험물은 원칙적으로 선적이 어려운 점 양해 부탁드립니다.**\n- 사고 차량 / 손상 배터리는 거절됩니다.\n- 회수 처리가 필요하신 경우 별도 협의 부탁드립니다 (전용 컨테이너 + 특수 보험 검토).\n\n**선상 발생 손상 시 대응 안내**\n1. 선장이 즉시 운항팀으로 보고합니다.\n2. 위험성 평가 (EmS 코드 활용)\n3. 격리 / 환기 / 응급 조치 수행\n4. 도착항에 사전 통보 → 별도 처리 부두 또는 폐기 절차 진행\n5. 사고 보고서 작성 (Casualty Report)\n\n**예방을 위한 권장 사항**\n- 적입 전 외관 검사를 철저히 부탁드립니다.\n- CPC (Container Packing Certificate)의 검사 항목을 꼼꼼히 확인해 주시기 바랍니다.\n- 운송 중 정기 점검 부탁드립니다 (RFDG 온도, 일반 컨테이너 외관).",
+      "tags": [
+        "손상",
+        "Salvage Packaging",
+        "P911",
+        "사고",
+        "거절 사유"
+      ]
+    }
   ]
 };
 
@@ -2631,12 +3213,69 @@ function fqDeletePost(id) {
 function fqEsc(str) {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-function fqRenderText(str) {
-  // 간단 마크다운: **bold**, `code`, 줄바꿈
-  return fqEsc(str)
+function fqInline(s) {
+  // 인라인 마크다운: **bold**, `code`, [text](url)
+  return fqEsc(s)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function fqRenderText(str) {
+  // 블록 마크다운: 표(|...|), 목록(- / 1.), 인용(>), 굵게, 코드, 문단
+  const lines = String(str || '').split('\n');
+  let html = '';
+  let i = 0;
+  let listType = null; // 'ul' | 'ol'
+  const closeList = () => { if (listType) { html += listType === 'ul' ? '</ul>' : '</ol>'; listType = null; } };
+  while (i < lines.length) {
+    const raw = lines[i];
+    const t = raw.trim();
+
+    // 표: 현재 줄이 |...| 이고 다음 줄이 구분선(|---|)
+    if (t.startsWith('|') && i + 1 < lines.length && /^\|[\s:|-]+\|$/.test(lines[i + 1].trim())) {
+      closeList();
+      const cells = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const header = cells(t);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) { rows.push(cells(lines[i])); i++; }
+      html += '<table class="fq-table"><thead><tr>' +
+        header.map(h => `<th>${fqInline(h)}</th>`).join('') +
+        '</tr></thead><tbody>' +
+        rows.map(r => '<tr>' + r.map(c => `<td>${fqInline(c)}</td>`).join('') + '</tr>').join('') +
+        '</tbody></table>';
+      continue;
+    }
+    // 인용문 (연속 > 병합)
+    if (t.startsWith('>')) {
+      closeList();
+      const quote = [];
+      while (i < lines.length && lines[i].trim().startsWith('>')) {
+        quote.push(fqInline(lines[i].trim().replace(/^>\s?/, '')));
+        i++;
+      }
+      html += `<blockquote class="fq-quote">${quote.join('<br>')}</blockquote>`;
+      continue;
+    }
+    // 순서 없는 목록
+    if (/^[-*]\s+/.test(t)) {
+      if (listType !== 'ul') { closeList(); html += '<ul class="fq-ul">'; listType = 'ul'; }
+      html += `<li>${fqInline(t.replace(/^[-*]\s+/, ''))}</li>`;
+      i++; continue;
+    }
+    // 순서 있는 목록
+    if (/^\d+\.\s+/.test(t)) {
+      if (listType !== 'ol') { closeList(); html += '<ol class="fq-ol">'; listType = 'ol'; }
+      html += `<li>${fqInline(t.replace(/^\d+\.\s+/, ''))}</li>`;
+      i++; continue;
+    }
+    // 빈 줄 / 일반 문단
+    closeList();
+    if (t !== '') html += `<p>${fqInline(t)}</p>`;
+    i++;
+  }
+  closeList();
+  return html;
 }
 function fqToast(msg, type) {
   const t = document.getElementById('fqToast');
