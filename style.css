@@ -4360,6 +4360,8 @@ header span {
 .fq-email-row { display: flex; gap: 12px; margin-top: 4px; }
 .fq-email-row > div { flex: 1; }
 .fq-email-form .fq-new-actions { margin-top: 14px; }
+.fq-email-list-head { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--fq-border); font-size: 13px; font-weight: 700; color: var(--fq-primary); margin-bottom: 10px; }
+#fqEmailList { display: flex; flex-direction: column; gap: 8px; }
 
 /* 게시글 */
 .fq-posts { display: flex; flex-direction: column; gap: 8px; }

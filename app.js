@@ -2948,15 +2948,68 @@ async function fqRemoteSet(id, data) {
 }
 // 동적 항목(dyn) + 시드 병합 → FQ_FAQ_DATA 재구성
 function fqMergeFaq(dyn) {
-  dyn = dyn || [];
-  FQ_FAQ_DATA.items = dyn.concat(FQ_SEED_ITEMS);
+  dyn = (dyn || []).map(it => {
+    // 레거시(이메일/게시판 전용) 또는 알 수 없는 카테고리는 내용 기반 태그로 재분류
+    let cat = it.cat;
+    if (!cat || !FQ_SEED_CATS.includes(cat)) cat = fqClassifyKeyword((it.q || '') + '\n' + (it.a || ''));
+    return Object.assign({}, it, { cat });
+  });
+  // 시드(정리된 49건)를 앞에, 동적 항목(이메일/게시판)은 뒤에 — 단, 메인 목록 렌더에서는 시드만 노출
+  FQ_FAQ_DATA.items = FQ_SEED_ITEMS.concat(dyn);
+  // 카테고리 칩은 시드 카테고리만 (이메일/게시판 전용 카테고리 노출 안 함)
   FQ_FAQ_DATA.categories = FQ_SEED_CATS.slice();
-  dyn.forEach(it => { if (it.cat && !FQ_FAQ_DATA.categories.includes(it.cat)) FQ_FAQ_DATA.categories.push(it.cat); });
 }
 // 현재 항목 중 시드가 아닌 동적 항목만 추출
 function fqDynItems() {
   const seedIds = new Set(FQ_SEED_ITEMS.map(x => x.id));
   return (FQ_FAQ_DATA.items || []).filter(x => x && !seedIds.has(x.id));
+}
+// 내용 기반 카테고리 태그 분류 (동적 항목 표시용 — 기존 시드 카테고리 중 선택)
+function fqClassifyKeyword(text) {
+  const t = String(text || '');
+  const pick = kw => FQ_SEED_CATS.find(c => c.includes(kw));
+  const rules = [
+    [/리튬|lithium|배터리|battery|UN ?-?34(80|81)|UN ?-?309[01]|\bSP ?-?188\b|[12]차\s*전지|power\s*bank|보조\s*배터리/i, '리튬'],
+    [/전기차|\bEV\b|차량|vehicle|UN ?-?3166|UN ?-?355[67]|전동(휠체어|자전거)|지게차|forklift/i, '차량'],
+    [/숯|charcoal|활성탄|activated\s*carbon|carbon\s*black|카본\s*블랙|과탄산|percarbonate|UN ?-?136[12]|UN ?-?3378/i, '금지'],
+    [/해양\s*오염|marine\s*pollutant|환경\s*유해|UN ?-?3082|UN ?-?3077/i, '해양'],
+    [/부식|corros|불산|hydrofluoric|염산|hydrochloric|황산|sulfuric|UN ?-?1790|UN ?-?1789|\bclass ?-?8\b|\bcl ?8\b/i, '부식'],
+    [/인화|flammable|페인트|paint|래커|lacquer|에탄올|메탄올|알코올|alcohol|UN ?-?1263|UN ?-?1170|UN ?-?1993|\bclass ?-?3\b|\bcl ?3\b/i, '인화'],
+    [/산화|oxidi[sz]|과산화|peroxide|자기\s*반응|self-?react|자연\s*발화|spontaneous|SADT|\bclass ?-?5\b/i, '산화'],
+    [/에어로졸|aerosol|UN ?-?1950|소화기|extinguisher|UN ?-?1044|압축\s*가스|liquefied\s*gas|\bclass ?-?2\b/i, '에어로졸'],
+    [/flexitank|플렉시|flexi\s*tank|\bIBC\b|벌크백/i, 'Flexitank'],
+    [/\bRFDG\b|reefer|냉동|온도\s*(통제|모니터|기록)/i, 'RFDG'],
+    [/\bOOG\b|flat\s*rack|\bFR\b|open\s*top|\bOT\b|coil|코일|heavy\s*cargo|중량물|강재|steel|컨테이너\s*(규격|스펙|종류)|super\s*rack|supercon/i, 'OOG'],
+    [/항만|\bport\b|상해|닝보|칭다오|샤먼|천진|terminal|CAS\s*(no|번호)|하역\s*(불가|제한)/i, '항만'],
+    [/MSDS|\bSDS\b|DGD|위험물\s*신고서|B\/L|bill\s*of\s*lading|manifest|적하목록|\bVGM\b|declaration|서류/i, '서류'],
+    [/PRE-?CHECK|프리\s*체크|사전\s*검토|부킹|승인\s*(절차|요청)|application/i, '절차'],
+    [/격리|segregation|stowage|적재|혼적|혼합|\bSGG\b|compartment/i, '적재'],
+    [/\bLQ\b|\bEQ\b|limited\s*quantity|excepted\s*quantity|special\s*provision|\bSP ?-?\d/i, '특별'],
+    [/EmS|UN ?-?38\.3|packing\s*instruction|\bP\d{3}\b|tank\s*container|portable\s*tank|overpack|N\.?O\.?S|\bDGL\b|컬럼|column/i, 'IMDG'],
+    [/\bclass ?-?[1-9]\b|폭발|explosive|compatibility|독성|toxic|감염|infectious|방사|radioactive/i, 'Class'],
+    [/손상|salvage|사고|damaged|클레임|claim|incident|화재/i, '사고'],
+    [/타\s*선사|선사별|carrier/i, '선사']
+  ];
+  for (const [re, kw] of rules) { if (re.test(t)) { const c = pick(kw); if (c) return c; } }
+  return pick('판정') || FQ_SEED_CATS[0];
+}
+// 질문 정규화 + 중복 판정 (RE:/FW:·[..]·기호 제거 후 비교)
+function fqNormQ(s) {
+  return String(s || '').replace(/^(\s*(re|fw|fwd)\s*:\s*)+/i, '').replace(/\[[^\]]*\]/g, '').replace(/[^0-9A-Za-z가-힣]/g, '').toLowerCase();
+}
+function fqBigrams(s) { const out = new Set(); for (let i = 0; i + 1 < s.length; i++) out.add(s.slice(i, i + 2)); return out; }
+function fqIsDupQuestion(q, excludeId) {
+  const nq = fqNormQ(q); if (nq.length < 4) return false;
+  const tq = fqBigrams(nq);
+  return (FQ_FAQ_DATA.items || []).some(it => {
+    if (it.id === excludeId) return false;
+    const ni = fqNormQ(it.q); if (ni.length < 4) return false;
+    if (ni === nq) return true;
+    if (ni.length > 6 && (ni.includes(nq) || nq.includes(ni))) return true;
+    const ti = fqBigrams(ni); let inter = 0; tq.forEach(x => { if (ti.has(x)) inter++; });
+    const uni = tq.size + ti.size - inter;
+    return uni > 0 && inter / uni >= 0.82;
+  });
 }
 // 공용 DB에서 FAQ 동적 항목 동기화 (실패 시 로컬 캐시 유지)
 async function fqSyncFaqRemote() {
@@ -2967,6 +3020,7 @@ async function fqSyncFaqRemote() {
     try { localStorage.setItem(FQ_CONFIG.FAQ_CACHE_KEY, JSON.stringify(dyn)); } catch (e) {}
     fqMergeFaq(dyn);
     fqRenderFaq();
+    if (typeof fqRenderEmailList === 'function') fqRenderEmailList();
   } catch (e) { console.warn('FAQ 공용 DB 동기화 실패(로컬 사용):', e.message); fqRemoteOK = false; }
 }
 // 공용 DB에서 게시판 글 동기화
@@ -3119,19 +3173,38 @@ async function fqAskAi() {
   }
 }
 
-// ── 이메일 업로드 → FAQ 등록 ──
+// ── 이메일 업로드 / 이메일 문의 목록 ──
+const FQ_AUTO_CAT = '🔎 자동 분류 (내용 기반 추천)';
 function fqToggleEmailForm() {
   const f = document.getElementById('fqEmailForm');
   if (!f) return;
   f.hidden = !f.hidden;
-  if (!f.hidden) fqPopulateEmailCats();
+  if (!f.hidden) { fqPopulateEmailCats(); fqRenderEmailList(); }
 }
 function fqPopulateEmailCats() {
   const sel = document.getElementById('fqEmCat');
   if (!sel) return;
-  const cats = (FQ_FAQ_DATA.categories || []).filter(c => c !== '전체');
-  if (!cats.includes(FQ_EMAIL_FAQ_CAT)) cats.unshift(FQ_EMAIL_FAQ_CAT);
-  sel.innerHTML = cats.map(c => `<option value="${fqEsc(c)}"${c === FQ_EMAIL_FAQ_CAT ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
+  const cats = [FQ_AUTO_CAT, ...FQ_SEED_CATS.filter(c => c !== '전체')];
+  sel.innerHTML = cats.map(c => `<option value="${fqEsc(c)}"${c === FQ_AUTO_CAT ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
+}
+// 등록된 이메일 문의 목록 (source === 'email') — 📧 아이콘 클릭 시 표시
+function fqRenderEmailList() {
+  const box = document.getElementById('fqEmailList');
+  if (!box) return;
+  const mails = (FQ_FAQ_DATA.items || []).filter(i => i.source === 'email');
+  if (mails.length === 0) {
+    box.innerHTML = '<div class="fq-empty">등록된 이메일 문의가 없습니다. 위에서 이메일을 업로드해 등록하세요.</div>';
+    return;
+  }
+  box.innerHTML = mails.map(m => `
+    <div class="fq-item" data-id="${fqEsc(m.id)}">
+      <div class="fq-q" onclick="fqToggleFaqItem('${fqEsc(m.id)}')">
+        <div style="flex:1;"><div class="fq-q-text">${fqEsc(m.q)}</div></div>
+        <span class="fq-q-tag">${fqEsc(m.cat || '')}</span>
+        <span class="fq-q-arrow">▼</span>
+      </div>
+      <div class="fq-a">${fqRenderText(m.a || '')}</div>
+    </div>`).join('');
 }
 // ── Outlook .msg (OLE/CFB 복합문서) 파서 — 제목·본문 추출 ──
 function fqParseMsg(arrayBuffer) {
@@ -3248,7 +3321,7 @@ async function fqSubmitEmail() {
   const inquiry = document.getElementById('fqEmInquiry').value.trim();
   const reply = document.getElementById('fqEmReply').value.trim();
   const by = document.getElementById('fqEmBy').value.trim();
-  const cat = document.getElementById('fqEmCat').value || FQ_EMAIL_FAQ_CAT;
+  let cat = document.getElementById('fqEmCat').value || FQ_AUTO_CAT;
   if (!subject || !reply) { fqToast('제목과 회신(답변)은 필수입니다', 'warn'); return; }
   if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
     const pwd = prompt('담당자 비밀번호를 입력하세요:');
@@ -3256,20 +3329,17 @@ async function fqSubmitEmail() {
     sessionStorage.setItem('fq_reply_ok', '1');
   }
   const bodyPart = inquiry ? ('**문의 내용**\n' + inquiry + '\n\n**답변**\n') : '';
+  // 자동 분류 선택 시 내용 기반으로 카테고리 태그 부여
+  if (cat === FQ_AUTO_CAT) cat = fqClassifyKeyword(subject + '\n' + inquiry + '\n' + reply);
   const item = {
     id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
     cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email'
   };
-  // 로컬 즉시 반영 + 공용 DB 저장
-  await fqUpsertFaqItem(item);
+  const ok = await fqUpsertFaqItem(item);   // 로컬 즉시 반영 + 공용 DB 저장 (중복이면 false)
   ['fqEmSubject', 'fqEmInquiry', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
-  document.getElementById('fqEmailForm').hidden = true;
-  document.querySelectorAll('#fqModule [data-fq-tab]').forEach(b => b.classList.toggle('active', b.dataset.fqTab === 'faq'));
-  document.querySelectorAll('#fqModule [data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === 'faq'));
-  fqCurrentCat = cat;
-  fqRenderFaq();
-  fqToast(fqRemoteOK ? '✓ 이메일 문의가 FAQ에 등록되었습니다 (전체 공유)' : '✓ 이메일 문의 등록 (로컬)', 'success');
+  fqRenderEmailList();   // 📧 이메일 문의 목록 갱신 (메인 FAQ엔 노출 안 함)
+  if (ok) fqToast(fqRemoteOK ? '✓ 이메일 문의가 등록되었습니다 (전체 공유, 📧 목록에서 조회)' : '✓ 이메일 문의 등록 (로컬)', 'success');
 }
 
 function fqRenderFaq() {
@@ -3285,8 +3355,8 @@ function fqRenderFaq() {
     fqRenderFaq();
   }));
 
-  // 목록
-  let items = FQ_FAQ_DATA.items || [];
+  // 목록 — 메인 FAQ는 정리된 시드 지식만 노출 (이메일/게시판 동적 항목은 제외, 각자 별도 영역에서 조회)
+  let items = (FQ_FAQ_DATA.items || []).filter(i => !i.source);
   if (fqCurrentCat !== '전체') items = items.filter(i => i.cat === fqCurrentCat);
   if (search) {
     items = items.filter(i => {
@@ -3547,22 +3617,30 @@ function fqEnsureCategory(cat) {
 
 // FAQ 항목을 로컬(즉시) + 공용 DB에 등록/갱신
 async function fqUpsertFaqItem(item) {
-  fqEnsureCategory(item.cat);
   FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
   const i = FQ_FAQ_DATA.items.findIndex(x => x.id === item.id);
-  if (i >= 0) FQ_FAQ_DATA.items[i] = item; else FQ_FAQ_DATA.items.unshift(item);
+  if (i >= 0) {
+    FQ_FAQ_DATA.items[i] = item;                 // 동일 항목 갱신
+  } else if (fqIsDupQuestion(item.q, item.id)) {
+    fqToast('이미 유사한 문의가 있어 등록을 건너뜁니다', 'warn');
+    return false;                                // 중복이면 등록 안 함
+  } else {
+    FQ_FAQ_DATA.items.push(item);                // 뒤에 추가 (메인 FAQ 목록엔 노출 안 됨)
+  }
   fqSaveFaq();
   if (typeof fqRenderFaq === 'function') fqRenderFaq();
   await fqPushFaqRemote();   // 공용 DB 저장
+  return true;
 }
 
-// 게시판 답변 → FAQ 자동 등록 (동일 글은 갱신)
+// 게시판 답변 → FAQ DB 자동 축적 (AI 문의·중복검사에 활용 / 메인 FAQ 목록엔 노출 안 함, 게시판 탭에서 확인)
 async function fqAddBoardAnswerToFaq(post) {
   const faqId = 'faq_brd_' + post.id;
   // 비밀글은 본문(문의 내용)을 공개하지 않고 제목+답변만 등록
   const bodyPart = (!post.isPrivate && post.body) ? ('**문의 내용**\n' + post.body + '\n\n**답변**\n') : '';
   const item = {
-    id: faqId, cat: FQ_BOARD_FAQ_CAT, q: post.subject, a: bodyPart + post.answer,
+    id: faqId, cat: fqClassifyKeyword(post.subject + '\n' + (post.body || '') + '\n' + post.answer),
+    q: post.subject, a: bodyPart + post.answer,
     tags: ['게시판', post.category, post.answerBy].filter(Boolean), source: 'board'
   };
   await fqUpsertFaqItem(item);
