@@ -2915,12 +2915,25 @@ const FQ_SEED_ITEMS = (FQ_FAQ_DATA.items || []).slice();
 const FQ_SEED_CATS = (FQ_FAQ_DATA.categories || []).slice();
 let fqRemoteOK = false;   // 공용 DB 연결 성공 여부
 
-async function fqApi(path, opts) {
-  const res = await fetch(path, opts);
-  let j = {};
-  try { j = await res.json(); } catch (e) {}
-  if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
-  return j;
+// ─── 공용 저장소: 사용자 소유 Supabase 프로젝트에 직접 연결 (publishable 키) ───
+// inquiry_state(id='faq'|'board', data jsonb) 단일 행에 전체 상태 저장 (전체 행 upsert)
+const FQ_SB_URL = 'https://jasgjzzazgkwcpghzjop.supabase.co';
+const FQ_SB_KEY = 'sb_publishable_nlY-SPzGQVowYbZ4LuwCpw_65sd2539';
+const FQ_SB_HEADERS = { apikey: FQ_SB_KEY, Authorization: 'Bearer ' + FQ_SB_KEY };
+
+async function fqRemoteGet(id) {
+  const res = await fetch(`${FQ_SB_URL}/rest/v1/inquiry_state?id=eq.${id}&select=data`, { headers: FQ_SB_HEADERS });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const rows = await res.json();
+  return (rows[0] && rows[0].data) || (id === 'board' ? { posts: [] } : { items: [] });
+}
+async function fqRemoteSet(id, data) {
+  const res = await fetch(`${FQ_SB_URL}/rest/v1/inquiry_state?on_conflict=id`, {
+    method: 'POST',
+    headers: Object.assign({}, FQ_SB_HEADERS, { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' }),
+    body: JSON.stringify({ id, data, updated_at: new Date().toISOString() })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text().catch(() => '')));
 }
 // 동적 항목(dyn) + 시드 병합 → FQ_FAQ_DATA 재구성
 function fqMergeFaq(dyn) {
@@ -2937,9 +2950,9 @@ function fqDynItems() {
 // 공용 DB에서 FAQ 동적 항목 동기화 (실패 시 로컬 캐시 유지)
 async function fqSyncFaqRemote() {
   try {
-    const j = await fqApi(FQ_CONFIG.API + '?id=faq');
+    const data = await fqRemoteGet('faq');
     fqRemoteOK = true;
-    const dyn = (j.data && j.data.items) || [];
+    const dyn = data.items || [];
     try { localStorage.setItem(FQ_CONFIG.FAQ_CACHE_KEY, JSON.stringify(dyn)); } catch (e) {}
     fqMergeFaq(dyn);
     fqRenderFaq();
@@ -2948,12 +2961,22 @@ async function fqSyncFaqRemote() {
 // 공용 DB에서 게시판 글 동기화
 async function fqSyncPostsRemote() {
   try {
-    const j = await fqApi(FQ_CONFIG.API + '?id=board');
+    const data = await fqRemoteGet('board');
     fqRemoteOK = true;
-    fqPosts = (j.data && j.data.posts) || [];
+    fqPosts = data.posts || [];
     try { localStorage.setItem(FQ_CONFIG.BOARD_KEY, JSON.stringify(fqPosts)); } catch (e) {}
     fqRenderPosts();
   } catch (e) { console.warn('게시판 공용 DB 동기화 실패(로컬 사용):', e.message); }
+}
+// 현재 동적 FAQ 항목 전체를 공용 DB에 저장
+async function fqPushFaqRemote() {
+  try { await fqRemoteSet('faq', { items: fqDynItems() }); fqRemoteOK = true; }
+  catch (e) { console.warn('FAQ 공용 저장 실패(로컬):', e.message); }
+}
+// 현재 게시판 글 전체를 공용 DB에 저장
+async function fqPushPostsRemote() {
+  try { await fqRemoteSet('board', { posts: fqPosts }); fqRemoteOK = true; }
+  catch (e) { console.warn('게시판 공용 저장 실패(로컬):', e.message); }
 }
 
 
@@ -3250,16 +3273,9 @@ async function fqSubmitPost() {
     answeredAt: null,
     answerBy: null
   };
-  // 공용 DB 우선 저장 (실패 시 로컬에만 저장)
-  try {
-    const j = await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'create', post }) });
-    fqRemoteOK = true;
-    fqPosts = (j.data && j.data.posts) || [post, ...fqPosts];
-  } catch (e) {
-    console.warn('문의 공용 저장 실패(로컬 저장):', e.message);
-    fqPosts.unshift(post);
-  }
+  fqPosts.unshift(post);
   fqSavePosts();
+  await fqPushPostsRemote();   // 공용 DB 저장 (실패 시 로컬 유지)
   fqResetNewForm();
   document.getElementById('fqNewPostForm').hidden = true;
   fqRenderPosts();
@@ -3366,16 +3382,10 @@ async function fqSaveAnswer(id) {
   post.answeredAt = new Date().toISOString();
   post.answerBy = answerBy;
   post.status = 'answered';
-  // 공용 DB에 답변 저장
-  try {
-    const j = await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'answer', postId: id, answer: text, answerBy }) });
-    fqRemoteOK = true;
-    if (j.data && j.data.posts) fqPosts = j.data.posts;
-  } catch (e) { console.warn('답변 공용 저장 실패(로컬):', e.message); }
   fqSavePosts();
+  await fqPushPostsRemote();   // 답변 반영(게시판 전체 행 저장)
   // 문의 + 답변을 FAQ 공용 DB로 자동 등록
-  const updated = fqPosts.find(p => p.id === id) || post;
-  await fqAddBoardAnswerToFaq(updated);
+  await fqAddBoardAnswerToFaq(post);
   fqCloseAnswerForm(id);
   fqRenderPosts();
   fqToast(fqRemoteOK ? '✓ 답변 등록 + FAQ 자동 반영 (전체 공유)' : '✓ 답변 등록 (로컬)', 'success');
@@ -3395,10 +3405,7 @@ async function fqUpsertFaqItem(item) {
   if (i >= 0) FQ_FAQ_DATA.items[i] = item; else FQ_FAQ_DATA.items.unshift(item);
   fqSaveFaq();
   if (typeof fqRenderFaq === 'function') fqRenderFaq();
-  try {
-    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'faq', action: 'upsert', item }) });
-    fqRemoteOK = true;
-  } catch (e) { console.warn('FAQ 공용 저장 실패(로컬):', e.message); }
+  await fqPushFaqRemote();   // 공용 DB 저장
 }
 
 // 게시판 답변 → FAQ 자동 등록 (동일 글은 갱신)
@@ -3416,14 +3423,15 @@ async function fqAddBoardAnswerToFaq(post) {
 async function fqDeletePost(id) {
   if (!confirm('이 문의를 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
   fqPosts = fqPosts.filter(p => p.id !== id);
+  // 연동된 게시판 FAQ 항목도 함께 제거
+  FQ_FAQ_DATA.items = (FQ_FAQ_DATA.items || []).filter(x => x.id !== 'faq_brd_' + id);
   fqSavePosts();
+  fqSaveFaq();
   fqRenderPosts();
-  // 공용 DB에서 글 + 연동 FAQ 항목 삭제
-  try {
-    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'delete', postId: id }) });
-    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'faq', action: 'delete', postId: 'faq_brd_' + id }) });
-    fqRemoteOK = true;
-  } catch (e) { console.warn('삭제 공용 반영 실패(로컬):', e.message); }
+  fqRenderFaq();
+  // 공용 DB 반영 (글 + FAQ 전체 행 저장)
+  await fqPushPostsRemote();
+  await fqPushFaqRemote();
   fqToast('🗑 삭제됨', 'warn');
 }
 
