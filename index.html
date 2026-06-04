@@ -407,8 +407,19 @@
         <input type="search" class="fq-search" id="fqSearch" placeholder="🔍 FAQ 검색 (질문·답변·태그)">
         <button class="fq-btn ghost" id="fqExpandAll">모두 펴기</button>
         <button class="fq-btn ghost" id="fqCollapseAll">모두 접기</button>
+        <button class="fq-btn accent" id="fqAiBtn">🤖 AI에게 문의</button>
         <button class="fq-btn accent" id="fqEmailUploadBtn">📧 이메일 업로드</button>
         <button class="fq-btn ghost" id="fqAdminBtn">🔐 관리자</button>
+      </div>
+
+      <!-- AI에게 문의하기 (FAQ·문의답변 DB 기반 LLM 답변) -->
+      <div class="fq-ai-box" id="fqAiBox" hidden>
+        <div class="fq-ai-head">🤖 AI에게 문의하기 <span>지금까지 쌓인 FAQ·문의답변을 정리해 답변합니다</span></div>
+        <div class="fq-ai-input-row">
+          <input type="text" id="fqAiInput" placeholder="궁금한 점을 자유롭게 입력하세요 (예: 리튬배터리 100Wh 초과는 어떻게 보내나요?)">
+          <button class="fq-btn primary" id="fqAiAskBtn">질문하기</button>
+        </div>
+        <div class="fq-ai-answer" id="fqAiAnswer"></div>
       </div>
 
       <!-- 이메일 문의·회신 → FAQ 등록 (담당자 전용) -->

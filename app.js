@@ -3055,6 +3055,16 @@ function fqBindFaq(scope) {
     localStorage.removeItem(FQ_CONFIG.FAQ_CACHE_KEY);
     location.reload();
   });
+  // AI에게 문의
+  const aiBtn = scope.querySelector('#fqAiBtn');
+  if (aiBtn) aiBtn.addEventListener('click', () => {
+    const box = document.getElementById('fqAiBox');
+    if (box) { box.hidden = !box.hidden; if (!box.hidden) document.getElementById('fqAiInput').focus(); }
+  });
+  const aiAsk = scope.querySelector('#fqAiAskBtn');
+  if (aiAsk) aiAsk.addEventListener('click', fqAskAi);
+  const aiInput = scope.querySelector('#fqAiInput');
+  if (aiInput) aiInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fqAskAi(); } });
   // 이메일 업로드 → FAQ
   const emBtn = scope.querySelector('#fqEmailUploadBtn');
   if (emBtn) emBtn.addEventListener('click', fqToggleEmailForm);
@@ -3064,6 +3074,38 @@ function fqBindFaq(scope) {
   if (emSubmit) emSubmit.addEventListener('click', fqSubmitEmail);
   const emFile = scope.querySelector('#fqEmFile');
   if (emFile) emFile.addEventListener('change', fqReadEmailFile);
+}
+
+// ── AI에게 문의 (FAQ·문의답변 DB 기반 LLM 답변) ──
+async function fqAskAi() {
+  const inputEl = document.getElementById('fqAiInput');
+  const ansEl = document.getElementById('fqAiAnswer');
+  const q = (inputEl.value || '').trim();
+  if (!q) { fqToast('질문을 입력하세요', 'warn'); return; }
+  ansEl.innerHTML = '<div class="fq-ai-loading">🤖 사내 FAQ·문의답변을 정리해 답변을 만들고 있습니다…</div>';
+  // 질문과 관련도 높은 자료 우선 선별 (키워드 겹침)
+  const items = FQ_FAQ_DATA.items || [];
+  const qWords = q.toLowerCase().split(/[\s,./]+/).filter(w => w.length > 1);
+  const scored = items.map(it => {
+    const hay = (it.q + ' ' + (it.a || '') + ' ' + ((it.tags || []).join(' '))).toLowerCase();
+    let s = 0; qWords.forEach(w => { if (hay.includes(w)) s++; });
+    return { it, s };
+  }).sort((a, b) => b.s - a.s);
+  // 관련 자료 우선 + 최소 분량 보장
+  const top = scored.slice(0, 24).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
+  try {
+    const res = await fetch('/api/faq-ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, context: top })
+    });
+    let j = {}; try { j = await res.json(); } catch (e) {}
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    ansEl.innerHTML =
+      '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
+      '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 사내 FAQ·문의답변 DB를 근거로 생성되며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
+  } catch (e) {
+    ansEl.innerHTML = '<div class="fq-ai-error">답변 생성 실패: ' + fqEsc(e.message) + '<br>잠시 후 다시 시도해 주세요.</div>';
+  }
 }
 
 // ── 이메일 업로드 → FAQ 등록 ──

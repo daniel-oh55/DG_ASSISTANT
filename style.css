@@ -4308,6 +4308,31 @@ header span {
 .fq-new-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .fq-hint { font-size: 11px; color: var(--fq-muted); margin-top: 8px; }
 
+/* AI에게 문의 */
+.fq-ai-box { background: linear-gradient(180deg, rgba(46,196,182,0.06), var(--fq-bg)); border: 1px solid var(--fq-accent); border-radius: var(--fq-radius); padding: 18px; margin-bottom: 16px; }
+.fq-ai-head { font-size: 14px; font-weight: 700; color: var(--fq-primary); margin-bottom: 12px; }
+.fq-ai-head span { font-size: 11px; font-weight: 600; color: var(--fq-muted); margin-left: 6px; }
+.fq-ai-input-row { display: flex; gap: 8px; }
+.fq-ai-input-row input { flex: 1; padding: 11px 14px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 14px; font-family: inherit; background: white; }
+.fq-ai-input-row input:focus { outline: none; border-color: var(--fq-accent); box-shadow: 0 0 0 3px rgba(46,196,182,0.12); }
+.fq-ai-input-row .fq-btn { white-space: nowrap; }
+.fq-ai-answer:empty { display: none; }
+.fq-ai-answer { margin-top: 14px; }
+.fq-ai-loading { padding: 14px; color: var(--fq-muted); font-size: 13px; background: white; border: 1px dashed var(--fq-border); border-radius: var(--fq-radius-sm); }
+.fq-ai-error { padding: 14px; color: #b42318; font-size: 13px; background: #fff4f3; border: 1px solid #f3c0bb; border-radius: var(--fq-radius-sm); line-height: 1.6; }
+.fq-ai-result { padding: 16px; background: white; border: 1px solid var(--fq-border); border-radius: var(--fq-radius-sm); font-size: 13.5px; line-height: 1.7; color: var(--fq-text); }
+.fq-ai-result p { margin: 0 0 9px; }
+.fq-ai-result p:last-child { margin-bottom: 0; }
+.fq-ai-result strong { color: var(--fq-primary); }
+.fq-ai-result ul, .fq-ai-result ol { margin: 4px 0 11px; padding-left: 20px; }
+.fq-ai-result li { margin: 3px 0; }
+.fq-ai-result code { background: var(--fq-bg); padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+.fq-ai-result table { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 12.5px; border: 1px solid var(--fq-border); border-radius: 6px; overflow: hidden; }
+.fq-ai-result th { background: var(--fq-primary); color: #fff; font-weight: 700; text-align: left; padding: 8px 10px; }
+.fq-ai-result td { padding: 7px 10px; border-top: 1px solid var(--fq-border); vertical-align: top; }
+.fq-ai-result blockquote { margin: 6px 0 12px; padding: 10px 14px; border-left: 3px solid var(--fq-accent); background: var(--fq-bg); border-radius: 0 6px 6px 0; }
+.fq-ai-disclaimer { margin-top: 10px; font-size: 11.5px; color: var(--fq-muted); line-height: 1.6; }
+
 /* 이메일 업로드 → FAQ 폼 */
 .fq-email-form { background: var(--fq-bg); border: 1px solid var(--fq-accent); border-radius: var(--fq-radius); padding: 18px; margin-bottom: 16px; }
 .fq-email-head { font-size: 14px; font-weight: 700; color: var(--fq-primary); margin-bottom: 6px; }
