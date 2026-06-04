@@ -1511,6 +1511,49 @@ header span {
     background: rgba(0, 191, 165, 0.18);
 }
 
+/* 원본 규정 PDF 링크 */
+.carrier-doc-action {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+.carrier-doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(120, 170, 255, 0.45);
+    background: rgba(90, 150, 255, 0.12);
+    color: #bcd4ff;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all .15s;
+}
+.carrier-doc-link:hover {
+    color: #ffffff;
+    border-color: rgba(120, 170, 255, 0.85);
+    background: rgba(90, 150, 255, 0.24);
+}
+/* 자사(SKR/HAS) 카드 강조 */
+.carrier-result-card.carrier-own {
+    border-color: rgba(0, 191, 165, 0.55) !important;
+    box-shadow: 0 0 0 2px rgba(0, 191, 165, 0.28), 0 10px 30px rgba(0,0,0,0.18);
+}
+[data-theme="bright"] .carrier-doc-link {
+    color: #2456b8;
+    border-color: rgba(90, 130, 220, 0.5);
+    background: rgba(90, 130, 220, 0.10);
+}
+[data-theme="bright"] .carrier-doc-link:hover {
+    color: #12347a;
+    background: rgba(90, 130, 220, 0.2);
+}
+
 #carrierCheckResult > div[style*="margin-top:18px"] {
     padding: 14px 16px;
     border-radius: 14px;

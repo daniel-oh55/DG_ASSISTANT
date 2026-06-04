@@ -1625,6 +1625,15 @@ function renderRuleRemarkCondition(rule) {
     return html;
 }
 
+// 선사 그룹별 원본 규정 파일 (carriers/ 폴더에 호스팅)
+const CARRIER_DOCS = {
+    SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.11)' },
+    HMM_PARTNER: { url: '/carriers/hmm.pdf',      label: 'HMM Prohibited & Restricted List' },
+    TSL:         { url: '/carriers/tsl.pdf',      label: 'TSL Restricted-Prohibited DG (Rev.29)' },
+    KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.01)' },
+    NSS_DYS:     { url: '/carriers/nss_dys.xlsx',  label: 'NSS & DYS DG Prohibition List (XLSX)' }
+};
+
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
     const showOnlyAllowed = document.getElementById('showOnlyAllowedCarrier')?.checked;
@@ -1632,9 +1641,12 @@ function renderCarrierResultFromApi(dgItem, results) {
     carrierCommonRulesStore = {};
 
 
-    const filteredResults = showOnlyAllowed
+    const filteredResults = (showOnlyAllowed
         ? results.filter(r => r.status === 'ALLOWED')
-        : results;
+        : results.slice());
+    // SKR/HAS(자사)를 항상 결과 최상단에 고정 (나머지는 기존 순서 유지)
+    filteredResults.sort((a, b) =>
+        (a.carrier_group === 'SKR_HAL' ? 0 : 1) - (b.carrier_group === 'SKR_HAL' ? 0 : 1));
 
     const unno = escapeHtml(dgItem.UNNO || '');
     const name = escapeHtml(dgItem.Name || '-');
@@ -1683,15 +1695,24 @@ const commonButtonHtml = commonRules.length
     `
     : '';
 
+                const isOwn = result.carrier_group === 'SKR_HAL';
+                const doc = CARRIER_DOCS[result.carrier_group];
+                const docHtml = doc ? `
+                    <div class="carrier-doc-action">
+                        <a class="carrier-doc-link" href="${doc.url}" target="_blank" rel="noopener" title="${escapeHtml(doc.label)}">📄 원본 규정 보기</a>
+                    </div>
+                ` : '';
+
                 return `
-                    <div class="carrier-result-card ${carrierStatusClass(result.status)}">
+                    <div class="carrier-result-card ${carrierStatusClass(result.status)}${isOwn ? ' carrier-own' : ''}">
                         <div class="carrier-result-header">
-                            <div class="carrier-name">${escapeHtml(result.carrier_name || result.carrier_group)}</div>
+                            <div class="carrier-name">${isOwn ? '⭐ ' : ''}${escapeHtml(result.carrier_name || result.carrier_group)}</div>
                             <div class="carrier-status">${escapeHtml(result.status_label || carrierStatusLabel(result.status))}</div>
                         </div>
                         <div class="carrier-rule-box">
                           ${ruleHtml}
                           ${commonButtonHtml}
+                          ${docHtml}
                         </div>
                     </div>
                 `;
