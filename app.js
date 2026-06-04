@@ -2240,7 +2240,9 @@ const FQ_CONFIG = {
   // 비밀번호 'admin1234' SHA-256 해시
   ADMIN_PWD_HASH: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270',
   EXPORT_FILENAME: 'dg_assistant_inquiry_export',
-  REPLY_PWD: '1234'   // 담당자 답글 비밀번호
+  REPLY_PWD: '1234',          // 담당자 답글 비밀번호
+  FAQ_CACHE_KEY: 'dg_assistant_faq_dyn_v1',  // 동적 FAQ(DB) 오프라인 캐시
+  API: '/api/inquiry'         // Supabase 공용 저장소 엔드포인트
 };
 
 // 게시판 답변·이메일 업로드가 자동 등록되는 FAQ 카테고리
@@ -2887,6 +2889,52 @@ let fqPosts = [];
 let fqCurrentCat = '전체';
 let fqOpenPostId = null;
 
+// ─── Supabase 전체 공유: 시드(코드 49건) + 동적 항목(공용 DB) 분리 ───
+const FQ_SEED_ITEMS = (FQ_FAQ_DATA.items || []).slice();
+const FQ_SEED_CATS = (FQ_FAQ_DATA.categories || []).slice();
+let fqRemoteOK = false;   // 공용 DB 연결 성공 여부
+
+async function fqApi(path, opts) {
+  const res = await fetch(path, opts);
+  let j = {};
+  try { j = await res.json(); } catch (e) {}
+  if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+  return j;
+}
+// 동적 항목(dyn) + 시드 병합 → FQ_FAQ_DATA 재구성
+function fqMergeFaq(dyn) {
+  dyn = dyn || [];
+  FQ_FAQ_DATA.items = dyn.concat(FQ_SEED_ITEMS);
+  FQ_FAQ_DATA.categories = FQ_SEED_CATS.slice();
+  dyn.forEach(it => { if (it.cat && !FQ_FAQ_DATA.categories.includes(it.cat)) FQ_FAQ_DATA.categories.push(it.cat); });
+}
+// 현재 항목 중 시드가 아닌 동적 항목만 추출
+function fqDynItems() {
+  const seedIds = new Set(FQ_SEED_ITEMS.map(x => x.id));
+  return (FQ_FAQ_DATA.items || []).filter(x => x && !seedIds.has(x.id));
+}
+// 공용 DB에서 FAQ 동적 항목 동기화 (실패 시 로컬 캐시 유지)
+async function fqSyncFaqRemote() {
+  try {
+    const j = await fqApi(FQ_CONFIG.API + '?id=faq');
+    fqRemoteOK = true;
+    const dyn = (j.data && j.data.items) || [];
+    try { localStorage.setItem(FQ_CONFIG.FAQ_CACHE_KEY, JSON.stringify(dyn)); } catch (e) {}
+    fqMergeFaq(dyn);
+    fqRenderFaq();
+  } catch (e) { console.warn('FAQ 공용 DB 동기화 실패(로컬 사용):', e.message); fqRemoteOK = false; }
+}
+// 공용 DB에서 게시판 글 동기화
+async function fqSyncPostsRemote() {
+  try {
+    const j = await fqApi(FQ_CONFIG.API + '?id=board');
+    fqRemoteOK = true;
+    fqPosts = (j.data && j.data.posts) || [];
+    try { localStorage.setItem(FQ_CONFIG.BOARD_KEY, JSON.stringify(fqPosts)); } catch (e) {}
+    fqRenderPosts();
+  } catch (e) { console.warn('게시판 공용 DB 동기화 실패(로컬 사용):', e.message); }
+}
+
 
 // ═══════════════════════════════════════════════════════════════
 // 초기화
@@ -2901,6 +2949,9 @@ function fqInit(scope) {
   fqRenderFaq();
   fqRenderPosts();
   fqUpdateAdminUI();
+  // 공용 DB(Supabase) 최신 데이터 동기화 (비동기 — 끝나면 자동 재렌더)
+  fqSyncFaqRemote();
+  fqSyncPostsRemote();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2912,6 +2963,9 @@ function fqBindTabs(scope) {
       const tab = btn.dataset.fqTab;
       scope.querySelectorAll('[data-fq-tab]').forEach(b => b.classList.toggle('active', b.dataset.fqTab === tab));
       scope.querySelectorAll('[data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === tab));
+      // 탭 전환 시 공용 DB에서 최신 데이터 새로고침
+      if (tab === 'faq') fqSyncFaqRemote();
+      else if (tab === 'board') fqSyncPostsRemote();
     });
   });
 }
@@ -2920,15 +2974,16 @@ function fqBindTabs(scope) {
 // FAQ
 // ═══════════════════════════════════════════════════════════════
 function fqLoadFaq() {
-  try {
-    const saved = localStorage.getItem(FQ_CONFIG.FAQ_KEY);
-    if (saved) { FQ_FAQ_DATA = JSON.parse(saved); }
-  } catch (e) { console.warn('FAQ load 실패:', e); }
+  // 오프라인 캐시(동적 항목)만 로드 → 시드와 병합 (공용 DB는 fqSyncFaqRemote가 갱신)
+  let dyn = [];
+  try { const c = localStorage.getItem(FQ_CONFIG.FAQ_CACHE_KEY); if (c) dyn = JSON.parse(c) || []; } catch (e) {}
+  fqMergeFaq(dyn);
 }
 
 function fqSaveFaq() {
-  try { localStorage.setItem(FQ_CONFIG.FAQ_KEY, JSON.stringify(FQ_FAQ_DATA)); }
-  catch (e) { console.error('FAQ save 실패:', e); }
+  // 동적 항목만 로컬 캐시에 저장 (시드는 코드에 유지)
+  try { localStorage.setItem(FQ_CONFIG.FAQ_CACHE_KEY, JSON.stringify(fqDynItems())); }
+  catch (e) { console.error('FAQ cache 실패:', e); }
 }
 
 function fqBindFaq(scope) {
@@ -2952,8 +3007,8 @@ function fqBindFaq(scope) {
     } catch (e) { alert('JSON 파싱 오류: ' + e.message); }
   });
   scope.querySelector('#fqAdminReset').addEventListener('click', () => {
-    if (!confirm('FAQ를 초기 상태로 되돌리시겠습니까?')) return;
-    localStorage.removeItem(FQ_CONFIG.FAQ_KEY);
+    if (!confirm('FAQ 로컬 캐시를 초기화하고 공용 DB에서 다시 불러오시겠습니까?')) return;
+    localStorage.removeItem(FQ_CONFIG.FAQ_CACHE_KEY);
     location.reload();
   });
   // 이메일 업로드 → FAQ
@@ -3008,15 +3063,13 @@ async function fqSubmitEmail() {
     if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
     sessionStorage.setItem('fq_reply_ok', '1');
   }
-  fqEnsureCategory(cat);
   const bodyPart = inquiry ? ('**문의 내용**\n' + inquiry + '\n\n**답변**\n') : '';
-  const tags = ['이메일', by].filter(Boolean);
-  FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
-  FQ_FAQ_DATA.items.unshift({
+  const item = {
     id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
-    cat: cat, q: subject, a: bodyPart + reply, tags: tags, source: 'email'
-  });
-  fqSaveFaq();
+    cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email'
+  };
+  // 로컬 즉시 반영 + 공용 DB 저장
+  await fqUpsertFaqItem(item);
   ['fqEmSubject', 'fqEmInquiry', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
   document.getElementById('fqEmailForm').hidden = true;
@@ -3024,7 +3077,7 @@ async function fqSubmitEmail() {
   document.querySelectorAll('#fqModule [data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === 'faq'));
   fqCurrentCat = cat;
   fqRenderFaq();
-  fqToast('✓ 이메일 문의가 FAQ에 등록되었습니다', 'success');
+  fqToast(fqRemoteOK ? '✓ 이메일 문의가 FAQ에 등록되었습니다 (전체 공유)' : '✓ 이메일 문의 등록 (로컬)', 'success');
 }
 
 function fqRenderFaq() {
@@ -3176,12 +3229,20 @@ async function fqSubmitPost() {
     answeredAt: null,
     answerBy: null
   };
-  fqPosts.unshift(post);
+  // 공용 DB 우선 저장 (실패 시 로컬에만 저장)
+  try {
+    const j = await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'create', post }) });
+    fqRemoteOK = true;
+    fqPosts = (j.data && j.data.posts) || [post, ...fqPosts];
+  } catch (e) {
+    console.warn('문의 공용 저장 실패(로컬 저장):', e.message);
+    fqPosts.unshift(post);
+  }
   fqSavePosts();
   fqResetNewForm();
   document.getElementById('fqNewPostForm').hidden = true;
   fqRenderPosts();
-  fqToast('✓ 문의 등록됨', 'success');
+  fqToast(fqRemoteOK ? '✓ 문의 등록됨 (전체 공유)' : '✓ 문의 등록됨 (로컬)', 'success');
 }
 
 function fqRenderPosts() {
@@ -3268,7 +3329,7 @@ function fqOpenAnswerForm(id) {
 function fqCloseAnswerForm(id) {
   document.getElementById('fqAnsForm-' + id).classList.remove('open');
 }
-function fqSaveAnswer(id) {
+async function fqSaveAnswer(id) {
   const text = document.getElementById('fqAnsText-' + id).value.trim();
   if (!text) { fqToast('답변 내용 필요', 'warn'); return; }
   // 작성 권한 재확인 (폼이 직접 열렸을 경우 대비)
@@ -3279,16 +3340,24 @@ function fqSaveAnswer(id) {
   }
   const post = fqPosts.find(p => p.id === id);
   if (!post) return;
+  const answerBy = prompt('답변자 (예: 운항팀, 이원태 차장):', post.answerBy || '담당자') || '담당자';
   post.answer = text;
   post.answeredAt = new Date().toISOString();
-  post.answerBy = prompt('답변자 (예: 운항팀, 이원태 차장):', post.answerBy || '담당자') || '담당자';
+  post.answerBy = answerBy;
   post.status = 'answered';
+  // 공용 DB에 답변 저장
+  try {
+    const j = await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'answer', postId: id, answer: text, answerBy }) });
+    fqRemoteOK = true;
+    if (j.data && j.data.posts) fqPosts = j.data.posts;
+  } catch (e) { console.warn('답변 공용 저장 실패(로컬):', e.message); }
   fqSavePosts();
-  // 문의 + 답변을 FAQ 데이터베이스로 자동 등록
-  fqAddBoardAnswerToFaq(post);
+  // 문의 + 답변을 FAQ 공용 DB로 자동 등록
+  const updated = fqPosts.find(p => p.id === id) || post;
+  await fqAddBoardAnswerToFaq(updated);
   fqCloseAnswerForm(id);
   fqRenderPosts();
-  fqToast('✓ 답변 등록 + FAQ 자동 반영 완료', 'success');
+  fqToast(fqRemoteOK ? '✓ 답변 등록 + FAQ 자동 반영 (전체 공유)' : '✓ 답변 등록 (로컬)', 'success');
 }
 
 // FAQ 카테고리 보장 (없으면 추가)
@@ -3297,30 +3366,43 @@ function fqEnsureCategory(cat) {
   if (!FQ_FAQ_DATA.categories.includes(cat)) FQ_FAQ_DATA.categories.push(cat);
 }
 
+// FAQ 항목을 로컬(즉시) + 공용 DB에 등록/갱신
+async function fqUpsertFaqItem(item) {
+  fqEnsureCategory(item.cat);
+  FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
+  const i = FQ_FAQ_DATA.items.findIndex(x => x.id === item.id);
+  if (i >= 0) FQ_FAQ_DATA.items[i] = item; else FQ_FAQ_DATA.items.unshift(item);
+  fqSaveFaq();
+  if (typeof fqRenderFaq === 'function') fqRenderFaq();
+  try {
+    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'faq', action: 'upsert', item }) });
+    fqRemoteOK = true;
+  } catch (e) { console.warn('FAQ 공용 저장 실패(로컬):', e.message); }
+}
+
 // 게시판 답변 → FAQ 자동 등록 (동일 글은 갱신)
-function fqAddBoardAnswerToFaq(post) {
-  fqEnsureCategory(FQ_BOARD_FAQ_CAT);
+async function fqAddBoardAnswerToFaq(post) {
   const faqId = 'faq_brd_' + post.id;
   // 비밀글은 본문(문의 내용)을 공개하지 않고 제목+답변만 등록
   const bodyPart = (!post.isPrivate && post.body) ? ('**문의 내용**\n' + post.body + '\n\n**답변**\n') : '';
-  const answerText = bodyPart + post.answer;
-  const tags = ['게시판', post.category, post.answerBy].filter(Boolean);
-  FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
-  const existing = FQ_FAQ_DATA.items.find(x => x.id === faqId);
-  if (existing) {
-    existing.q = post.subject; existing.a = answerText; existing.cat = FQ_BOARD_FAQ_CAT; existing.tags = tags;
-  } else {
-    FQ_FAQ_DATA.items.unshift({ id: faqId, cat: FQ_BOARD_FAQ_CAT, q: post.subject, a: answerText, tags: tags, source: 'board' });
-  }
-  fqSaveFaq();
-  if (typeof fqRenderFaq === 'function') fqRenderFaq();
+  const item = {
+    id: faqId, cat: FQ_BOARD_FAQ_CAT, q: post.subject, a: bodyPart + post.answer,
+    tags: ['게시판', post.category, post.answerBy].filter(Boolean), source: 'board'
+  };
+  await fqUpsertFaqItem(item);
 }
 
-function fqDeletePost(id) {
+async function fqDeletePost(id) {
   if (!confirm('이 문의를 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
   fqPosts = fqPosts.filter(p => p.id !== id);
   fqSavePosts();
   fqRenderPosts();
+  // 공용 DB에서 글 + 연동 FAQ 항목 삭제
+  try {
+    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'board', action: 'delete', postId: id }) });
+    await fqApi(FQ_CONFIG.API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'faq', action: 'delete', postId: 'faq_brd_' + id }) });
+    fqRemoteOK = true;
+  } catch (e) { console.warn('삭제 공용 반영 실패(로컬):', e.message); }
   fqToast('🗑 삭제됨', 'warn');
 }
 
