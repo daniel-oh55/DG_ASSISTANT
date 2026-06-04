@@ -407,8 +407,38 @@
         <input type="search" class="fq-search" id="fqSearch" placeholder="🔍 FAQ 검색 (질문·답변·태그)">
         <button class="fq-btn ghost" id="fqExpandAll">모두 펴기</button>
         <button class="fq-btn ghost" id="fqCollapseAll">모두 접기</button>
+        <button class="fq-btn accent" id="fqEmailUploadBtn">📧 이메일 업로드</button>
         <button class="fq-btn ghost" id="fqAdminBtn">🔐 관리자</button>
       </div>
+
+      <!-- 이메일 문의·회신 → FAQ 등록 (담당자 전용) -->
+      <div class="fq-email-form" id="fqEmailForm" hidden>
+        <div class="fq-email-head">📧 이메일 문의·회신 → FAQ 등록 <span>담당자 전용 · 비밀번호 1234</span></div>
+        <p class="fq-email-guide">이메일로 받은 문의와 회신 내용을 등록하면 FAQ에 자동 저장되어 팀원·고객이 함께 조회할 수 있습니다. 이메일 파일(.eml/.txt)을 첨부하면 제목·내용을 자동으로 불러옵니다.</p>
+        <label class="fq-field-label" for="fqEmFile">이메일 파일 첨부 (.eml / .txt / .msg · 선택)</label>
+        <input type="file" id="fqEmFile" accept=".eml,.txt,.msg,message/rfc822,text/plain">
+        <label class="fq-field-label" for="fqEmSubject">제목 (질문) <span class="fq-req">*</span></label>
+        <input type="text" id="fqEmSubject" maxlength="200" placeholder="예: UN3082 해양오염물질 닝보 선적 가능 여부">
+        <label class="fq-field-label" for="fqEmInquiry">문의 내용</label>
+        <textarea id="fqEmInquiry" placeholder="고객이 보내온 문의 내용 (선택)"></textarea>
+        <label class="fq-field-label" for="fqEmReply">회신 (답변) 내용 <span class="fq-req">*</span></label>
+        <textarea id="fqEmReply" placeholder="담당자가 회신한 답변 내용"></textarea>
+        <div class="fq-email-row">
+          <div>
+            <label class="fq-field-label" for="fqEmCat">카테고리</label>
+            <select id="fqEmCat"></select>
+          </div>
+          <div>
+            <label class="fq-field-label" for="fqEmBy">담당자</label>
+            <input type="text" id="fqEmBy" placeholder="예: 운항팀 / 이원태 차장">
+          </div>
+        </div>
+        <div class="fq-new-actions">
+          <button type="button" class="fq-btn ghost" id="fqEmCancelBtn">취소</button>
+          <button type="button" class="fq-btn primary" id="fqEmSubmitBtn">📥 FAQ로 등록</button>
+        </div>
+      </div>
+
       <div class="fq-cats" id="fqCats"></div>
       <div class="fq-list" id="fqList"></div>
       <div class="fq-admin-tools" id="fqAdminTools">

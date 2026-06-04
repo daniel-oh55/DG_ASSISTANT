@@ -4265,6 +4265,24 @@ header span {
 .fq-new-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .fq-hint { font-size: 11px; color: var(--fq-muted); margin-top: 8px; }
 
+/* 이메일 업로드 → FAQ 폼 */
+.fq-email-form { background: var(--fq-bg); border: 1px solid var(--fq-accent); border-radius: var(--fq-radius); padding: 18px; margin-bottom: 16px; }
+.fq-email-head { font-size: 14px; font-weight: 700; color: var(--fq-primary); margin-bottom: 6px; }
+.fq-email-head span { font-size: 11px; font-weight: 600; color: white; background: var(--fq-accent); padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+.fq-email-guide { font-size: 12px; color: var(--fq-muted); line-height: 1.6; margin-bottom: 12px; }
+.fq-email-form .fq-field-label { display: block; font-size: 11px; font-weight: 700; color: var(--fq-muted); margin: 10px 0 4px; letter-spacing: 0.04em; }
+.fq-email-form input[type="text"], .fq-email-form textarea, .fq-email-form select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; background: white;
+}
+.fq-email-form input:focus, .fq-email-form textarea:focus, .fq-email-form select:focus {
+  outline: none; border-color: var(--fq-accent); box-shadow: 0 0 0 3px rgba(46,196,182,0.12);
+}
+.fq-email-form textarea { resize: vertical; min-height: 80px; }
+.fq-email-form input[type="file"] { font-size: 12px; }
+.fq-email-row { display: flex; gap: 12px; margin-top: 4px; }
+.fq-email-row > div { flex: 1; }
+.fq-email-form .fq-new-actions { margin-top: 14px; }
+
 /* 게시글 */
 .fq-posts { display: flex; flex-direction: column; gap: 8px; }
 .fq-post { background: white; border: 1px solid var(--fq-border); border-radius: var(--fq-radius); overflow: hidden; }

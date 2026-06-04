@@ -2234,13 +2234,18 @@ if (themeToggleBtn) {
    FAQ + 문의 게시판 모듈 v1.0 — DG_ASSISTANT 통합 (2026-06-02)
    ═══════════════════════════════════════════════════════════════ */
 const FQ_CONFIG = {
-  FAQ_KEY:    'dg_assistant_faq_v2',
+  FAQ_KEY:    'dg_assistant_faq_v3',
   BOARD_KEY:  'dg_assistant_board_v1',
   ADMIN_SESSION_KEY: 'dg_assistant_admin_v1',
   // 비밀번호 'admin1234' SHA-256 해시
   ADMIN_PWD_HASH: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270',
-  EXPORT_FILENAME: 'dg_assistant_inquiry_export'
+  EXPORT_FILENAME: 'dg_assistant_inquiry_export',
+  REPLY_PWD: '1234'   // 담당자 답글 비밀번호
 };
+
+// 게시판 답변·이메일 업로드가 자동 등록되는 FAQ 카테고리
+const FQ_BOARD_FAQ_CAT = '💬 게시판 문의';
+const FQ_EMAIL_FAQ_CAT = '📧 이메일 문의';
 
 // ───── DG 관련 시드 FAQ (사이트 분석 기반) ─────
 let FQ_FAQ_DATA = {
@@ -2272,7 +2277,7 @@ let FQ_FAQ_DATA = {
       "id": "gen-msds-decide",
       "cat": "🧭 위험물 판정 기준",
       "q": "위험물인지 아닌지 어떻게 판단하나요? (MSDS 어디를 봐야 하나요?)",
-      "a": "안녕하세요. 위험물 여부는 화주께서 받으신 **MSDS의 14번 운송정보** 섹션을 먼저 확인해 주시면 가장 정확하게 판단할 수 있습니다.\n\n**1. CLASS / UN No. 기재 여부 확인**\n- MSDS 14번에 IMDG / Class / UN번호가 적혀 있다면 위험물에 해당합니다.\n- 운송방식(해상·육상·항공) 구분이 없더라도 CLASS·UN번호가 표기되어 있으면 위험물로 분류하고 있습니다.\n\n**2. 인화점도 함께 확인 부탁드립니다 (MSDS 9번)**\n- Flash Point가 **60°C 이하**라면 인화성 위험물(Class 3)일 가능성이 매우 높습니다.\n- 60°C를 초과하더라도 독성·부식성 등 다른 위험성으로 인해 위험물에 해당할 수 있으니, 전체 MSDS를 함께 검토해 주시기 바랍니다.\n\n**3. 독성·환경유해성 확인 (MSDS 12번)**\n- LC50 / EC50 / NOEC 수치를 확인해 주시기 바랍니다 (48~96h 노출 기준).\n- 어느 하나라도 **0.1 mg/L 이하** 반응이 있다면 환경유해성 물질에 해당하며, 액체는 **UN3082**, 고체는 **UN3077**로 운송하게 됩니다.\n- 예: 어류 LC50 0.12 mg/72h 등급은 UN3082/3077에 해당합니다.\n\n**4. 배터리 화물의 경우**\n- MSDS에 SPxx (예: SP188, SP230) 기재 시 추가 확인이 필요합니다.\n- UN 38.3 시험 통과 + 100Wh / 2g 이하 조건을 충족하시면 비위험물 취급도 가능합니다.\n\n판단이 어려우신 경우에는 MSDS 전체 PDF를 첨부해 DG Center로 문의 주시면 신속하게 확인 도와드리겠습니다.",
+      "a": "안녕하세요. 위험물 여부는 화주께서 받으신 **MSDS의 14번 운송정보** 섹션을 먼저 확인해 주시면 가장 정확하게 판단할 수 있습니다.\n\n**1. CLASS / UN No. 기재 여부 확인**\n- MSDS 14번에 IMDG / Class / UN번호가 적혀 있다면 위험물에 해당합니다.\n- 운송방식(해상·육상·항공) 구분이 없더라도 CLASS·UN번호가 표기되어 있으면 위험물로 분류하고 있습니다.\n\n**2. 인화점도 함께 확인 부탁드립니다 (MSDS 9번)**\n- Flash Point가 **60°C 이하**라면 인화성 위험물(Class 3)일 가능성이 매우 높습니다.\n- 60°C를 초과하더라도 독성·부식성 등 다른 위험성으로 인해 위험물에 해당할 수 있으니, 전체 MSDS를 함께 검토해 주시기 바랍니다.\n\n**3. 독성·환경유해성 확인 (MSDS 12번)**\n- LC50 / EC50 / NOEC 수치를 확인해 주시기 바랍니다 (48~96h 노출 기준).\n- 어느 하나라도 **1 mg/L 이하** 반응이 있다면 환경유해성 물질에 해당하며, 액체는 **UN3082**, 고체는 **UN3077**로 운송하게 됩니다.\n- 예: 어류 LC50 0.12 mg/L(96h) 등급은 UN3082/3077에 해당합니다.\n\n**4. 배터리 화물의 경우**\n- MSDS에 SPxx (예: SP188, SP230) 기재 시 추가 확인이 필요합니다.\n- UN 38.3 시험 통과 + 100Wh / 2g 이하 조건을 충족하시면 비위험물 취급도 가능합니다.\n\n판단이 어려우신 경우에는 MSDS 전체 PDF를 첨부해 DG Center로 문의 주시면 신속하게 확인 도와드리겠습니다.",
       "tags": [
         "MSDS",
         "판정",
@@ -2348,7 +2353,7 @@ let FQ_FAQ_DATA = {
       "id": "li-3090-3091",
       "cat": "🔋 리튬 배터리",
       "q": "UN3090 / UN3091 (리튬 금속 배터리) 선적 가능한가요?",
-      "a": "리튬 금속 배터리(UN3090·UN3091)는 현재 장금/흥아에서 **전면 선적 금지**로 운영하고 있습니다. SP188 비위험물 취급 건도 포함되며, 안전상의 사유로 부득이 운영 중인 점 양해 부탁드립니다.\n\n**제품 특성 (위험성)**\n- 1차 전지(충전 불가) — 100% 완충 상태로 출고됩니다.\n- 음극재가 리튬 금속이라 수분 접촉 시 폭발 위험이 있습니다.\n- 2차 전지(리튬이온) 대비 **열폭주 위험성이 훨씬 높습니다.**\n\n**1차 / 2차 전지 구분**\n| 항목 | 1차 전지 (3090/3091) | 2차 전지 (3480/3481) |\n|---|---|---|\n| 충전 | 불가 | 가능 |\n| 음극재 | 리튬 금속 | 흑연 |\n| 출하 충전율 | 100% | 30% 미만 |\n\n**SP388 (혼합 장비 처리)**\n1차 전지(9/3090)와 2차 전지(9/3480)가 동시에 장착된 장비의 경우, 더 위험한 1차 기준으로 **9/3091**로 분류됩니다.\n\n**금지 결정의 배경 (사고 사례)**\n- **2024.06.24 아리셀 화성공장 화재** — 비의 영향으로 불량 배터리가 수분과 반응하여 열폭주가 발생하였고, 대형 화재로 번지며 인명 피해까지 이어진 사고가 있었습니다. 배터리 화재는 소화가 불가능하고 유독가스가 발생하여 매우 위험합니다.\n\n**참고: 선사별 정책**\n| 선사 | 9/3090 위험물 | 9/3091 SP188 비위험물 |\n|---|---|---|\n| 장금/흥아 / HMM / 고려 / 남성·동영 / 천경 | 금지 | 금지 |\n| 동진 | 금지 | 허용 |\n| 완하이 (해외) | 9/3090, 3480, 3481 모두 금지 | - |\n| 그 외 해외선사 | 허용 | 허용 |\n\n파나소닉 코인 배터리 등 일상용 1차 전지도 동일하게 적용되니 참고 부탁드립니다.",
+      "a": "리튬 금속 배터리(UN3090·UN3091)는 현재 장금/흥아에서 **전면 선적 금지**로 운영하고 있습니다. SP188 비위험물 취급 건도 포함되며, 안전상의 사유로 부득이 운영 중인 점 양해 부탁드립니다.\n\n**제품 특성 (위험성)**\n- 1차 전지(충전 불가) — 100% 완충 상태로 출고됩니다.\n- 음극재가 리튬 금속이라 수분 접촉 시 폭발 위험이 있습니다.\n- 2차 전지(리튬이온) 대비 **열폭주 위험성이 훨씬 높습니다.**\n\n**1차 / 2차 전지 구분**\n| 항목 | 1차 전지 (3090/3091) | 2차 전지 (3480/3481) |\n|---|---|---|\n| 충전 | 불가 | 가능 |\n| 음극재 | 리튬 금속 | 흑연 |\n| 출하 충전율 | 100% | 30% 미만 |\n\n**SP387 (메탈+이온 혼합 전지)**\n리튬메탈 셀과 리튬이온 셀을 함께 포함한 배터리는 SP387에 따라 **UN3090/3091**(메탈 기준)으로 분류됩니다. (SP388은 차량 UN3166/3171용)\n\n**금지 결정의 배경 (사고 사례)**\n- **2024.06.24 아리셀 화성공장 화재** — 비의 영향으로 불량 배터리가 수분과 반응하여 열폭주가 발생하였고, 대형 화재로 번지며 인명 피해까지 이어진 사고가 있었습니다. 배터리 화재는 소화가 불가능하고 유독가스가 발생하여 매우 위험합니다.\n\n**참고: 선사별 정책**\n| 선사 | 9/3090 위험물 | 9/3091 SP188 비위험물 |\n|---|---|---|\n| 장금/흥아 / HMM / 고려 / 남성·동영 / 천경 | 금지 | 금지 |\n| 동진 | 금지 | 허용 |\n| 완하이 (해외) | 9/3090, 3480, 3481 모두 금지 | - |\n| 그 외 해외선사 | 허용 | 허용 |\n\n파나소닉 코인 배터리 등 일상용 1차 전지도 동일하게 적용되니 참고 부탁드립니다.",
       "tags": [
         "리튬금속",
         "Class 9",
@@ -2385,7 +2390,7 @@ let FQ_FAQ_DATA = {
       "id": "veh-3166",
       "cat": "🚗 차량 / EV",
       "q": "UN3166 (가스/액체 연료 차량) 선적 절차는?",
-      "a": "UN3166 차량은 연료 잔량 및 안전 조치를 충족하시면 선적이 가능합니다. 아래 사항 확인 후 진행 부탁드립니다.\n\n**가솔린·디젤 차량**\n- 연료탱크는 **1/4 미만** 충전 부탁드립니다.\n- 연료 캡과 밸브의 누유 방지를 확인해 주시기 바랍니다.\n- 배터리 단자는 절연 처리해 주시면 감사하겠습니다.\n\n**LPG / CNG 차량**\n- 가스 잔량은 **1/4 미만**이어야 합니다.\n- 밸브 폐쇄 상태를 꼭 확인 부탁드립니다.\n- 압력 시험 기록도 함께 준비해 주시면 좋습니다.\n\n**필요 서류**\n- MSDS\n- 차량등록증 (또는 동등 서류)\n- 차량 사진 (외관·연료 상태가 확인되는 사진)\n- 보험증명\n\n**선적이 어려운 경우**\n다음 케이스는 안전상 사유로 선적이 어려운 점 양해 부탁드립니다.\n- 누유 흔적이 있는 경우\n- 사고 이력 / 외관 손상이 확인되는 경우\n- 일부 항만의 차량 사전 승인을 받지 못한 경우\n\n**적용 Remark**\n- SP240 (차량 일반 조건)\n- SP312 (가스 연료 차량)\n- SP385 (전기차 — 별도 UN3556으로 분류)",
+      "a": "UN3166 차량은 연료 잔량 및 안전 조치를 충족하시면 선적이 가능합니다. 아래 사항 확인 후 진행 부탁드립니다.\n\n**가솔린·디젤 차량**\n- 연료탱크는 **1/4 미만** 충전 부탁드립니다.\n- 연료 캡과 밸브의 누유 방지를 확인해 주시기 바랍니다.\n- 배터리 단자는 절연 처리해 주시면 감사하겠습니다.\n\n**LPG / CNG 차량**\n- 가스 잔량은 **1/4 미만**이어야 합니다.\n- 밸브 폐쇄 상태를 꼭 확인 부탁드립니다.\n- 압력 시험 기록도 함께 준비해 주시면 좋습니다.\n\n**필요 서류**\n- MSDS\n- 차량등록증 (또는 동등 서류)\n- 차량 사진 (외관·연료 상태가 확인되는 사진)\n- 보험증명\n\n**선적이 어려운 경우**\n다음 케이스는 안전상 사유로 선적이 어려운 점 양해 부탁드립니다.\n- 누유 흔적이 있는 경우\n- 사고 이력 / 외관 손상이 확인되는 경우\n- 일부 항만의 차량 사전 승인을 받지 못한 경우\n\n**적용 Remark**\n- SP240 (차량 일반 조건)\n- SP312 (가스 연료 차량)\n- 전기차(배터리 구동)는 별도 **UN3556**(SP389)로 분류",
       "tags": [
         "차량",
         "Vehicle",
@@ -2418,7 +2423,7 @@ let FQ_FAQ_DATA = {
       "id": "co-1790",
       "cat": "⚗️ 부식성 (Cl.8)",
       "q": "UN1790 (불산 / Hydrofluoric Acid) 운송 절차는?",
-      "a": "불산은 고위험 부식성 물질이라 **사전 PRE-CHECK가 필수**입니다. 선적 검토 시 미리 운항팀으로 연락 부탁드립니다.\n\n**분류 / 포장 안내**\n- 농도에 따라 **PG I 또는 PG II**로 분류됩니다.\n- **PTFE 라이닝** 내산 용기 또는 UN 인증 IBC를 사용해 주셔야 합니다.\n- 50% 이상 농도의 경우 PG I (특별 관리 대상)으로 처리됩니다.\n\n**필요 서류 / 라벨**\n- MSDS (영문 + 한글) 모두 준비 부탁드립니다.\n- DGD\n- 외부 라벨 + 응급 처치 카드 부착이 필요합니다.\n- 비상연락처를 함께 명시해 주시면 감사하겠습니다.\n\n**적재 및 격리 안내**\n- Segregation Group **18 (Acids)** — 식품·유기물과는 \"Separated from\" 격리가 필요합니다.\n- 알칼리·시안화물과도 격리해 주셔야 합니다 (반응성).\n- 갑판 적재를 권장드립니다.\n\n**항만 제한 안내**\n- 부산 신항: 특정 부두에서만 가능합니다.\n- 일부 중국 항만은 사전 승인이 필요합니다.\n\n응급 대응 SOP를 사전에 합의해 주셔야 하며, 누출 시 즉시 통제가 가능한 체계가 갖춰져야 합니다.",
+      "a": "불산은 고위험 부식성 물질이라 **사전 PRE-CHECK가 필수**입니다. 선적 검토 시 미리 운항팀으로 연락 부탁드립니다.\n\n**분류 / 포장 안내**\n- 농도에 따라 **PG I 또는 PG II**로 분류됩니다.\n- **PTFE 라이닝** 내산 용기 또는 UN 인증 IBC를 사용해 주셔야 합니다.\n- 50% 이상 농도의 경우 PG I (특별 관리 대상)으로 처리됩니다.\n\n**필요 서류 / 라벨**\n- MSDS (영문 + 한글) 모두 준비 부탁드립니다.\n- DGD\n- 외부 라벨 + 응급 처치 카드 부착이 필요합니다.\n- 비상연락처를 함께 명시해 주시면 감사하겠습니다.\n\n**적재 및 격리 안내**\n- Segregation Group **1 (Acids)** — 식품·유기물과는 \"Separated from\" 격리가 필요합니다.\n- 알칼리·시안화물과도 격리해 주셔야 합니다 (반응성).\n- 갑판 적재를 권장드립니다.\n\n**항만 제한 안내**\n- 부산 신항: 특정 부두에서만 가능합니다.\n- 일부 중국 항만은 사전 승인이 필요합니다.\n\n응급 대응 SOP를 사전에 합의해 주셔야 하며, 누출 시 즉시 통제가 가능한 체계가 갖춰져야 합니다.",
       "tags": [
         "부식성",
         "불산",
@@ -2453,7 +2458,7 @@ let FQ_FAQ_DATA = {
       "id": "gen-marine-decide",
       "cat": "🌊 해양 오염 물질",
       "q": "Marine Pollutant(해양오염) 판정 기준은?",
-      "a": "Marine Pollutant 여부는 MSDS 12번 환경 유해성 섹션에서 다음 수치를 확인하시면 판단 가능합니다.\n\n**확인해 주실 수치**\n- **LC50** (Lethal Concentration 50%) — 어류 96h 시험 기준\n- **EC50** (Effect Concentration 50%) — 갑각류 48h, 조류 72h 시험\n- **NOEC** (No Observed Effect Concentration) — 만성 노출 시험\n\n**판정 기준 (IMDG 2.10)**\n- 위 수치 중 **어느 하나라도 0.1 mg/L 이하**일 경우 Marine Pollutant에 해당합니다.\n- 액체 → **UN3082** (Environmentally Hazardous Substance, Liquid, N.O.S.) Class 9\n- 고체 → **UN3077** (Environmentally Hazardous Substance, Solid, N.O.S.) Class 9\n\n**의무 사항 안내**\n- Marine Pollutant Mark를 외부에 부착해 주셔야 합니다.\n- DGD에 \"Marine Pollutant\"를 명시해 주시기 바랍니다.\n- SP274 / SP335가 적용되며, 정확한 성분명을 부기해 주셔야 합니다.\n- 적재는 갑판(데크)을 권장드리며, 누출 시 환경 영향 최소화 및 점검 용이성을 고려한 조치입니다.\n\n* 일부 항만(상해·닝보)은 CAS No. 기반으로 추가 확인이 필요한 점 참고 부탁드립니다.",
+      "a": "Marine Pollutant 여부는 MSDS 12번 환경 유해성 섹션에서 다음 수치를 확인하시면 판단 가능합니다.\n\n**확인해 주실 수치**\n- **LC50** (Lethal Concentration 50%) — 어류 96h 시험 기준\n- **EC50** (Effect Concentration 50%) — 갑각류 48h, 조류 72h 시험\n- **NOEC** (No Observed Effect Concentration) — 만성 노출 시험\n\n**판정 기준 (IMDG 2.10)**\n- 위 수치 중 **어느 하나라도 1 mg/L 이하**일 경우 Marine Pollutant에 해당합니다.\n- 액체 → **UN3082** (Environmentally Hazardous Substance, Liquid, N.O.S.) Class 9\n- 고체 → **UN3077** (Environmentally Hazardous Substance, Solid, N.O.S.) Class 9\n\n**의무 사항 안내**\n- Marine Pollutant Mark를 외부에 부착해 주셔야 합니다.\n- DGD에 \"Marine Pollutant\"를 명시해 주시기 바랍니다.\n- SP274 / SP335가 적용되며, 정확한 성분명을 부기해 주셔야 합니다.\n- 적재는 갑판(데크)을 권장드리며, 누출 시 환경 영향 최소화 및 점검 용이성을 고려한 조치입니다.\n\n* 일부 항만(상해·닝보)은 CAS No. 기반으로 추가 확인이 필요한 점 참고 부탁드립니다.",
       "tags": [
         "Marine Pollutant",
         "환경유해성",
@@ -2642,7 +2647,7 @@ let FQ_FAQ_DATA = {
       "id": "stow-seg",
       "cat": "📦 적재 / 격리",
       "q": "적재 / 격리 규정(Stowage & Segregation)은?",
-      "a": "위험물의 적재 및 격리는 IMDG Code 7장 기준을 따르고 있습니다. 아래 내용을 참고해 주시면 도움이 되실 듯합니다.\n\n**Stowage Category 분류**\n- **A** — 데크 / 언더데크 모두 가능\n- **B / C** — 일반 적재\n- **D** — 갑판 적재만 가능\n- **E** — 갑판 적재 (관계자만 접근)\n\n**Segregation (격리) — IMDG 7.2.4**\n| 코드 | 의미 |\n|---|---|\n| 1 | \"Away from\" — 같은 컨테이너 적재 불가, 최소 3m |\n| 2 | \"Separated from\" — 1 컨테이너 거리 |\n| 3 | \"Separated by complete compartment\" — 격벽 분리 |\n| 4 | \"Separated longitudinally by intervening complete compartment\" — 종방향 격벽 + 거리 |\n| X | 같은 컨테이너 가능 |\n\n**Segregation Group**\n- Group 1: Acids (산)\n- Group 18: Other Strong Acids (강산 — HF 등)\n- Group 11: Bases (염기)\n- 식품·식수와의 격리는 별도 규정이 있습니다 (IMDG 7.3.4).\n\n**자주 문의주시는 사례**\n- CLASS 9 + CLASS 4.1 혼적은 격리 문제가 없어 같은 컨테이너에 적재 가능합니다.\n- CLASS 8 산 + CLASS 8 염기는 Segregation Group 1 vs 11로 \"Separated from\" 격리가 적용됩니다.\n- 인화성 + 산화성 (Class 3 + 5.1)도 \"Separated from\" 격리가 필요합니다.",
+      "a": "위험물의 적재 및 격리는 IMDG Code 7장 기준을 따르고 있습니다. 아래 내용을 참고해 주시면 도움이 되실 듯합니다.\n\n**Stowage Category 분류**\n- **A** — 데크 / 언더데크 모두 가능\n- **B / C** — 일반 적재\n- **D** — 갑판 적재만 가능\n- **E** — 갑판 적재 (관계자만 접근)\n\n**Segregation (격리) — IMDG 7.2.4**\n| 코드 | 의미 |\n|---|---|\n| 1 | \"Away from\" — 같은 컨테이너 적재 불가, 최소 3m |\n| 2 | \"Separated from\" — 1 컨테이너 거리 |\n| 3 | \"Separated by complete compartment\" — 격벽 분리 |\n| 4 | \"Separated longitudinally by intervening complete compartment\" — 종방향 격벽 + 거리 |\n| X | 같은 컨테이너 가능 |\n\n**Segregation Group**\n- SGG1: Acids (산 — 염산·불산 등)\n- SGG18: Alkalis (염기 — 가성소다 등)\n- SGG6: Cyanides / SGG16: Peroxides\n- 전체 18개 그룹은 IMDG 3.1.4.4 참조\n- 식품·식수와의 격리는 별도 규정이 있습니다 (IMDG 7.3.4).\n\n**자주 문의주시는 사례**\n- CLASS 9 + CLASS 4.1 혼적은 격리 문제가 없어 같은 컨테이너에 적재 가능합니다.\n- CLASS 8 산 + CLASS 8 염기는 Segregation Group 1 vs 11로 \"Separated from\" 격리가 적용됩니다.\n- 인화성 + 산화성 (Class 3 + 5.1)도 \"Separated from\" 격리가 필요합니다.",
       "tags": [
         "적재",
         "격리",
@@ -2728,7 +2733,7 @@ let FQ_FAQ_DATA = {
       "id": "packing-instr",
       "cat": "📘 IMDG 전문지식",
       "q": "Packing Instruction (P001 등) 코드는 어떻게 읽나요?",
-      "a": "IMDG Column 8의 Packing Instructions는 포장 지침 코드를 의미합니다. 자주 사용되는 코드를 정리해 드렸습니다.\n\n**P 코드 (Single Packagings + Combination)**\n| 코드 | 의미 |\n|---|---|\n| **P001** | 액체 위험물 일반 포장 (드럼·캐니스터·박스+내포장) |\n| **P002** | 고체 위험물 일반 포장 |\n| **P003** | 일반 다용도 (큰 단위 포장) |\n| **P200** | 압축 가스 (실린더 표) |\n| **P301** | 자기반응성 액체 |\n| **P403** | 자연 발화성 고체 |\n| **P404** | 자연 발화성 액체 |\n| **P410** | Class 4.1 고체 |\n| **P504** | 산화성 액체 (5.1) |\n| **P902** | 위험물 함유 물품 (소화기 등) |\n| **P903** | 리튬 이온 배터리 |\n| **P903a/b** | 리튬 배터리 장비 / 동봉 |\n| **P906** | PCBs 함유 폐기물 |\n| **P911** | 손상/결함 리튬 배터리 |\n\n**IBC 코드**\n- **IBC01~IBC08** — 다양한 IBC(중간 벌크 컨테이너) 사용 조건\n\n**LP 코드 (Large Packagings)**\n- LP01, LP02 등 대형 포장 사용\n\n**활용 절차 안내**\n1. IMDG DGL Column 8에서 해당 UN의 Packing Instruction을 확인 부탁드립니다.\n2. IMDG 본문 4.1.4장에서 코드별 상세 절차를 확인하실 수 있습니다.\n3. UN 인증 포장재(UN 마킹 확인)를 사용해 주시기 바랍니다.\n4. PG(Packing Group)에 따라 시험 강도가 다르니 참고 부탁드립니다.\n\n**자주 문의주시는 사례**\n- P001 + PG II → 액체 200L 드럼, UN 1A1 또는 1H1 인증\n- P903 + 배터리 → 박스 내부 절연 + 외부 충격 보호\n- P911 (손상 배터리) → 별도 Salvage Packaging 필요 (대부분 운송이 어려운 점 양해 부탁드립니다)",
+      "a": "IMDG Column 8의 Packing Instructions는 포장 지침 코드를 의미합니다. 자주 사용되는 코드를 정리해 드렸습니다.\n\n**P 코드 (Single Packagings + Combination)**\n| 코드 | 의미 |\n|---|---|\n| **P001** | 액체 위험물 일반 포장 (드럼·캐니스터·박스+내포장) |\n| **P002** | 고체 위험물 일반 포장 |\n| **P003** | 일반 다용도 (큰 단위 포장) |\n| **P200** | 압축 가스 (실린더 표) |\n| **P520** | 자기반응성 물질 / 유기과산화물 |\n| **P400** | 자연 발화성 액체 (4.2 PG I) |\n| **P404** | 자연 발화성 고체 (4.2 PG I) |\n| **P403** | 기타 4.2 / 4.3 물질 |\n| **P410** | Class 4.1 고체 |\n| **P504** | 산화성 액체 (5.1) |\n| **P902** | 위험물 함유 물품 (소화기 등) |\n| **P903** | 리튬 이온 배터리 |\n| **P903a/b** | 리튬 배터리 장비 / 동봉 |\n| **P906** | PCBs 함유 폐기물 |\n| **P911** | 손상/결함 리튬 배터리 |\n\n**IBC 코드**\n- **IBC01~IBC08** — 다양한 IBC(중간 벌크 컨테이너) 사용 조건\n\n**LP 코드 (Large Packagings)**\n- LP01, LP02 등 대형 포장 사용\n\n**활용 절차 안내**\n1. IMDG DGL Column 8에서 해당 UN의 Packing Instruction을 확인 부탁드립니다.\n2. IMDG 본문 4.1.4장에서 코드별 상세 절차를 확인하실 수 있습니다.\n3. UN 인증 포장재(UN 마킹 확인)를 사용해 주시기 바랍니다.\n4. PG(Packing Group)에 따라 시험 강도가 다르니 참고 부탁드립니다.\n\n**자주 문의주시는 사례**\n- P001 + PG II → 액체 200L 드럼, UN 1A1 또는 1H1 인증\n- P903 + 배터리 → 박스 내부 절연 + 외부 충격 보호\n- P911 (손상 배터리) → 별도 Salvage Packaging 필요 (대부분 운송이 어려운 점 양해 부탁드립니다)",
       "tags": [
         "Packing Instruction",
         "P001",
@@ -2753,7 +2758,7 @@ let FQ_FAQ_DATA = {
       "id": "tank-container",
       "cat": "📘 IMDG 전문지식",
       "q": "Tank Container (탱크 컨테이너) 사용 규정은?",
-      "a": "Portable Tank는 IMDG 6.7 / Column 10-11(T-code, TP-code)에서 기준이 안내됩니다.\n\n**T-code (T1~T75) — Portable Tank Instruction**\n화물에 맞는 탱크 설계·시험 기준이 정의되어 있습니다.\n- **T1**: 일반 액체 (PG III)\n- **T11**: 인화성 액체 PG II\n- **T14**: 부식성 (8) PG II\n- **T22**: 일부 산화성 액체\n- **T50**: 액화 가스 (Class 2)\n\n**TP-code (TP1~TP41) — Tank Special Provisions**\n- TP1: 비례 충전 80% 이하\n- TP2: 충전율 화물별 상이\n- TP9: 가열 / 냉각 시스템\n- TP33: 단일 격실만 사용\n\n**Tank Container 종류**\n- ISO Tank: 20ft 표준 탱크 컨테이너 (24,000~26,000L)\n- Cryogenic Tank: 액화가스 (LNG / 액화질소)\n- Coiled Tank: 가열·냉각 코일 부착\n- Lined Tank: 화학물질 내화학성 (PTFE 등)\n\n**필수 확인 부탁드리는 사항**\n1. 탱크 검사 인증서 (CSC, 2년 유효)\n2. 시험 압력 (Test Pressure)\n3. 자재 적합성 (화물 ↔ 탱크 재질)\n4. **충전율 (Filling Degree)** — TP-code 준수 부탁드립니다.\n5. 잔류 가스 / 청결 확인 (이전 화물 잔류 시 거절될 수 있습니다).\n\n**Flexitank와 비교**\n| 항목 | Tank Container | Flexitank |\n|---|---|---|\n| 형태 | 강철 탱크 | 일회용 가방형 |\n| 용량 | ~26,000L | ~24,000L |\n| 사용 횟수 | 반복 사용 | 1회용 |\n| 위험물 | 가능 (UN 인증) | 제한적 (비위험물 위주) |\n| 적재 | 갑판·언더데크 | **갑판만 (Underdeck 금지)** |\n\n**자사 정책**\n- ISO Tank 위험물 진행이 가능합니다 (PRE-CHECK 필요).\n- 인증서 / 청결 / 충전율을 사전에 확인 부탁드립니다.",
+      "a": "Portable Tank는 IMDG 6.7 / Column 10-11(T-code, TP-code)에서 기준이 안내됩니다.\n\n**T-code (T1~T75) — Portable Tank Instruction**\n화물에 맞는 탱크 설계·시험 기준이 정의되어 있습니다.\n- **T1**: 일반 액체 (PG III)\n- **T11**: 인화성 액체 PG II\n- **T14**: 부식성 (8) PG II\n- **T22**: 일부 산화성 액체\n- **T50**: 액화 가스 (Class 2)\n\n**TP-code (TP1~TP41) — Tank Special Provisions**\n- TP1: 충전율은 IMDG 4.2.1.9 공식에 따라 산정(온도 보정)\n- TP2: 충전율 화물별 상이\n- TP9: 가열 / 냉각 시스템\n- TP33: 단일 격실만 사용\n\n**Tank Container 종류**\n- ISO Tank: 20ft 표준 탱크 컨테이너 (24,000~26,000L)\n- Cryogenic Tank: 액화가스 (LNG / 액화질소)\n- Coiled Tank: 가열·냉각 코일 부착\n- Lined Tank: 화학물질 내화학성 (PTFE 등)\n\n**필수 확인 부탁드리는 사항**\n1. 탱크 검사 인증서 (CSC) + 정기점검(2.5년·5년 주기)\n2. 시험 압력 (Test Pressure)\n3. 자재 적합성 (화물 ↔ 탱크 재질)\n4. **충전율 (Filling Degree)** — TP-code 준수 부탁드립니다.\n5. 잔류 가스 / 청결 확인 (이전 화물 잔류 시 거절될 수 있습니다).\n\n**Flexitank와 비교**\n| 항목 | Tank Container | Flexitank |\n|---|---|---|\n| 형태 | 강철 탱크 | 일회용 가방형 |\n| 용량 | ~26,000L | ~24,000L |\n| 사용 횟수 | 반복 사용 | 1회용 |\n| 위험물 | 가능 (UN 인증) | 제한적 (비위험물 위주) |\n| 적재 | 갑판·언더데크 | **갑판만 (Underdeck 금지)** |\n\n**자사 정책**\n- ISO Tank 위험물 진행이 가능합니다 (PRE-CHECK 필요).\n- 인증서 / 청결 / 충전율을 사전에 확인 부탁드립니다.",
       "tags": [
         "Tank Container",
         "Portable Tank",
@@ -2777,7 +2782,7 @@ let FQ_FAQ_DATA = {
       "id": "sadt-5-2",
       "cat": "📘 IMDG 전문지식",
       "q": "SADT(자기가속분해온도)는 무엇이고 왜 중요한가요?",
-      "a": "SADT는 Self-Accelerating Decomposition Temperature의 약자로, 화학물질이 외부 에너지 없이 자체적으로 분해를 가속화하는 최저 온도를 말합니다.\n\n**중요성**\n- 주로 **Class 5.2 (유기 과산화물)** 및 일부 자기반응성 물질(Class 4.1)에 적용됩니다.\n- SADT 미달 = 안전 / SADT 초과 = 폭주 분해 → 화재·폭발 위험으로 이어질 수 있습니다.\n- 따라서 운송 중 화물 온도는 SADT 이하로 반드시 유지되어야 합니다.\n\n**Control Temperature / Emergency Temperature**\n| 항목 | 정의 |\n|---|---|\n| **TC (Control Temp)** | 정상 운송 시 유지해야 하는 최대 온도 |\n| **TE (Emergency Temp)** | 이 온도 초과 시 비상 절차 발동 |\n\n* 일반적으로 TC = SADT - 10°C, TE = SADT - 5°C로 계산합니다.\n\n**예시**\n- UN3110 Organic Peroxide Type F, Solid, Temp Control: SADT 60°C → TC 50°C / TE 55°C\n- 운송 컨테이너는 RFDG (Reefer)를 사용하시고 50°C 이하 유지가 필요합니다.\n\n**자사 사례 안내**\n- UN3378 과탄산나트륨: 발열분해온도 60°C → RFDG로 온도 통제 시 안전 확보가 가능한지 검토 중입니다.\n- 일본구간 OCI 측 요청으로 RFDG 진행 가능성을 평가하고 있습니다.\n\n**DGD 기재 안내**\n- 14번 컬럼에 \"Temperature Controlled\"를 표기 부탁드립니다.\n- TC / TE를 명시해 주시기 바랍니다.\n- RFDG 컨테이너 사용이 필수입니다.",
+      "a": "SADT는 Self-Accelerating Decomposition Temperature의 약자로, 화학물질이 외부 에너지 없이 자체적으로 분해를 가속화하는 최저 온도를 말합니다.\n\n**중요성**\n- 주로 **Class 5.2 (유기 과산화물)** 및 일부 자기반응성 물질(Class 4.1)에 적용됩니다.\n- SADT 미달 = 안전 / SADT 초과 = 폭주 분해 → 화재·폭발 위험으로 이어질 수 있습니다.\n- 따라서 운송 중 화물 온도는 SADT 이하로 반드시 유지되어야 합니다.\n\n**Control Temperature / Emergency Temperature**\n| 항목 | 정의 |\n|---|---|\n| **TC (Control Temp)** | 정상 운송 시 유지해야 하는 최대 온도 |\n| **TE (Emergency Temp)** | 이 온도 초과 시 비상 절차 발동 |\n\n* SADT 구간별로 차등 적용됩니다 (SADT>35°C → TC=SADT−10·TE=SADT−5 / 20~35°C → TC=SADT−15·TE=SADT−10 / ≤20°C → TC=SADT−20·TE=SADT−10). IMDG 7.3.7 참조.\n\n**예시**\n- UN3110 Organic Peroxide Type F, Solid, Temp Control: SADT 60°C → TC 50°C / TE 55°C\n- 운송 컨테이너는 RFDG (Reefer)를 사용하시고 50°C 이하 유지가 필요합니다.\n\n**자사 사례 안내**\n- UN3378 과탄산나트륨: 발열분해온도 60°C → RFDG로 온도 통제 시 안전 확보가 가능한지 검토 중입니다.\n- 일본구간 OCI 측 요청으로 RFDG 진행 가능성을 평가하고 있습니다.\n\n**DGD 기재 안내**\n- 14번 컬럼에 \"Temperature Controlled\"를 표기 부탁드립니다.\n- TC / TE를 명시해 주시기 바랍니다.\n- RFDG 컨테이너 사용이 필수입니다.",
       "tags": [
         "SADT",
         "자기가속분해",
@@ -2802,7 +2807,7 @@ let FQ_FAQ_DATA = {
       "id": "imdg-list-cols",
       "cat": "📘 IMDG 전문지식",
       "q": "IMDG Code Dangerous Goods List(제2권) 컬럼별 의미는?",
-      "a": "IMDG DGL(Volume 2)은 18개 컬럼으로 구성되어 있습니다. 각 컬럼의 의미를 정리해 드리오니 참고해 주시기 바랍니다.\n\n| 컬럼 | 항목 | 설명 |\n|---|---|---|\n| **1** | UN No | 4자리 식별 번호 |\n| **2** | PSN | Proper Shipping Name (정확 명칭) |\n| **3** | Class / Sub-class | 1차 위험성 |\n| **4** | Subsidiary Risk | 2차 위험성 (예: 6.1+8) |\n| **5** | Packing Group | I / II / III |\n| **6** | Special Provisions | SP-xxx (개별 예외/조건) |\n| **7a** | Limited Quantity | LQ 한도 |\n| **7b** | Excepted Quantity | EQ 코드 (E0~E5) |\n| **8** | Packing Instructions | P001, P002, IBC02 등 |\n| **9** | Packing IBC | IBC 사용 가능 여부 |\n| **10** | Tank Instructions | T-code (T1~T75) |\n| **11** | Tank Special Provisions | TP-code |\n| **12** | EmS | F-x / S-x 응급 대응 |\n| **13** | Stowage Category | A~E |\n| **14** | Stowage Handling | SW-xxx |\n| **15** | Segregation | SG-xxx |\n| **16** | Properties / Observations | 추가 특성 |\n\n**자주 활용하시는 컬럼**\n- 6번 SP → 비위험물 취급 가능 여부 (예: SP188)\n- 7a/7b → LQ/EQ 적용\n- 12번 EmS → 사고 시 응급 절차\n- 13~15번 → 적재·격리 결정\n\nIMDG 본문(38-16)은 사내에 보유 중이며, 모호한 경우 직접 조회를 권장드립니다.",
+      "a": "IMDG DGL(Volume 2)은 컬럼 1~18(7a·7b·16a·16b 분할 포함)로 구성됩니다. 주요 컬럼은 아래와 같습니다.\n\n| 컬럼 | 항목 | 설명 |\n|---|---|---|\n| **1** | UN No | 4자리 식별 번호 |\n| **2** | PSN | Proper Shipping Name (정확 명칭) |\n| **3** | Class / Sub-class | 1차 위험성 |\n| **4** | Subsidiary Risk | 2차 위험성 (예: 6.1+8) |\n| **5** | Packing Group | I / II / III |\n| **6** | Special Provisions | SP-xxx (개별 예외/조건) |\n| **7a** | Limited Quantity | LQ 한도 |\n| **7b** | Excepted Quantity | EQ 코드 (E0~E5) |\n| **8** | Packing Instructions | P001, P002, IBC02 등 |\n| **9** | Packing Provisions | 포장 특별규정 (PP-) |\n| **10** | IBC Instructions | IBC 지침 |\n| **11** | IBC Provisions | IBC 특별규정 |\n| **13** | Tank Instructions | T-code (T1~T75) |\n| **14** | Tank Special Provisions | TP-code |\n| **15** | EmS | F-x / S-x 응급 대응 |\n| **16a** | Stowage & Handling | 적재·취급 (SW-) |\n| **16b** | Segregation | 격리 (SG-) |\n| **17** | Properties / Observations | 추가 특성 |\n\n*컬럼 12(구 IMO 탱크지침)는 삭제되었습니다.*\n\n**자주 활용하시는 컬럼**\n- 6번 SP → 비위험물 취급 가능 여부 (예: SP188)\n- 7a/7b → LQ/EQ 적용\n- 15번 EmS → 사고 시 응급 절차\n- 16a/16b번 → 적재·격리 결정\n\nIMDG 본문(38-16)은 사내에 보유 중이며, 모호한 경우 직접 조회를 권장드립니다.",
       "tags": [
         "IMDG",
         "DGL",
@@ -2814,7 +2819,7 @@ let FQ_FAQ_DATA = {
       "id": "ems-codes",
       "cat": "📘 IMDG 전문지식",
       "q": "EmS 코드(F-x / S-x)는 무엇인가요?",
-      "a": "EmS는 Emergency Schedule의 약자로, 사고 발생 시 본선 대응 절차를 정리한 코드입니다.\n\n**Fire 화재 절차 (F-A ~ F-J)**\n| 코드 | 적용 |\n|---|---|\n| F-A | 일반 화재 절차 |\n| F-B | 인화성 액체 (Class 3) |\n| F-C | 인화성 고체 (Class 4.1) |\n| F-D | 자연 발화성 (Class 4.2) |\n| F-E | 물 반응성 (Class 4.3) — 물 사용 금지 |\n| F-F | 산화성 / 유기과산화물 (5.1/5.2) |\n| F-G | 가스 (Class 2) |\n| F-H | 폭발물 (Class 1) |\n| F-I | 방사성 (Class 7) |\n| F-J | 부식성 (Class 8) |\n\n**Spillage 누출 절차 (S-A ~ S-Z)**\n| 코드 | 적용 |\n|---|---|\n| S-A | 일반 누출 절차 |\n| S-B | 독성 가스 누출 |\n| S-C | 인화성 액체 누출 |\n| S-D | 자연발화성 누출 |\n| S-E | 물반응성 누출 |\n| S-F | 산화성 누출 |\n| S-G | 산 누출 |\n| S-H | 염기 누출 |\n\n**활용 예시**\n- UN1170 (에탄올) → F-E + S-D\n- UN3480 (리튬이온) → F-A + S-I\n- UN1790 (불산) → F-A + S-B\n\n**DGD 작성 시**\n- IMDG 14번 컬럼에서 EmS 코드를 확인 후 DGD에 기재해 주시기 바랍니다.\n- 본선 안전관리책임자(STO)에게도 사전 공유해 주시면 좋습니다.\n- IMDG 보충판(Supplement) — EmS Guide에 상세 절차가 안내되어 있습니다.\n\n사고 발생 시 즉시 EmS 코드를 확인하시고, 절차서를 펼쳐 대응해 주시기 바랍니다.",
+      "a": "EmS는 Emergency Schedule의 약자로, 사고 발생 시 본선 대응 절차를 정리한 코드입니다.\n\n**중요 — EmS는 클래스로 일괄 결정되지 않습니다.**\nEmS 코드는 IMDG DGL(컬럼 15)에서 **UN별로 개별 지정**되며, 화재(F-)용 1종 + 유출(S-)용 1종이 함께 부여됩니다.\n\n- **Fire 스케줄**: F-A ~ F-J (화재 대응 절차 종류)\n- **Spillage 스케줄**: S-A ~ S-Z (유출 대응 절차 종류)\n\n같은 클래스라도 물질에 따라 다른 EmS가 부여될 수 있으므로, 반드시 해당 UN의 DGL 및 EmS Guide(IMDG 보충판)를 확인하세요.\n\n**활용 예시**\n- UN1170 (에탄올) → F-E + S-D\n- UN3480 (리튬이온) → F-A + S-I\n- UN1790 (불산) → F-A + S-B\n\n**DGD 작성 시**\n- IMDG 14번 컬럼에서 EmS 코드를 확인 후 DGD에 기재해 주시기 바랍니다.\n- 본선 안전관리책임자(STO)에게도 사전 공유해 주시면 좋습니다.\n- IMDG 보충판(Supplement) — EmS Guide에 상세 절차가 안내되어 있습니다.\n\n사고 발생 시 즉시 EmS 코드를 확인하시고, 절차서를 펼쳐 대응해 주시기 바랍니다.",
       "tags": [
         "EmS",
         "응급 대응",
@@ -2864,7 +2869,7 @@ let FQ_FAQ_DATA = {
       "id": "damaged-salvage",
       "cat": "🚨 사고 / 손상 대응",
       "q": "손상된 위험물 / Salvage Packaging은 어떻게 처리하나요?",
-      "a": "손상·결함 위험물은 안전상 사유로 **원칙적 선적 거절**로 운영하고 있습니다. 양해 부탁드립니다.\n\n**손상 사례 안내**\n- 누설 / 외부 손상 / 부풀어 오름 / 발열\n- 손상된 리튬 배터리 (UN3480/3481 → UN3171)\n- 사고 차량 (UN3171 등)\n\n**Salvage Packaging (회수 포장)**\n- **P911** (리튬 배터리 손상) / **P903** (일반)\n- **LP905** (대형 손상 배터리)\n- 외부 견고한 포장 + 흡수재가 필요합니다.\n- 명시 라벨: \"SALVAGE\" 또는 \"DAMAGED\"\n- 사용 가능 운송 수단이 제한적입니다 (대부분 도로/철도, 해상 거절).\n\n**자사 정책 안내**\n- **손상 위험물은 원칙적으로 선적이 어려운 점 양해 부탁드립니다.**\n- 사고 차량 / 손상 배터리는 거절됩니다.\n- 회수 처리가 필요하신 경우 별도 협의 부탁드립니다 (전용 컨테이너 + 특수 보험 검토).\n\n**선상 발생 손상 시 대응 안내**\n1. 선장이 즉시 운항팀으로 보고합니다.\n2. 위험성 평가 (EmS 코드 활용)\n3. 격리 / 환기 / 응급 조치 수행\n4. 도착항에 사전 통보 → 별도 처리 부두 또는 폐기 절차 진행\n5. 사고 보고서 작성 (Casualty Report)\n\n**예방을 위한 권장 사항**\n- 적입 전 외관 검사를 철저히 부탁드립니다.\n- CPC (Container Packing Certificate)의 검사 항목을 꼼꼼히 확인해 주시기 바랍니다.\n- 운송 중 정기 점검 부탁드립니다 (RFDG 온도, 일반 컨테이너 외관).",
+      "a": "손상·결함 위험물은 안전상 사유로 **원칙적 선적 거절**로 운영하고 있습니다. 양해 부탁드립니다.\n\n**손상 사례 안내**\n- 누설 / 외부 손상 / 부풀어 오름 / 발열\n- 손상·결함 리튬 배터리 → UN3480/3481/3090/3091 **그대로 유지**, 포장은 **P908/P911** 적용\n- UN3171은 *배터리 구동 차량/장비*이며 손상전지 자체의 UN번호가 아닙니다\n\n**Salvage Packaging (회수 포장)**\n- 리튬전지: **P908**(손상·결함) / **P911**(위험 상태 critical)\n- 대형 전지: **LP904 / LP906**\n- 외부 견고한 포장 + 흡수재가 필요합니다.\n- 명시 라벨: \"SALVAGE\" 또는 \"DAMAGED\"\n- 사용 가능 운송 수단이 제한적입니다 (대부분 도로/철도, 해상 거절).\n\n**자사 정책 안내**\n- **손상 위험물은 원칙적으로 선적이 어려운 점 양해 부탁드립니다.**\n- 사고 차량 / 손상 배터리는 거절됩니다.\n- 회수 처리가 필요하신 경우 별도 협의 부탁드립니다 (전용 컨테이너 + 특수 보험 검토).\n\n**선상 발생 손상 시 대응 안내**\n1. 선장이 즉시 운항팀으로 보고합니다.\n2. 위험성 평가 (EmS 코드 활용)\n3. 격리 / 환기 / 응급 조치 수행\n4. 도착항에 사전 통보 → 별도 처리 부두 또는 폐기 절차 진행\n5. 사고 보고서 작성 (Casualty Report)\n\n**예방을 위한 권장 사항**\n- 적입 전 외관 검사를 철저히 부탁드립니다.\n- CPC (Container Packing Certificate)의 검사 항목을 꼼꼼히 확인해 주시기 바랍니다.\n- 운송 중 정기 점검 부탁드립니다 (RFDG 온도, 일반 컨테이너 외관).",
       "tags": [
         "손상",
         "Salvage Packaging",
@@ -2951,6 +2956,75 @@ function fqBindFaq(scope) {
     localStorage.removeItem(FQ_CONFIG.FAQ_KEY);
     location.reload();
   });
+  // 이메일 업로드 → FAQ
+  const emBtn = scope.querySelector('#fqEmailUploadBtn');
+  if (emBtn) emBtn.addEventListener('click', fqToggleEmailForm);
+  const emCancel = scope.querySelector('#fqEmCancelBtn');
+  if (emCancel) emCancel.addEventListener('click', () => { document.getElementById('fqEmailForm').hidden = true; });
+  const emSubmit = scope.querySelector('#fqEmSubmitBtn');
+  if (emSubmit) emSubmit.addEventListener('click', fqSubmitEmail);
+  const emFile = scope.querySelector('#fqEmFile');
+  if (emFile) emFile.addEventListener('change', fqReadEmailFile);
+}
+
+// ── 이메일 업로드 → FAQ 등록 ──
+function fqToggleEmailForm() {
+  const f = document.getElementById('fqEmailForm');
+  if (!f) return;
+  f.hidden = !f.hidden;
+  if (!f.hidden) fqPopulateEmailCats();
+}
+function fqPopulateEmailCats() {
+  const sel = document.getElementById('fqEmCat');
+  if (!sel) return;
+  const cats = (FQ_FAQ_DATA.categories || []).filter(c => c !== '전체');
+  if (!cats.includes(FQ_EMAIL_FAQ_CAT)) cats.unshift(FQ_EMAIL_FAQ_CAT);
+  sel.innerHTML = cats.map(c => `<option value="${fqEsc(c)}"${c === FQ_EMAIL_FAQ_CAT ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
+}
+function fqReadEmailFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = String(ev.target.result || '');
+    const subjMatch = text.match(/^subject:\s*(.+)$/im);
+    const subjEl = document.getElementById('fqEmSubject');
+    if (subjMatch && subjEl && !subjEl.value) subjEl.value = subjMatch[1].trim();
+    const inq = document.getElementById('fqEmInquiry');
+    if (inq && !inq.value) inq.value = text.length > 8000 ? text.slice(0, 8000) + '\n...(생략)' : text;
+    fqToast('📎 이메일을 불러왔습니다. 내용을 다듬어 등록하세요', 'success');
+  };
+  reader.readAsText(file);
+}
+async function fqSubmitEmail() {
+  const subject = document.getElementById('fqEmSubject').value.trim();
+  const inquiry = document.getElementById('fqEmInquiry').value.trim();
+  const reply = document.getElementById('fqEmReply').value.trim();
+  const by = document.getElementById('fqEmBy').value.trim();
+  const cat = document.getElementById('fqEmCat').value || FQ_EMAIL_FAQ_CAT;
+  if (!subject || !reply) { fqToast('제목과 회신(답변)은 필수입니다', 'warn'); return; }
+  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
+    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');
+  }
+  fqEnsureCategory(cat);
+  const bodyPart = inquiry ? ('**문의 내용**\n' + inquiry + '\n\n**답변**\n') : '';
+  const tags = ['이메일', by].filter(Boolean);
+  FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
+  FQ_FAQ_DATA.items.unshift({
+    id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+    cat: cat, q: subject, a: bodyPart + reply, tags: tags, source: 'email'
+  });
+  fqSaveFaq();
+  ['fqEmSubject', 'fqEmInquiry', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
+  document.getElementById('fqEmailForm').hidden = true;
+  document.querySelectorAll('#fqModule [data-fq-tab]').forEach(b => b.classList.toggle('active', b.dataset.fqTab === 'faq'));
+  document.querySelectorAll('#fqModule [data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === 'faq'));
+  fqCurrentCat = cat;
+  fqRenderFaq();
+  fqToast('✓ 이메일 문의가 FAQ에 등록되었습니다', 'success');
 }
 
 function fqRenderFaq() {
@@ -3142,18 +3216,17 @@ function fqRenderPosts() {
               <div class="fq-post-answer-head">✓ 답변 — ${p.answerBy || '관리자'} · ${new Date(p.answeredAt).toLocaleString('ko')}</div>
               ${fqRenderText(p.answer)}
             </div>` : ''}
-          ${fqAdminMode ? `
-            <div class="fq-post-actions">
-              <button class="fq-btn accent" onclick="fqOpenAnswerForm('${p.id}')">${p.answer ? '답변 수정' : '✏️ 답변 작성'}</button>
-              <button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>
+          <div class="fq-post-actions">
+            <button class="fq-btn accent" onclick="fqRequestReply('${p.id}')">${p.answer ? '✏️ 답변 수정' : '✏️ 답글 작성 (담당자)'}</button>
+            ${fqAdminMode ? `<button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>` : ''}
+          </div>
+          <div class="fq-answer-form" id="fqAnsForm-${p.id}">
+            <textarea id="fqAnsText-${p.id}" placeholder="답변 내용 입력... (저장하면 FAQ에도 자동 등록됩니다)">${fqEsc(p.answer || '')}</textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 6px;">
+              <button class="fq-btn ghost" onclick="fqCloseAnswerForm('${p.id}')">취소</button>
+              <button class="fq-btn primary" onclick="fqSaveAnswer('${p.id}')">저장</button>
             </div>
-            <div class="fq-answer-form" id="fqAnsForm-${p.id}">
-              <textarea id="fqAnsText-${p.id}" placeholder="답변 내용 입력...">${fqEsc(p.answer || '')}</textarea>
-              <div style="display: flex; justify-content: flex-end; gap: 6px;">
-                <button class="fq-btn ghost" onclick="fqCloseAnswerForm('${p.id}')">취소</button>
-                <button class="fq-btn primary" onclick="fqSaveAnswer('${p.id}')">저장</button>
-              </div>
-            </div>` : ''}
+          </div>
         </div>`;
     }).join('');
 }
@@ -3179,6 +3252,16 @@ async function fqUnlockPost(evt, id) {
   }
 }
 
+// 답글 작성 요청 — 관리자는 바로, 그 외는 담당자 비밀번호(1234) 확인 후 작성 폼 오픈
+function fqRequestReply(id) {
+  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
+    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    if (pwd === null) return;
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');   // 세션 동안 재입력 생략
+  }
+  fqOpenAnswerForm(id);
+}
 function fqOpenAnswerForm(id) {
   document.getElementById('fqAnsForm-' + id).classList.add('open');
 }
@@ -3188,15 +3271,49 @@ function fqCloseAnswerForm(id) {
 function fqSaveAnswer(id) {
   const text = document.getElementById('fqAnsText-' + id).value.trim();
   if (!text) { fqToast('답변 내용 필요', 'warn'); return; }
+  // 작성 권한 재확인 (폼이 직접 열렸을 경우 대비)
+  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
+    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');
+  }
   const post = fqPosts.find(p => p.id === id);
   if (!post) return;
   post.answer = text;
   post.answeredAt = new Date().toISOString();
-  post.answerBy = prompt('답변자 (예: 관리자, 운항팀장):', post.answerBy || '관리자') || '관리자';
+  post.answerBy = prompt('답변자 (예: 운항팀, 이원태 차장):', post.answerBy || '담당자') || '담당자';
   post.status = 'answered';
   fqSavePosts();
+  // 문의 + 답변을 FAQ 데이터베이스로 자동 등록
+  fqAddBoardAnswerToFaq(post);
+  fqCloseAnswerForm(id);
   fqRenderPosts();
-  fqToast('✓ 답변 등록됨', 'success');
+  fqToast('✓ 답변 등록 + FAQ 자동 반영 완료', 'success');
+}
+
+// FAQ 카테고리 보장 (없으면 추가)
+function fqEnsureCategory(cat) {
+  FQ_FAQ_DATA.categories = FQ_FAQ_DATA.categories || [];
+  if (!FQ_FAQ_DATA.categories.includes(cat)) FQ_FAQ_DATA.categories.push(cat);
+}
+
+// 게시판 답변 → FAQ 자동 등록 (동일 글은 갱신)
+function fqAddBoardAnswerToFaq(post) {
+  fqEnsureCategory(FQ_BOARD_FAQ_CAT);
+  const faqId = 'faq_brd_' + post.id;
+  // 비밀글은 본문(문의 내용)을 공개하지 않고 제목+답변만 등록
+  const bodyPart = (!post.isPrivate && post.body) ? ('**문의 내용**\n' + post.body + '\n\n**답변**\n') : '';
+  const answerText = bodyPart + post.answer;
+  const tags = ['게시판', post.category, post.answerBy].filter(Boolean);
+  FQ_FAQ_DATA.items = FQ_FAQ_DATA.items || [];
+  const existing = FQ_FAQ_DATA.items.find(x => x.id === faqId);
+  if (existing) {
+    existing.q = post.subject; existing.a = answerText; existing.cat = FQ_BOARD_FAQ_CAT; existing.tags = tags;
+  } else {
+    FQ_FAQ_DATA.items.unshift({ id: faqId, cat: FQ_BOARD_FAQ_CAT, q: post.subject, a: answerText, tags: tags, source: 'board' });
+  }
+  fqSaveFaq();
+  if (typeof fqRenderFaq === 'function') fqRenderFaq();
 }
 
 function fqDeletePost(id) {
