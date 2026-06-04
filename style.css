@@ -2520,6 +2520,16 @@ header span {
     --home-glow-soft: rgba(255, 92, 142, 0.10);
 }
 
+.card-amber {
+    --home-glow-strong: rgba(255, 176, 32, 0.30);
+    --home-glow-soft: rgba(255, 176, 32, 0.10);
+}
+
+.card-teal {
+    --home-glow-strong: rgba(20, 184, 200, 0.30);
+    --home-glow-soft: rgba(20, 184, 200, 0.10);
+}
+
 /* Quick Search */
 .home-quick-search {
     position: relative;

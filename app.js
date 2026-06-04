@@ -641,6 +641,17 @@ homeCards.forEach(card => {
 
         const targetId = card.getAttribute('data-target');
         activateTab(targetId);
+
+        // FAQ / 문의 게시판 카드: 모듈 내부 탭도 전환
+        const fqTab = card.getAttribute('data-fq-init-tab');
+        if (fqTab) {
+            setTimeout(() => {
+                document.querySelectorAll('#fqModule [data-fq-tab]').forEach(b => b.classList.toggle('active', b.dataset.fqTab === fqTab));
+                document.querySelectorAll('#fqModule [data-fq-panel]').forEach(p => p.classList.toggle('active', p.dataset.fqPanel === fqTab));
+                if (typeof fqSyncFaqRemote === 'function' && fqTab === 'faq') fqSyncFaqRemote();
+                if (typeof fqSyncPostsRemote === 'function' && fqTab === 'board') fqSyncPostsRemote();
+            }, 30);
+        }
     });
 });
 
@@ -3122,20 +3133,115 @@ function fqPopulateEmailCats() {
   if (!cats.includes(FQ_EMAIL_FAQ_CAT)) cats.unshift(FQ_EMAIL_FAQ_CAT);
   sel.innerHTML = cats.map(c => `<option value="${fqEsc(c)}"${c === FQ_EMAIL_FAQ_CAT ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
 }
+// ── Outlook .msg (OLE/CFB 복합문서) 파서 — 제목·본문 추출 ──
+function fqParseMsg(arrayBuffer) {
+  const u8 = new Uint8Array(arrayBuffer);
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  const LE = true;
+  if (dv.getUint32(0, false) !== 0xD0CF11E0) throw new Error('지원하지 않는 .msg 형식입니다');
+  const secSize = 1 << dv.getUint16(0x1e, LE);
+  const miniSize = 1 << dv.getUint16(0x20, LE);
+  const firstDir = dv.getUint32(0x30, LE);
+  const miniCutoff = dv.getUint32(0x38, LE);
+  const firstMiniFat = dv.getUint32(0x3c, LE);
+  const firstDifat = dv.getUint32(0x44, LE), numDifat = dv.getUint32(0x48, LE);
+  const ENDOFCHAIN = 0xFFFFFFFE, FREESECT = 0xFFFFFFFF;
+  const secOff = s => (s + 1) * secSize;
+  const difat = [];
+  for (let i = 0; i < 109; i++) { const v = dv.getUint32(0x4c + i * 4, LE); if (v === FREESECT || v === ENDOFCHAIN) break; difat.push(v); }
+  let ds = firstDifat;
+  for (let n = 0; n < numDifat && ds !== ENDOFCHAIN && ds !== FREESECT; n++) {
+    const base = secOff(ds), cnt = (secSize / 4) - 1;
+    for (let i = 0; i < cnt; i++) { const v = dv.getUint32(base + i * 4, LE); if (v !== FREESECT && v !== ENDOFCHAIN) difat.push(v); }
+    ds = dv.getUint32(base + cnt * 4, LE);
+  }
+  const fat = new Uint32Array(difat.length * (secSize / 4));
+  let fi = 0;
+  for (const f of difat) { const base = secOff(f); for (let i = 0; i < secSize / 4; i++) fat[fi++] = dv.getUint32(base + i * 4, LE); }
+  const chain = start => { const out = []; let s = start, g = 0; while (s !== ENDOFCHAIN && s !== FREESECT && g++ < 1e7) { out.push(s); s = fat[s]; } return out; };
+  const readChain = start => { const secs = chain(start); const out = new Uint8Array(secs.length * secSize); secs.forEach((s, i) => out.set(u8.subarray(secOff(s), secOff(s) + secSize), i * secSize)); return out; };
+  const dirBytes = readChain(firstDir);
+  const entries = [];
+  for (let off = 0; off + 128 <= dirBytes.length; off += 128) {
+    const nameLen = dirBytes[off + 0x40] | (dirBytes[off + 0x41] << 8);
+    if (nameLen <= 0) continue;
+    let name = ''; for (let i = 0; i < nameLen - 2; i += 2) name += String.fromCharCode(dirBytes[off + i] | (dirBytes[off + i + 1] << 8));
+    const ddv = new DataView(dirBytes.buffer, dirBytes.byteOffset + off, 128);
+    entries.push({ name, type: dirBytes[off + 0x42], start: ddv.getUint32(0x74, LE), size: ddv.getUint32(0x78, LE) });
+  }
+  const root = entries.find(e => e.type === 5);
+  const miniStream = root ? readChain(root.start) : new Uint8Array(0);
+  let miniFat = new Uint32Array(0);
+  if (firstMiniFat !== ENDOFCHAIN) { const mb = readChain(firstMiniFat); miniFat = new Uint32Array(mb.buffer, mb.byteOffset, Math.floor(mb.byteLength / 4)); }
+  const readStream = e => {
+    if (e.size >= miniCutoff) return readChain(e.start).subarray(0, e.size);
+    const out = new Uint8Array(e.size); let s = e.start, o = 0, g = 0;
+    while (s !== ENDOFCHAIN && s !== FREESECT && o < e.size && g++ < 1e7) { const mo = s * miniSize, n = Math.min(miniSize, e.size - o); out.set(miniStream.subarray(mo, mo + n), o); o += n; s = miniFat[s]; }
+    return out;
+  };
+  const utf16 = b => { let s = ''; for (let i = 0; i + 1 < b.length; i += 2) s += String.fromCharCode(b[i] | (b[i + 1] << 8)); return s; };
+  const find = tag => entries.find(e => e.type === 2 && e.name.toUpperCase().includes(tag));
+  const getStr = (uniTag, ansiTag) => {
+    const u = find(uniTag); if (u) return utf16(readStream(u));
+    const a = find(ansiTag);
+    if (a) { const b = readStream(a); try { return new TextDecoder('euc-kr').decode(b); } catch (_) { return new TextDecoder().decode(b); } }
+    return '';
+  };
+  return {
+    subject: getStr('0037001F', '0037001E').replace(/ +$/, '').trim(),
+    body: getStr('1000001F', '1000001E').replace(/ +$/, '').trim(),
+    from: getStr('0C1A001F', '0C1A001E').replace(/ +$/, '').trim()
+  };
+}
+
+// .eml/.txt 텍스트에서 제목·본문 추출 (간단 파싱)
+function fqDecodeRfc2047(s) {
+  return String(s || '').replace(/=\?([^?]+)\?([BbQq])\?([^?]*)\?=/g, (m, cs, enc, data) => {
+    try {
+      let bytes;
+      if (enc.toUpperCase() === 'B') { const bin = atob(data); bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); }
+      else { const t = data.replace(/_/g, ' ').replace(/=([0-9A-Fa-f]{2})/g, (x, h) => String.fromCharCode(parseInt(h, 16))); bytes = Uint8Array.from(t, c => c.charCodeAt(0)); }
+      return new TextDecoder(cs).decode(bytes);
+    } catch (_) { return m; }
+  });
+}
+function fqParseEml(text) {
+  const idx = text.search(/\r?\n\r?\n/);
+  const head = idx >= 0 ? text.slice(0, idx) : text;
+  let body = idx >= 0 ? text.slice(idx).replace(/^\r?\n\r?\n/, '') : '';
+  const unfolded = head.replace(/\r?\n[ \t]+/g, ' ');
+  const sm = unfolded.match(/^subject:\s*(.+)$/im);
+  const subject = sm ? fqDecodeRfc2047(sm[1].trim()) : '';
+  const cte = (unfolded.match(/^content-transfer-encoding:\s*(.+)$/im) || [])[1] || '';
+  if (/quoted-printable/i.test(cte)) body = body.replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+  return { subject, body };
+}
+
 function fqReadEmailFile(e) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
+  const isMsg = /\.msg$/i.test(file.name);
   const reader = new FileReader();
   reader.onload = ev => {
-    const text = String(ev.target.result || '');
-    const subjMatch = text.match(/^subject:\s*(.+)$/im);
-    const subjEl = document.getElementById('fqEmSubject');
-    if (subjMatch && subjEl && !subjEl.value) subjEl.value = subjMatch[1].trim();
-    const inq = document.getElementById('fqEmInquiry');
-    if (inq && !inq.value) inq.value = text.length > 8000 ? text.slice(0, 8000) + '\n...(생략)' : text;
-    fqToast('📎 이메일을 불러왔습니다. 내용을 다듬어 등록하세요', 'success');
+    try {
+      let subject = '', body = '';
+      if (isMsg) {
+        const r = fqParseMsg(ev.target.result);
+        subject = r.subject; body = r.body;
+      } else {
+        const r = fqParseEml(String(ev.target.result || ''));
+        subject = r.subject; body = r.body || String(ev.target.result || '');
+      }
+      const subjEl = document.getElementById('fqEmSubject');
+      const inq = document.getElementById('fqEmInquiry');
+      if (subjEl && subject) subjEl.value = subject;
+      if (inq) inq.value = body.length > 20000 ? body.slice(0, 20000) + '\n...(이하 생략)' : body;
+      fqToast('📎 이메일을 불러왔습니다. 회신(답변)란을 채우고 등록하세요', 'success');
+    } catch (err) {
+      fqToast('이메일 파일 분석 실패: ' + err.message, 'warn');
+    }
   };
-  reader.readAsText(file);
+  if (isMsg) reader.readAsArrayBuffer(file); else reader.readAsText(file);
 }
 async function fqSubmitEmail() {
   const subject = document.getElementById('fqEmSubject').value.trim();
