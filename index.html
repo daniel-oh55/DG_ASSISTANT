@@ -456,6 +456,9 @@
       <div class="fq-email-form" id="fqEmailForm" hidden>
         <div class="fq-email-head">📧 이메일 문의·회신 등록 <span>담당자 전용 · 비밀번호 1234</span></div>
         <p class="fq-email-guide">이메일로 받은 문의와 회신을 등록하면 아래 <b>이메일 문의 목록</b>에 쌓이고, 전체 공유 + AI 문의에 활용됩니다. (FAQ 메인 목록과는 분리되어 이 영역에서만 조회됩니다.) 이메일 파일(.eml/.txt/.msg)을 첨부하면 제목·내용을 자동으로 불러옵니다.</p>
+
+        <div class="fq-em-form-toggle" id="fqEmFormToggle">➕ 새 이메일 문의 등록 <span class="fq-em-arrow">▲ 접기</span></div>
+        <div id="fqEmFormFields">
         <label class="fq-field-label" for="fqEmFile">이메일 파일 첨부 (.eml / .txt / .msg · 선택)</label>
         <input type="file" id="fqEmFile" accept=".eml,.txt,.msg,message/rfc822,text/plain">
         <label class="fq-field-label" for="fqEmSubject">제목 (질문) <span class="fq-req">*</span></label>
@@ -478,6 +481,7 @@
           <button type="button" class="fq-btn ghost" id="fqEmCancelBtn">닫기</button>
           <button type="button" class="fq-btn primary" id="fqEmSubmitBtn">📥 이메일 문의 등록</button>
         </div>
+        </div><!-- /#fqEmFormFields -->
 
         <div class="fq-email-list-head">📋 등록된 이메일 문의</div>
         <div class="fq-list" id="fqEmailList"></div>

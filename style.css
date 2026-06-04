@@ -4360,6 +4360,9 @@ header span {
 .fq-email-row { display: flex; gap: 12px; margin-top: 4px; }
 .fq-email-row > div { flex: 1; }
 .fq-email-form .fq-new-actions { margin-top: 14px; }
+.fq-em-form-toggle { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 9px 12px; margin: 4px 0 10px; background: white; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-weight: 700; color: var(--fq-primary); }
+.fq-em-form-toggle:hover { border-color: var(--fq-accent); }
+.fq-em-form-toggle .fq-em-arrow { font-size: 12px; font-weight: 600; color: var(--fq-accent-2); }
 .fq-email-list-head { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--fq-border); font-size: 13px; font-weight: 700; color: var(--fq-primary); margin-bottom: 10px; }
 #fqEmailList { display: flex; flex-direction: column; gap: 8px; }
 

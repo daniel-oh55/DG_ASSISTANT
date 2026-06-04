@@ -3133,6 +3133,8 @@ function fqBindFaq(scope) {
   // 이메일 업로드 → FAQ
   const emBtn = scope.querySelector('#fqEmailUploadBtn');
   if (emBtn) emBtn.addEventListener('click', fqToggleEmailForm);
+  const emToggle = scope.querySelector('#fqEmFormToggle');
+  if (emToggle) emToggle.addEventListener('click', fqToggleEmFormFields);
   const emCancel = scope.querySelector('#fqEmCancelBtn');
   if (emCancel) emCancel.addEventListener('click', () => { document.getElementById('fqEmailForm').hidden = true; });
   const emSubmit = scope.querySelector('#fqEmSubmitBtn');
@@ -3179,7 +3181,18 @@ function fqToggleEmailForm() {
   const f = document.getElementById('fqEmailForm');
   if (!f) return;
   f.hidden = !f.hidden;
-  if (!f.hidden) { fqPopulateEmailCats(); fqRenderEmailList(); }
+  if (!f.hidden) { fqPopulateEmailCats(); fqRenderEmailList(); fqSetEmFormToggle(true); }
+}
+// 입력 폼 영역 접기/펴기
+function fqSetEmFormToggle(open) {
+  const ff = document.getElementById('fqEmFormFields');
+  const arrow = document.querySelector('#fqEmFormToggle .fq-em-arrow');
+  if (ff) ff.hidden = !open;
+  if (arrow) arrow.textContent = open ? '▲ 접기' : '▼ 펴기';
+}
+function fqToggleEmFormFields() {
+  const ff = document.getElementById('fqEmFormFields');
+  fqSetEmFormToggle(ff ? ff.hidden : true);
 }
 function fqPopulateEmailCats() {
   const sel = document.getElementById('fqEmCat');
@@ -3339,7 +3352,13 @@ async function fqSubmitEmail() {
   ['fqEmSubject', 'fqEmInquiry', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
   fqRenderEmailList();   // 📧 이메일 문의 목록 갱신 (메인 FAQ엔 노출 안 함)
-  if (ok) fqToast(fqRemoteOK ? '✓ 이메일 문의가 등록되었습니다 (전체 공유, 📧 목록에서 조회)' : '✓ 이메일 문의 등록 (로컬)', 'success');
+  if (ok) {
+    // 등록 완료 → 입력 폼 영역을 접어서 초기화 (목록은 유지). 📧 버튼으로 다시 펼침.
+    const ff = document.getElementById('fqEmFormFields');
+    if (ff) ff.hidden = true;
+    fqSetEmFormToggle(false);
+    fqToast(fqRemoteOK ? '✓ 등록 완료 — 입력창을 접었습니다. 📧 목록에서 확인하세요' : '✓ 이메일 문의 등록 (로컬)', 'success');
+  }
 }
 
 function fqRenderFaq() {
