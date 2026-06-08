@@ -285,9 +285,24 @@
                 <input type="checkbox" id="showOnlyAllowedCarrier">
                 선적 가능한 선사만 보기
             </label>
+            <button class="btn" id="skrHistBtn" type="button">📜 SKR/HAS 규정 변경 이력</button>
         </div>
 
         <div id="carrierCheckResult"></div>
+    </div>
+
+    <!-- SKR/HAS 규정 변경 이력 모달 -->
+    <div id="skrHistModal" class="skr-modal" hidden>
+      <div class="skr-modal-box">
+        <div class="skr-modal-head">
+          <span>📜 SKR/HAS 금지리스트 규정 변경 이력</span>
+          <button type="button" class="skr-modal-close" id="skrHistClose">✕</button>
+        </div>
+        <div class="skr-modal-body">
+          <div class="skr-hist-list" id="skrHistList"></div>
+          <div class="skr-hist-detail" id="skrHistDetail"></div>
+        </div>
+      </div>
     </div>
 </section>
 

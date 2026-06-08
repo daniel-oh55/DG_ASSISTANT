@@ -1841,6 +1841,74 @@ if (carrierCheckBtn) {
     carrierCheckBtn.addEventListener('click', checkCarrierLoadingPossibility);
 }
 
+// ── SKR/HAS 규정 변경 이력 (carriers/skr_versions.json) ──
+let SKR_VERSIONS = null;
+async function fqLoadSkrVersions() {
+    if (SKR_VERSIONS) return SKR_VERSIONS;
+    const r = await fetch('/carriers/skr_versions.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    SKR_VERSIONS = await r.json();
+    return SKR_VERSIONS;
+}
+function skrLbl(k) { return /:ALL$/.test(String(k)) ? String(k).replace('C', 'Class ').replace(':ALL', ' 전체') : ('UN' + k); }
+async function fqOpenSkrHistory() {
+    const modal = document.getElementById('skrHistModal');
+    const list = document.getElementById('skrHistList');
+    const detail = document.getElementById('skrHistDetail');
+    if (!modal) return;
+    modal.hidden = false;
+    detail.innerHTML = '';
+    list.innerHTML = '<div class="fq-ai-loading">이력을 불러오는 중…</div>';
+    try {
+        const data = await fqLoadSkrVersions();
+        const vs = (data.versions || []).slice().reverse();   // 최신 먼저
+        list.innerHTML = '<div class="skr-hist-title">버전 목록 (최신순) · 클릭 시 해당 버전 규정 조회</div>' +
+            vs.map((v, i) => {
+                const realIdx = data.versions.length - 1 - i;
+                const cnt = v.count != null ? (v.count + '건') : '보관본';
+                return `<div class="skr-ver" data-vi="${realIdx}">
+                    <div class="skr-ver-head"><b>${fqEsc(v.version)}</b> <span class="skr-ver-date">${fqEsc(v.date || '')}</span> <span class="skr-ver-cnt">${cnt}</span></div>
+                    <div class="skr-ver-remark">${fqEsc(v.remark || '')}</div>
+                </div>`;
+            }).join('');
+        list.querySelectorAll('.skr-ver').forEach(el => el.addEventListener('click', () => fqShowSkrVersion(+el.dataset.vi)));
+        if (data.versions.length) fqShowSkrVersion(data.versions.length - 1);   // 최신 버전 상세 기본 표시
+    } catch (e) {
+        list.innerHTML = '<div class="fq-ai-error">이력을 불러오지 못했습니다: ' + fqEsc(e.message) + '</div>';
+    }
+}
+function fqShowSkrVersion(idx) {
+    const data = SKR_VERSIONS; if (!data) return;
+    const v = data.versions[idx]; if (!v) return;
+    document.querySelectorAll('.skr-ver').forEach(el => el.classList.toggle('active', +el.dataset.vi === idx));
+    const detail = document.getElementById('skrHistDetail');
+    const addSet = new Set(v.added || []);
+    let html = `<div class="skr-detail-head">${fqEsc(v.version)} <span>${fqEsc(v.date || '')} · ${v.count != null ? v.count + '건' : '보관본'}</span></div>`;
+    if ((v.added && v.added.length) || (v.removed && v.removed.length)) {
+        html += '<div class="skr-diff">';
+        if (v.added && v.added.length) html += '<div class="skr-diff-add"><b>+ 추가 ' + v.added.length + '건</b> ' + v.added.map(skrLbl).join(', ') + '</div>';
+        if (v.removed && v.removed.length) html += '<div class="skr-diff-del"><b>− 삭제 ' + v.removed.length + '건</b> ' + v.removed.map(skrLbl).join(', ') + '</div>';
+        html += '</div>';
+    }
+    if (v.archived || !(v.entries && v.entries.length)) {
+        html += '<div class="fq-empty">이 버전은 보관본으로 상세 목록이 없습니다. (PDF 보관본 참조)</div>';
+    } else {
+        html += '<table class="skr-table"><thead><tr><th>Class</th><th>UNNO</th><th>Proper Shipping Name</th><th>Remark</th></tr></thead><tbody>' +
+            v.entries.map(e => {
+                const key = e.unno === 'ALL' ? ('C' + e.class + ':ALL') : e.unno;
+                const isNew = addSet.has(key);
+                return `<tr class="${isNew ? 'skr-row-new' : ''}"><td>${fqEsc(e.class || '')}</td><td>${fqEsc(e.unno || '')}${isNew ? ' 🆕' : ''}</td><td>${fqEsc(e.psn || '')}</td><td>${fqEsc(e.remark || '')}</td></tr>`;
+            }).join('') + '</tbody></table>';
+    }
+    detail.innerHTML = html;
+}
+const skrHistBtn = document.getElementById('skrHistBtn');
+if (skrHistBtn) skrHistBtn.addEventListener('click', fqOpenSkrHistory);
+const skrHistCloseBtn = document.getElementById('skrHistClose');
+if (skrHistCloseBtn) skrHistCloseBtn.addEventListener('click', () => { const m = document.getElementById('skrHistModal'); if (m) m.hidden = true; });
+const skrHistModalEl = document.getElementById('skrHistModal');
+if (skrHistModalEl) skrHistModalEl.addEventListener('click', e => { if (e.target === skrHistModalEl) skrHistModalEl.hidden = true; });
+
 const carrierCheckInput = document.getElementById('carrierCheckInput');
 if (carrierCheckInput) {
     carrierCheckInput.addEventListener('keydown', e => {

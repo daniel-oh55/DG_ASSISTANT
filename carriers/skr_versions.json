@@ -1,0 +1,7696 @@
+{
+ "carrier": "SKR/HAS (Sinokor & Heung-A) 위험물 금지리스트",
+ "source": "SKR HAL ONLY 기준",
+ "updated": "2026-06-08",
+ "versions": [
+  {
+   "version": "VER.2",
+   "date": "(구버전)",
+   "count": null,
+   "entries": [],
+   "added": [],
+   "removed": [],
+   "remark": "구버전 보관본 — 상세 목록은 보관 PDF 참조(엑셀 미보유)",
+   "archived": true
+  },
+  {
+   "version": "VER.7",
+   "date": "2024-08-13",
+   "count": 297,
+   "entries": [
+    {
+     "unno": "0055",
+     "class": "1",
+     "psn": "CASES, CARTRIDGE, EMPTY, WITH PRIMER",
+     "remark": "KI1 service PUS-SIN/JKT only"
+    },
+    {
+     "unno": "0349",
+     "class": "1",
+     "psn": "ARTICLES, EXPLOSIVE, N.O.S.",
+     "remark": "Manufacturer-Hanhwa/PS only"
+    },
+    {
+     "unno": "0513",
+     "class": "1",
+     "psn": "DETONATORS, ELECTRONIC programmable for blasting",
+     "remark": ""
+    },
+    {
+     "unno": "1003",
+     "class": "2.2",
+     "psn": "AIR, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1017",
+     "class": "2.3",
+     "psn": "CHLORINE",
+     "remark": ""
+    },
+    {
+     "unno": "1030",
+     "class": "2.1",
+     "psn": "1,1-DIFLUOROETHANE (REFRIGERANT GAS R 152a)",
+     "remark": ""
+    },
+    {
+     "unno": "1032",
+     "class": "2.1",
+     "psn": "DIMETHYLAMINE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1045",
+     "class": "2.3",
+     "psn": "FLUORINE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1048",
+     "class": "2.3",
+     "psn": "HYDROGEN BROMIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1049",
+     "class": "2.1",
+     "psn": "HYDROGEN, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1053",
+     "class": "2.3",
+     "psn": "HYDROGEN SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1057",
+     "class": "2.1",
+     "psn": "LIGHTERS or LIGHTER REFILLS containing flammable gas",
+     "remark": ""
+    },
+    {
+     "unno": "1062",
+     "class": "2.3",
+     "psn": "METHYL BROMIDE with not more than 2.0% chloropicrin",
+     "remark": ""
+    },
+    {
+     "unno": "1064",
+     "class": "2.3",
+     "psn": "METHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "1067",
+     "class": "2.3",
+     "psn": "DINITROGEN TETROXIDE (NITROGEN DIOXIDE)",
+     "remark": ""
+    },
+    {
+     "unno": "1073",
+     "class": "2.2",
+     "psn": "OXYGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1079",
+     "class": "2.3",
+     "psn": "SULPHUR DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1089",
+     "class": "3",
+     "psn": "ACETALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1092",
+     "class": "6.1",
+     "psn": "ACROLEIN, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1100",
+     "class": "3",
+     "psn": "ALLYL CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1108",
+     "class": "3",
+     "psn": "1-PENTENE (n-AMYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "1131",
+     "class": "3",
+     "psn": "CARBON DISULPHIDE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1144",
+     "class": "3",
+     "psn": "CROTONYLENE",
+     "remark": ""
+    },
+    {
+     "unno": "1155",
+     "class": "3",
+     "psn": "DIETHYL ETHER (ETHYL ETHER)",
+     "remark": ""
+    },
+    {
+     "unno": "1167",
+     "class": "3",
+     "psn": "DIVINYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1194",
+     "class": "3",
+     "psn": "ETHYL NITRITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1218",
+     "class": "3",
+     "psn": "ISOPRENE, STABILIZED",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1221",
+     "class": "3",
+     "psn": "ISOPROPYLAMINE",
+     "remark": ""
+    },
+    {
+     "unno": "1242",
+     "class": "4.3",
+     "psn": "METHYLDICHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "1243",
+     "class": "3",
+     "psn": "METHYL FORMATE",
+     "remark": ""
+    },
+    {
+     "unno": "1244",
+     "class": "6.1",
+     "psn": "METHYLHDRAZINE",
+     "remark": ""
+    },
+    {
+     "unno": "1259",
+     "class": "6.1",
+     "psn": "NICKEL CARBONYL",
+     "remark": ""
+    },
+    {
+     "unno": "1280",
+     "class": "3",
+     "psn": "PROPYLENE OXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1302",
+     "class": "3",
+     "psn": "VINYL ETHYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1303",
+     "class": "3",
+     "psn": "VINYLIDENE CHLORIDE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1336",
+     "class": "4.1",
+     "psn": "NITROGUANIDINE(PICRITE),WETTED with not less than 20% water, by mess",
+     "remark": ""
+    },
+    {
+     "unno": "1347",
+     "class": "4.1",
+     "psn": "SILVER PICRATE, WETTED with not less than 30% water, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1361",
+     "class": "4.2",
+     "psn": "CARBON animal or vegetable origin",
+     "remark": "- Non DG(SP 925) prohibit"
+    },
+    {
+     "unno": "1362",
+     "class": "4.2",
+     "psn": "CARBON, ACTIVATED",
+     "remark": ""
+    },
+    {
+     "unno": "1363",
+     "class": "4.2",
+     "psn": "COPRA",
+     "remark": ""
+    },
+    {
+     "unno": "1364",
+     "class": "4.2",
+     "psn": "COTTON WASTE, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1365",
+     "class": "4.2",
+     "psn": "COTTON, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1369",
+     "class": "4.2",
+     "psn": "p-NITROSODIMETHYLANILINE",
+     "remark": ""
+    },
+    {
+     "unno": "1372",
+     "class": "4.2",
+     "psn": "FIBRES, ANIMAL or FIBRES, VEGETABLE burnt, wet or damp",
+     "remark": ""
+    },
+    {
+     "unno": "1373",
+     "class": "4.2",
+     "psn": "FIBRES or FABRICS, ANIMAL or VEGETABLE or SYNTHETIC, N.O.S. with oil",
+     "remark": ""
+    },
+    {
+     "unno": "1374",
+     "class": "4.2",
+     "psn": "FISH MEAL, UNSTABILIZED or FISHSCRAP, UNSTABILIZED High hazard. Unrestricted moisture content, Unrestricted fat content in excess of 12%, by mass ; unrestricted fat content in excess of 15%, by mass, in the case of anti-oxidant treated fishmeal or fishscrap",
+     "remark": ""
+    },
+    {
+     "unno": "1376",
+     "class": "4.2",
+     "psn": "IRON OXIDE, SPENT or IRON SPONGE, SPENT obtained from coal gas purification",
+     "remark": ""
+    },
+    {
+     "unno": "1378",
+     "class": "4.2",
+     "psn": "METAL CATALYST, WETTED with a visible excess of liquid",
+     "remark": ""
+    },
+    {
+     "unno": "1379",
+     "class": "4.2",
+     "psn": "PAPER, UNSATURATED OIL TREATED incompletely dried(including carbon paper)",
+     "remark": ""
+    },
+    {
+     "unno": "1380",
+     "class": "4.2",
+     "psn": "PENTABORANE",
+     "remark": ""
+    },
+    {
+     "unno": "1381",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE or YELLOW, DRY or UNDER WATER or IN SOLUTION",
+     "remark": "ISO TANK & UNDERWATER CONDITION ONLY"
+    },
+    {
+     "unno": "1382",
+     "class": "4.2",
+     "psn": "POTASSIUM SULPHIDE, ANHYDROUS or POTASSIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1383",
+     "class": "4.2",
+     "psn": "PYROPHORIC METAL, N.O.S. or PYROPHORIC ALLOY, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1384",
+     "class": "4.2",
+     "psn": "SODIUM DITHIONITE (SODIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1385",
+     "class": "4.2",
+     "psn": "SODIUM SULPHIDE, ANHYDROUS or SODIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1386",
+     "class": "4.2",
+     "psn": "SEED CAKE containing vegetable oil (a) mechanically expelled seeds, containing more than 10% oil or more than 20% oil and moisture combined",
+     "remark": ""
+    },
+    {
+     "unno": "1387",
+     "class": "4.2",
+     "psn": "WOOL WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1402",
+     "class": "4.3",
+     "psn": "CALCIUM CARBIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1406",
+     "class": "4.3",
+     "psn": "Calcium-Silicon alloy",
+     "remark": ""
+    },
+    {
+     "unno": "1407",
+     "class": "4.3",
+     "psn": "CAESIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1408",
+     "class": "4.3",
+     "psn": "FERROSILICON with 30% or more but less than 90% silicon",
+     "remark": ""
+    },
+    {
+     "unno": "1415",
+     "class": "4.3",
+     "psn": "LITHIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1418",
+     "class": "4.3",
+     "psn": "MAGNESIUM POWDER or MAGNESIUM ALLOYS POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1431",
+     "class": "4.2",
+     "psn": "SODIUM METHYLATE",
+     "remark": ""
+    },
+    {
+     "unno": "1436",
+     "class": "4.3",
+     "psn": "ZINC DUST, ZINC POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1442",
+     "class": "5.1",
+     "psn": "AMMONIUM PERCHLORATE",
+     "remark": ""
+    },
+    {
+     "unno": "1479",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1512",
+     "class": "5.1",
+     "psn": "ZINC AMMONIUM NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1613",
+     "class": "6.1",
+     "psn": "HYDROCYANIC ACID, AQUEOUS SOLUTION (HYDROGEN CYANIDE, AQUEOUS SOLUTION) with not more than 20% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1642",
+     "class": "6.1",
+     "psn": "MERCURY OXYCYANIDE, DESENSITIZED",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1649",
+     "class": "6.1",
+     "psn": "MOTOR FUEL ANTI-KNOCK MIXTURE",
+     "remark": ""
+    },
+    {
+     "unno": "1660",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1746",
+     "class": "5.1",
+     "psn": "BROMINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1748",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE,DRY or CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "1749",
+     "class": "2.3",
+     "psn": "CHLORINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1791",
+     "class": "8",
+     "psn": "HYPOCHLORITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1854",
+     "class": "4.2",
+     "psn": "BARIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1855",
+     "class": "4.2",
+     "psn": "CALCIUM, PYROPHORIC or CALCIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1856",
+     "class": "4.2",
+     "psn": "RAGS, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1857",
+     "class": "4.2",
+     "psn": "TEXTILE WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1873",
+     "class": "5.1",
+     "psn": "PERCHLORIC ACID with more than 50% but not more than 72% acid, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1887",
+     "class": "6.1",
+     "psn": "BROMOCHLOROMETHANE",
+     "remark": ""
+    },
+    {
+     "unno": "1923",
+     "class": "4.2",
+     "psn": "CALCIUM DITHIONITE (CALCIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1929",
+     "class": "4.2",
+     "psn": "POTASSIUM DITHIONITE (POTASSIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1932",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "1942",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE with not more than 0.2% combustible substances, including any organic substance calculated as carbon, to the exclusion of any other added substance",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1955",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1961",
+     "class": "2.1",
+     "psn": "ETHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1964",
+     "class": "2.1",
+     "psn": "HYDROCARBON GAS MIXTURE, COMPRESSED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1966",
+     "class": "2.1",
+     "psn": "HYDROGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1971",
+     "class": "2.1",
+     "psn": "METHANE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1972",
+     "class": "2.1",
+     "psn": "METHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1975",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE AND DINITROGEN TETROXIDE MIXTURE (NITRIC OXIDE AND NITROGEN DIOXIDE MIXTURE)",
+     "remark": ""
+    },
+    {
+     "unno": "1991",
+     "class": "3",
+     "psn": "CHLOROPRENE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "2002",
+     "class": "4.2",
+     "psn": "CELLULOID, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "2004",
+     "class": "4.2",
+     "psn": "MAGNESIUM DIAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2006",
+     "class": "4.2",
+     "psn": "PLASTICS, NITROCELLULOSE-BASED, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2008",
+     "class": "4.2",
+     "psn": "ZIRCONIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2009",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, DRY finished sheets, strip or coiled wire",
+     "remark": ""
+    },
+    {
+     "unno": "2015",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE, STABILIZED or HYDROGEN PEROXIDE, AQUEOUS SOLUTION, STABILIZED with more than 60% hydrogen peroxide",
+     "remark": ""
+    },
+    {
+     "unno": "2031",
+     "class": "8",
+     "psn": "NITRIC ACID other than red fuming",
+     "remark": ""
+    },
+    {
+     "unno": "2034",
+     "class": "2.1",
+     "psn": "HYDROGEN AND METHANE MIXTURE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2067",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2071",
+     "class": "9",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": ""
+    },
+    {
+     "unno": "2186",
+     "class": "2.3",
+     "psn": "HYDROGEN CHLORIDE, REFRIGERATED LIQUID",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2188",
+     "class": "2.3",
+     "psn": "ARSINE",
+     "remark": ""
+    },
+    {
+     "unno": "2190",
+     "class": "2.3",
+     "psn": "OXYGEN DIFLUORIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2199",
+     "class": "2.3",
+     "psn": "PHOSPHINE",
+     "remark": ""
+    },
+    {
+     "unno": "2204",
+     "class": "2.3",
+     "psn": "CARBONYL SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2208",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 10% but more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "2210",
+     "class": "4.2",
+     "psn": "MAGNESIUM HYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2211",
+     "class": "9",
+     "psn": "POLIMERIC BEADS, EXPANDABLE evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "2212",
+     "class": "9",
+     "psn": "ASBESTOS, AMPHIBOLE (amosite, tremolite, actinolite, anthophyllite, crocidolite)",
+     "remark": ""
+    },
+    {
+     "unno": "2217",
+     "class": "4.2",
+     "psn": "SEED CAKE with not more than 1.5% oil and not more than 11% moisture",
+     "remark": ""
+    },
+    {
+     "unno": "2315",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "2318",
+     "class": "4.2",
+     "psn": "SODIUM HYDROSULPHIDE with less than 25% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "2356",
+     "class": "3",
+     "psn": "2-CHLOROPROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "2363",
+     "class": "3",
+     "psn": "ETHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "2371",
+     "class": "3",
+     "psn": "ISOPENTENES",
+     "remark": ""
+    },
+    {
+     "unno": "2389",
+     "class": "3",
+     "psn": "FURAN",
+     "remark": ""
+    },
+    {
+     "unno": "2417",
+     "class": "2.3",
+     "psn": "CARBONYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2418",
+     "class": "2.3",
+     "psn": "SULPHUR TETRAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2421",
+     "class": "2.3",
+     "psn": "NITROGEN TRIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2426",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE, LIQUID (hot concentrated solution)",
+     "remark": ""
+    },
+    {
+     "unno": "2441",
+     "class": "4.2",
+     "psn": "TITANIUM TRICHLORIDE, PYROPHORIC or TITANIUM TRICHLORIDE MIXTURE, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "2447",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE, MOLTEN",
+     "remark": ""
+    },
+    {
+     "unno": "2455",
+     "class": "2.2",
+     "psn": "METHYL NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2456",
+     "class": "3",
+     "psn": "2-CHLOROPROPENE",
+     "remark": ""
+    },
+    {
+     "unno": "2459",
+     "class": "3",
+     "psn": "2-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2465",
+     "class": "5.1",
+     "psn": "DICHLOROISOCYANURIC ACID, DRY or DICHLOROISOCYANURIC ACID SALTS",
+     "remark": ""
+    },
+    {
+     "unno": "2468",
+     "class": "5.1",
+     "psn": "TRICHLOROISOCYANURIC ACID, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2478",
+     "class": "3",
+     "psn": "ISOCYANATES, FLAMMABLE, TOXIC, N.O.S. or ISOCYANATE SOLUTION, FLAMMABLE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2534",
+     "class": "2.3",
+     "psn": "METHYLCHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2545",
+     "class": "4.2",
+     "psn": "HAFNIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2546",
+     "class": "4.2",
+     "psn": "TITANIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2548",
+     "class": "2.3",
+     "psn": "CHLORINE PENTAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2561",
+     "class": "3",
+     "psn": "3-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2626",
+     "class": "5.1",
+     "psn": "CHLORIC ACID, AQUEOUS SOLUTION with not more than 10% chloric acid",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2627",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2749",
+     "class": "3",
+     "psn": "TETRAMETHYLSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2793",
+     "class": "4.2",
+     "psn": "FERROUS METAL BORINGS, SHAVINGS, TURNINGS or CUTTINGS in a form liable to self-heating",
+     "remark": ""
+    },
+    {
+     "unno": "2845",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2846",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2870",
+     "class": "4.2",
+     "psn": "ALUMINIUM BOROHYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2880",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "2881",
+     "class": "4.2",
+     "psn": "METAL CATALYST, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2901",
+     "class": "2.3",
+     "psn": "BROMINE CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2940",
+     "class": "4.2",
+     "psn": "9-PHOSPHABICYCLONONANES (CYCLOOCTADIENEPHOSPHINES)",
+     "remark": ""
+    },
+    {
+     "unno": "2950",
+     "class": "4.3",
+     "psn": "MAGNESIUM GRANULES, COATED paticle size not less than 149 microns",
+     "remark": ""
+    },
+    {
+     "unno": "2956",
+     "class": "4.1",
+     "psn": "5-tert-BUTYL-2,4,6-TRINITRO-m-XYLENE(MUSK XYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "2983",
+     "class": "3",
+     "psn": "ETHYLENE OXIDE AND PROPYLENE OXIDE MIXTURE with not more than 30% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3064",
+     "class": "3",
+     "psn": "NITROGLYCERIN SOLUTION IN ALCOHOL with more than 1% but not more than 5% nitroglycerin",
+     "remark": ""
+    },
+    {
+     "unno": "3083",
+     "class": "2.3",
+     "psn": "PERCHLORYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3085",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3087",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, TOXIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3088",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3090",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES (including lithium alloy batteries)",
+     "remark": "Non DG prohibit"
+    },
+    {
+     "unno": "3091",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES CONTAINED IN EQUIPMENT or LITHIUM METAL BATTERIES PACKED WITH EQUIPMENT (including lithium alloy batteries)",
+     "remark": "Non DG prohibit"
+    },
+    {
+     "unno": "3097",
+     "class": "4.1",
+     "psn": "FLAMMABLE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3100",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3101",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3102",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3103",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3104",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3105",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3106",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3107",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3108",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3109",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3110",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3111",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3112",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3113",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3114",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3115",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3116",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3117",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3118",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3119",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3120",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3121",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, WATER-REACTIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3126",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3127",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3128",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3129",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3130",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3131",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3132",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3133",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3134",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3135",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3137",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3138",
+     "class": "2.1",
+     "psn": "ETHYLENE, ACETYLENE AND PROPYLENE MIXTURE, REFRIGERATED LIQUID containing at least 71.5% ethylene, \nwith not more than 22.5% acetylene and not more than 6% propylene",
+     "remark": ""
+    },
+    {
+     "unno": "3149",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE AND PEROXYACETIC ACID MIXTURE, STABILIZED with acid(s), water and not more than 5%\nperoxyacetic acid, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "3151",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, LIQUID or POLYHALOGENATED TERPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3152",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, SOLID or POLYHALOGENATED TERPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3162",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3171",
+     "class": "9",
+     "psn": "BATTERY-POWERED VEHICLE or BATTERY-POWERED EQUIPMENT",
+     "remark": "Only Prohibited Elec. Car / See the remark L / N"
+    },
+    {
+     "unno": "3174",
+     "class": "4.2",
+     "psn": "TITANIUM DISULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3183",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3184",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3185",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3186",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3187",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3188",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3189",
+     "class": "4.2",
+     "psn": "METAL POWDER, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3190",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3191",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3192",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3194",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3200",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3205",
+     "class": "4.2",
+     "psn": "ALKALINE EARTH METAL ALCOHOLATES, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3206",
+     "class": "4.2",
+     "psn": "ALKALI METAL ALCOHOLATES, SELF-HEATING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3209",
+     "class": "4.3",
+     "psn": "METALLIC SUBSTANCE, WATERREACTIVE, SELFHEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3212",
+     "class": "5.1",
+     "psn": "HYPOCHLORITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3219",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, AQUEOUS SOLUTION, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3221",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3222",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3223",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3224",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3225",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3226",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3227",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3228",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3229",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3230",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3231",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3232",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3233",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3234",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C, TEMPERATURE  CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3235",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3236",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3237",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3238",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3239",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3240",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3242",
+     "class": "4.1",
+     "psn": "AZODICARBONAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3254",
+     "class": "4.2",
+     "psn": "TRIBUTYLPHOSPHANE",
+     "remark": ""
+    },
+    {
+     "unno": "3255",
+     "class": "4.2",
+     "psn": "tert-BUTYL HYPOCHLORITE",
+     "remark": ""
+    },
+    {
+     "unno": "3256",
+     "class": "3",
+     "psn": "ELEVATED TEMPERATURE LIQUID, FLAMMABLE, N.O.S. with flashpoint above 60°C, at or above its flashpoint",
+     "remark": ""
+    },
+    {
+     "unno": "3257",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE LIQUID, N.O.S. at or above 100°C and below its flashpoint (including molten metals, molten salts, etc.)",
+     "remark": ""
+    },
+    {
+     "unno": "3258",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE SOLID, N.O.S. at or above 240°C",
+     "remark": ""
+    },
+    {
+     "unno": "3269",
+     "class": "3",
+     "psn": "POLYESTER RESIN KIT",
+     "remark": ""
+    },
+    {
+     "unno": "3294",
+     "class": "6.1",
+     "psn": "HYDROGEN CYANIDE, SOLUTION IN ALCOHOL with not more than 45% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3300",
+     "class": "2.3",
+     "psn": "ETHYLENE OXIDE AND CARBON DIOXIDE MIXTURE with more than 87% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3303",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3306",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3307",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3308",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3309",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, FLAMMABLE, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3310",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3311",
+     "class": "2.2",
+     "psn": "GAS, REFRIGERATED LIQUID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3313",
+     "class": "4.2",
+     "psn": "ORGANIC PIGMENTS, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3314",
+     "class": "9",
+     "psn": "PLASTICS MOULDING COMPOUND in dough, sheet or extruded rope form, evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "3315",
+     "class": "6.1",
+     "psn": "CHEMICAL SAMPLE, TOXIC",
+     "remark": ""
+    },
+    {
+     "unno": "3319",
+     "class": "4.1",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 2% but not more than 10% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3341",
+     "class": "4.2",
+     "psn": "THIOUREA DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3342",
+     "class": "4.2",
+     "psn": "XANTHATES",
+     "remark": ""
+    },
+    {
+     "unno": "3343",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, FLAMMABLE, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3344",
+     "class": "4.1",
+     "psn": "PENTAERYTHRITE TETRANITRATE (PENTAERYTHRITOL TETRANITRATE; PETN)\nMIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 10% but not more than 20% PETN, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3357",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3375",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE EMULSION or SUSPENSION or GEL, intermediate for blasting explosives",
+     "remark": ""
+    },
+    {
+     "unno": "3377",
+     "class": "5.1",
+     "psn": "SODIUM PERBORATE MONOHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3378",
+     "class": "5.1",
+     "psn": "SODIUM CARBONATE PEROXYHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3379",
+     "class": "3",
+     "psn": "DESENSITIZED EXPLOSIVE, LIQUID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3380",
+     "class": "4.1",
+     "psn": "DESENSITIZED EXPLOSIVE, SOLID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3391",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3392",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3393",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3394",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3397",
+     "class": "4.3",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, WATERREACTIVE, SELFHEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3400",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3432",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3468",
+     "class": "2.1",
+     "psn": "HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM\nCONTAINED IN EQUIPMENT or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM PACKED WITH EQUIPMENT",
+     "remark": ""
+    },
+    {
+     "unno": "3480",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES (including lithium ion polymer batteries)",
+     "remark": "See the remark L / N\nNon DG(SP188) prohibit"
+    },
+    {
+     "unno": "3481",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES CONTAINED IN EQUIPMENT",
+     "remark": "See the remark L / N\nNon DG(SP188) prohibit"
+    },
+    {
+     "unno": "3485",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, DRY, CORROSIVE or CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "3486",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 10% but not more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "3487",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED, CORROSIVE or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE, CORROSIVE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "3502",
+     "class": "2.2",
+     "psn": "CHEMICAL UNDER PRESSURE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3507",
+     "class": "6.1",
+     "psn": "URANIUM HEXAFLUORIDE, RADIOACTIVE MATERIAL, EXCEPTED PACKAGE, less than 0.1 kg per package, non-fissile or fissile-excepted",
+     "remark": ""
+    },
+    {
+     "unno": "3509",
+     "class": "9",
+     "psn": "PACKAGING, DISCARDED, EMPTY, UNCLEANED",
+     "remark": ""
+    },
+    {
+     "unno": "3515",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3518",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3519",
+     "class": "2.3",
+     "psn": "BORON TRIFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3520",
+     "class": "2.3",
+     "psn": "CHLORINE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3521",
+     "class": "2.3",
+     "psn": "SILICON TETRAFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3532",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, STABILIZED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3533",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, SOLID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3534",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3536",
+     "class": "9",
+     "psn": "LITHIUM BATTERIES INSTALLED IN CARGO TRANSPORT UNIT lithium ion batteries or lithium metal batteries",
+     "remark": ""
+    },
+    {
+     "unno": "3542",
+     "class": "4.2",
+     "psn": "ARTICLES CONTAINING A SUBSTANCE LIABLE TO SPONTANEOUS COMBUSTION, N.O.S",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "1",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "2",
+     "psn": "",
+     "remark": "See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "ALL",
+     "class": "5.1",
+     "psn": "PROHIBIT INDIA / BANGLADESH / SRIRANKA / PAKISTAN   (INNSA / INMUN / BDCGP / LKCMB / PKKHI )",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "6.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "7",
+     "psn": "",
+     "remark": ""
+    }
+   ],
+   "added": [],
+   "removed": [],
+   "remark": "이력 비교 시작 기준본 (297건)"
+  },
+  {
+   "version": "VER.8",
+   "date": "2024-10-10",
+   "count": 322,
+   "entries": [
+    {
+     "unno": "0055",
+     "class": "1",
+     "psn": "CASES, CARTRIDGE, EMPTY, WITH PRIMER",
+     "remark": "KI1 service PUS-SIN/JKT \n/ SKR, HAL vessel only \n/ Manufacturer-Hanhwa, PS only"
+    },
+    {
+     "unno": "0349",
+     "class": "1",
+     "psn": "ARTICLES, EXPLOSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "0513",
+     "class": "1",
+     "psn": "DETONATORS, ELECTRONIC programmable for blasting",
+     "remark": ""
+    },
+    {
+     "unno": "1003",
+     "class": "2.2",
+     "psn": "AIR, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1017",
+     "class": "2.3",
+     "psn": "CHLORINE",
+     "remark": ""
+    },
+    {
+     "unno": "1030",
+     "class": "2.1",
+     "psn": "1,1-DIFLUOROETHANE (REFRIGERANT GAS R 152a)",
+     "remark": ""
+    },
+    {
+     "unno": "1032",
+     "class": "2.1",
+     "psn": "DIMETHYLAMINE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1045",
+     "class": "2.3",
+     "psn": "FLUORINE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1048",
+     "class": "2.3",
+     "psn": "HYDROGEN BROMIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1049",
+     "class": "2.1",
+     "psn": "HYDROGEN, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1053",
+     "class": "2.3",
+     "psn": "HYDROGEN SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1057",
+     "class": "2.1",
+     "psn": "LIGHTERS or LIGHTER REFILLS containing flammable gas",
+     "remark": ""
+    },
+    {
+     "unno": "1062",
+     "class": "2.3",
+     "psn": "METHYL BROMIDE with not more than 2.0% chloropicrin",
+     "remark": ""
+    },
+    {
+     "unno": "1064",
+     "class": "2.3",
+     "psn": "METHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "1067",
+     "class": "2.3",
+     "psn": "DINITROGEN TETROXIDE (NITROGEN DIOXIDE)",
+     "remark": ""
+    },
+    {
+     "unno": "1073",
+     "class": "2.2",
+     "psn": "OXYGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1079",
+     "class": "2.3",
+     "psn": "SULPHUR DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1089",
+     "class": "3",
+     "psn": "ACETALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1090",
+     "class": "3",
+     "psn": "ACETONE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1092",
+     "class": "6.1",
+     "psn": "ACROLEIN, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1093",
+     "class": "3",
+     "psn": "ACRYLONITRILE, STABILIZED",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1100",
+     "class": "3",
+     "psn": "ALLYL CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1108",
+     "class": "3",
+     "psn": "1-PENTENE (n-AMYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "1131",
+     "class": "3",
+     "psn": "CARBON DISULPHIDE",
+     "remark": "ISO TANK ONLY / See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1144",
+     "class": "3",
+     "psn": "CROTONYLENE",
+     "remark": ""
+    },
+    {
+     "unno": "1146",
+     "class": "3",
+     "psn": "CYCLOPENTANE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1154",
+     "class": "3",
+     "psn": "DIETHYLAMINE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1155",
+     "class": "3",
+     "psn": "DIETHYL ETHER (ETHYL ETHER)",
+     "remark": ""
+    },
+    {
+     "unno": "1159",
+     "class": "3",
+     "psn": "DIISOPROPYL ETHER",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1160",
+     "class": "3",
+     "psn": "DIMETHYLAMINE, AQUEOUS SOLUTION",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1164",
+     "class": "3",
+     "psn": "DIMETHYL SULPHIDE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1167",
+     "class": "3",
+     "psn": "DIVINYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1194",
+     "class": "3",
+     "psn": "ETHYL NITRITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1203",
+     "class": "3",
+     "psn": "MOTOR SPIRIT or GASOLINE or PETROL",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1208",
+     "class": "3",
+     "psn": "HEXANES",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1218",
+     "class": "3",
+     "psn": "ISOPRENE, STABILIZED",
+     "remark": "ISO TANK ONLY / See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1221",
+     "class": "3",
+     "psn": "ISOPROPYLAMINE",
+     "remark": ""
+    },
+    {
+     "unno": "1242",
+     "class": "4.3",
+     "psn": "METHYLDICHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "1243",
+     "class": "3",
+     "psn": "METHYL FORMATE",
+     "remark": ""
+    },
+    {
+     "unno": "1244",
+     "class": "6.1",
+     "psn": "METHYLHDRAZINE",
+     "remark": ""
+    },
+    {
+     "unno": "1259",
+     "class": "6.1",
+     "psn": "NICKEL CARBONYL",
+     "remark": ""
+    },
+    {
+     "unno": "1275",
+     "class": "3",
+     "psn": "PROPIONALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1280",
+     "class": "3",
+     "psn": "PROPYLENE OXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1295",
+     "class": "4.3",
+     "psn": "TRICHLOROSILANE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1298",
+     "class": "3",
+     "psn": "TRIMETHYLCHLOROSILANE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "1302",
+     "class": "3",
+     "psn": "VINYL ETHYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1303",
+     "class": "3",
+     "psn": "VINYLIDENE CHLORIDE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1336",
+     "class": "4.1",
+     "psn": "NITROGUANIDINE(PICRITE),WETTED with not less than 20% water, by mess",
+     "remark": ""
+    },
+    {
+     "unno": "1344",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "1347",
+     "class": "4.1",
+     "psn": "SILVER PICRATE, WETTED with not less than 30% water, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1361",
+     "class": "4.2",
+     "psn": "CARBON animal or vegetable origin",
+     "remark": "Non DG(SP 925) prohibit\n/ See the remark E"
+    },
+    {
+     "unno": "1362",
+     "class": "4.2",
+     "psn": "CARBON, ACTIVATED",
+     "remark": ""
+    },
+    {
+     "unno": "1363",
+     "class": "4.2",
+     "psn": "COPRA",
+     "remark": ""
+    },
+    {
+     "unno": "1364",
+     "class": "4.2",
+     "psn": "COTTON WASTE, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1365",
+     "class": "4.2",
+     "psn": "COTTON, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1369",
+     "class": "4.2",
+     "psn": "p-NITROSODIMETHYLANILINE",
+     "remark": ""
+    },
+    {
+     "unno": "1372",
+     "class": "4.2",
+     "psn": "FIBRES, ANIMAL or FIBRES, VEGETABLE burnt, wet or damp",
+     "remark": ""
+    },
+    {
+     "unno": "1373",
+     "class": "4.2",
+     "psn": "FIBRES or FABRICS, ANIMAL or VEGETABLE or SYNTHETIC, N.O.S. with oil",
+     "remark": ""
+    },
+    {
+     "unno": "1374",
+     "class": "4.2",
+     "psn": "FISH MEAL, UNSTABILIZED or FISHSCRAP, UNSTABILIZED High hazard. Unrestricted moisture content, Unrestricted fat content in excess of 12%, by mass ; unrestricted fat content in excess of 15%, by mass, in the case of anti-oxidant treated fishmeal or fishscrap",
+     "remark": ""
+    },
+    {
+     "unno": "1376",
+     "class": "4.2",
+     "psn": "IRON OXIDE, SPENT or IRON SPONGE, SPENT obtained from coal gas purification",
+     "remark": ""
+    },
+    {
+     "unno": "1378",
+     "class": "4.2",
+     "psn": "METAL CATALYST, WETTED with a visible excess of liquid",
+     "remark": ""
+    },
+    {
+     "unno": "1379",
+     "class": "4.2",
+     "psn": "PAPER, UNSATURATED OIL TREATED incompletely dried(including carbon paper)",
+     "remark": ""
+    },
+    {
+     "unno": "1380",
+     "class": "4.2",
+     "psn": "PENTABORANE",
+     "remark": ""
+    },
+    {
+     "unno": "1381",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE or YELLOW, DRY or UNDER WATER or IN SOLUTION",
+     "remark": "ISO TANK & UNDERWATER CONDITION ONLY / See the remark N (SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1382",
+     "class": "4.2",
+     "psn": "POTASSIUM SULPHIDE, ANHYDROUS or POTASSIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1383",
+     "class": "4.2",
+     "psn": "PYROPHORIC METAL, N.O.S. or PYROPHORIC ALLOY, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1384",
+     "class": "4.2",
+     "psn": "SODIUM DITHIONITE (SODIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1385",
+     "class": "4.2",
+     "psn": "SODIUM SULPHIDE, ANHYDROUS or SODIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1386",
+     "class": "4.2",
+     "psn": "SEED CAKE containing vegetable oil (a) mechanically expelled seeds, containing more than 10% oil or more than 20% oil and moisture combined",
+     "remark": ""
+    },
+    {
+     "unno": "1387",
+     "class": "4.2",
+     "psn": "WOOL WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1402",
+     "class": "4.3",
+     "psn": "CALCIUM CARBIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1406",
+     "class": "4.3",
+     "psn": "Calcium-Silicon alloy",
+     "remark": ""
+    },
+    {
+     "unno": "1407",
+     "class": "4.3",
+     "psn": "CAESIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1415",
+     "class": "4.3",
+     "psn": "LITHIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1418",
+     "class": "4.3",
+     "psn": "MAGNESIUM POWDER or MAGNESIUM ALLOYS POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1431",
+     "class": "4.2",
+     "psn": "SODIUM METHYLATE",
+     "remark": ""
+    },
+    {
+     "unno": "1436",
+     "class": "4.3",
+     "psn": "ZINC DUST, ZINC POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1442",
+     "class": "5.1",
+     "psn": "AMMONIUM PERCHLORATE",
+     "remark": ""
+    },
+    {
+     "unno": "1463",
+     "class": "5.1",
+     "psn": "CHROMIUM TRIOXIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1477",
+     "class": "5.1",
+     "psn": "NITRATES, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1479",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1490",
+     "class": "5.1",
+     "psn": "POTASSIUM PERMANGANATE",
+     "remark": ""
+    },
+    {
+     "unno": "1512",
+     "class": "5.1",
+     "psn": "ZINC AMMONIUM NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1613",
+     "class": "6.1",
+     "psn": "HYDROCYANIC ACID, AQUEOUS SOLUTION (HYDROGEN CYANIDE, AQUEOUS SOLUTION) with not more than 20% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1642",
+     "class": "6.1",
+     "psn": "MERCURY OXYCYANIDE, DESENSITIZED",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1649",
+     "class": "6.1",
+     "psn": "MOTOR FUEL ANTI-KNOCK MIXTURE",
+     "remark": ""
+    },
+    {
+     "unno": "1660",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1746",
+     "class": "5.1",
+     "psn": "BROMINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1748",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE,DRY or CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "1749",
+     "class": "2.3",
+     "psn": "CHLORINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1791",
+     "class": "8",
+     "psn": "HYPOCHLORITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1854",
+     "class": "4.2",
+     "psn": "BARIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1855",
+     "class": "4.2",
+     "psn": "CALCIUM, PYROPHORIC or CALCIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1856",
+     "class": "4.2",
+     "psn": "RAGS, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1857",
+     "class": "4.2",
+     "psn": "TEXTILE WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1873",
+     "class": "5.1",
+     "psn": "PERCHLORIC ACID with more than 50% but not more than 72% acid, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1887",
+     "class": "6.1",
+     "psn": "BROMOCHLOROMETHANE",
+     "remark": ""
+    },
+    {
+     "unno": "1923",
+     "class": "4.2",
+     "psn": "CALCIUM DITHIONITE (CALCIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1929",
+     "class": "4.2",
+     "psn": "POTASSIUM DITHIONITE (POTASSIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1932",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "1942",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE with not more than 0.2% combustible substances, including any organic substance calculated as carbon, to the exclusion of any other added substance",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1955",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1961",
+     "class": "2.1",
+     "psn": "ETHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1964",
+     "class": "2.1",
+     "psn": "HYDROCARBON GAS MIXTURE, COMPRESSED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1966",
+     "class": "2.1",
+     "psn": "HYDROGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1971",
+     "class": "2.1",
+     "psn": "METHANE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1972",
+     "class": "2.1",
+     "psn": "METHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1975",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE AND DINITROGEN TETROXIDE MIXTURE (NITRIC OXIDE AND NITROGEN DIOXIDE MIXTURE)",
+     "remark": ""
+    },
+    {
+     "unno": "1978",
+     "class": "2.1",
+     "psn": "PROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "1991",
+     "class": "3",
+     "psn": "CHLOROPRENE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "2002",
+     "class": "4.2",
+     "psn": "CELLULOID, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "2004",
+     "class": "4.2",
+     "psn": "MAGNESIUM DIAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2006",
+     "class": "4.2",
+     "psn": "PLASTICS, NITROCELLULOSE-BASED, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2008",
+     "class": "4.2",
+     "psn": "ZIRCONIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2009",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, DRY finished sheets, strip or coiled wire",
+     "remark": ""
+    },
+    {
+     "unno": "2015",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE, STABILIZED or HYDROGEN PEROXIDE, AQUEOUS SOLUTION, STABILIZED with more than 60% hydrogen peroxide",
+     "remark": ""
+    },
+    {
+     "unno": "2034",
+     "class": "2.1",
+     "psn": "HYDROGEN AND METHANE MIXTURE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2045",
+     "class": "3",
+     "psn": "ISOBUTYL ALDEHYDE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "2056",
+     "class": "3",
+     "psn": "TETRAHYDROFURAN",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "2067",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2071",
+     "class": "9",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": ""
+    },
+    {
+     "unno": "2186",
+     "class": "2.3",
+     "psn": "HYDROGEN CHLORIDE, REFRIGERATED LIQUID",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2188",
+     "class": "2.3",
+     "psn": "ARSINE",
+     "remark": ""
+    },
+    {
+     "unno": "2190",
+     "class": "2.3",
+     "psn": "OXYGEN DIFLUORIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2199",
+     "class": "2.3",
+     "psn": "PHOSPHINE",
+     "remark": ""
+    },
+    {
+     "unno": "2203",
+     "class": "2.1",
+     "psn": "SILANE",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "2204",
+     "class": "2.3",
+     "psn": "CARBONYL SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2208",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 10% but more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "2210",
+     "class": "4.2",
+     "psn": "MAGNESIUM HYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2211",
+     "class": "9",
+     "psn": "POLIMERIC BEADS, EXPANDABLE evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "2212",
+     "class": "9",
+     "psn": "ASBESTOS, AMPHIBOLE (amosite, tremolite, actinolite, anthophyllite, crocidolite)",
+     "remark": ""
+    },
+    {
+     "unno": "2217",
+     "class": "4.2",
+     "psn": "SEED CAKE with not more than 1.5% oil and not more than 11% moisture",
+     "remark": ""
+    },
+    {
+     "unno": "2270",
+     "class": "3",
+     "psn": "ETHYLAMINE, AQUEOUS SOLUTION with not less than 50% but not more than 70% ethylamine",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "2315",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "2318",
+     "class": "4.2",
+     "psn": "SODIUM HYDROSULPHIDE with less than 25% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "2356",
+     "class": "3",
+     "psn": "2-CHLOROPROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "2363",
+     "class": "3",
+     "psn": "ETHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "2371",
+     "class": "3",
+     "psn": "ISOPENTENES",
+     "remark": ""
+    },
+    {
+     "unno": "2389",
+     "class": "3",
+     "psn": "FURAN",
+     "remark": ""
+    },
+    {
+     "unno": "2398",
+     "class": "3",
+     "psn": "METHYL tert-BUTYL ETHER",
+     "remark": "ISO TANK ONLY"
+    },
+    {
+     "unno": "2417",
+     "class": "2.3",
+     "psn": "CARBONYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2418",
+     "class": "2.3",
+     "psn": "SULPHUR TETRAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2421",
+     "class": "2.3",
+     "psn": "NITROGEN TRIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2426",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE, LIQUID (hot concentrated solution)",
+     "remark": ""
+    },
+    {
+     "unno": "2441",
+     "class": "4.2",
+     "psn": "TITANIUM TRICHLORIDE, PYROPHORIC or TITANIUM TRICHLORIDE MIXTURE, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "2447",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE, MOLTEN",
+     "remark": ""
+    },
+    {
+     "unno": "2455",
+     "class": "2.2",
+     "psn": "METHYL NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2456",
+     "class": "3",
+     "psn": "2-CHLOROPROPENE",
+     "remark": ""
+    },
+    {
+     "unno": "2459",
+     "class": "3",
+     "psn": "2-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2465",
+     "class": "5.1",
+     "psn": "DICHLOROISOCYANURIC ACID, DRY or DICHLOROISOCYANURIC ACID SALTS",
+     "remark": ""
+    },
+    {
+     "unno": "2468",
+     "class": "5.1",
+     "psn": "TRICHLOROISOCYANURIC ACID, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2478",
+     "class": "3",
+     "psn": "ISOCYANATES, FLAMMABLE, TOXIC, N.O.S. or ISOCYANATE SOLUTION, FLAMMABLE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2534",
+     "class": "2.3",
+     "psn": "METHYLCHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2545",
+     "class": "4.2",
+     "psn": "HAFNIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2546",
+     "class": "4.2",
+     "psn": "TITANIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2548",
+     "class": "2.3",
+     "psn": "CHLORINE PENTAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2556",
+     "class": "4.1",
+     "psn": "NITROCELLULOSE WITH ALCOHOL (not less than 25% alcohol, by mass, and not more than 12.6% nitrogen, by dry mass)",
+     "remark": ""
+    },
+    {
+     "unno": "2557",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "2561",
+     "class": "3",
+     "psn": "3-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2626",
+     "class": "5.1",
+     "psn": "CHLORIC ACID, AQUEOUS SOLUTION with not more than 10% chloric acid",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2627",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2749",
+     "class": "3",
+     "psn": "TETRAMETHYLSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2793",
+     "class": "4.2",
+     "psn": "FERROUS METAL BORINGS, SHAVINGS, TURNINGS or CUTTINGS in a form liable to self-heating",
+     "remark": ""
+    },
+    {
+     "unno": "2845",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2846",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2870",
+     "class": "4.2",
+     "psn": "ALUMINIUM BOROHYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2880",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "2881",
+     "class": "4.2",
+     "psn": "METAL CATALYST, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2901",
+     "class": "2.3",
+     "psn": "BROMINE CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2940",
+     "class": "4.2",
+     "psn": "9-PHOSPHABICYCLONONANES (CYCLOOCTADIENEPHOSPHINES)",
+     "remark": ""
+    },
+    {
+     "unno": "2950",
+     "class": "4.3",
+     "psn": "MAGNESIUM GRANULES, COATED paticle size not less than 149 microns",
+     "remark": ""
+    },
+    {
+     "unno": "2956",
+     "class": "4.1",
+     "psn": "5-tert-BUTYL-2,4,6-TRINITRO-m-XYLENE(MUSK XYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "2983",
+     "class": "3",
+     "psn": "ETHYLENE OXIDE AND PROPYLENE OXIDE MIXTURE with not more than 30% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3064",
+     "class": "3",
+     "psn": "NITROGLYCERIN SOLUTION IN ALCOHOL with more than 1% but not more than 5% nitroglycerin",
+     "remark": ""
+    },
+    {
+     "unno": "3083",
+     "class": "2.3",
+     "psn": "PERCHLORYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3085",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3087",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, TOXIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3088",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3090",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES (including lithium alloy batteries)",
+     "remark": "See the remark N, Non DG prohibit"
+    },
+    {
+     "unno": "3091",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES CONTAINED IN EQUIPMENT or LITHIUM METAL BATTERIES PACKED WITH EQUIPMENT (including lithium alloy batteries)",
+     "remark": "See the remark N, Non DG prohibit"
+    },
+    {
+     "unno": "3097",
+     "class": "4.1",
+     "psn": "FLAMMABLE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3100",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3102",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3103",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3104",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3105",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3106",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3107",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3108",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3109",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3110",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3111",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3112",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3113",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3114",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3115",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3116",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3117",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3118",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3119",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3120",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3121",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, WATER-REACTIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3126",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3127",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3128",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3129",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3130",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3131",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3132",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3133",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3134",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3135",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3137",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3138",
+     "class": "2.1",
+     "psn": "ETHYLENE, ACETYLENE AND PROPYLENE MIXTURE, REFRIGERATED LIQUID containing at least 71.5% ethylene, \nwith not more than 22.5% acetylene and not more than 6% propylene",
+     "remark": ""
+    },
+    {
+     "unno": "3149",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE AND PEROXYACETIC ACID MIXTURE, STABILIZED with acid(s), water and not more than 5%\nperoxyacetic acid, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "3151",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, LIQUID or POLYHALOGENATED TERPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3152",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, SOLID or POLYHALOGENATED TERPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3162",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3170",
+     "class": "4.3",
+     "psn": "ALUMINIUM SMELTING BY-PRODUCTS",
+     "remark": ""
+    },
+    {
+     "unno": "3171",
+     "class": "9",
+     "psn": "BATTERY-POWERED VEHICLE or BATTERY-POWERED EQUIPMENT",
+     "remark": "Only Prohibited Elec. Car / See the remark L / N"
+    },
+    {
+     "unno": "3174",
+     "class": "4.2",
+     "psn": "TITANIUM DISULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3183",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3184",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3185",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3186",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3187",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3188",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3189",
+     "class": "4.2",
+     "psn": "METAL POWDER, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3190",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3191",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3192",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3194",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3200",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3205",
+     "class": "4.2",
+     "psn": "ALKALINE EARTH METAL ALCOHOLATES, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3206",
+     "class": "4.2",
+     "psn": "ALKALI METAL ALCOHOLATES, SELF-HEATING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3209",
+     "class": "4.3",
+     "psn": "METALLIC SUBSTANCE, WATERREACTIVE, SELFHEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3212",
+     "class": "5.1",
+     "psn": "HYPOCHLORITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3219",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, AQUEOUS SOLUTION, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3221",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3222",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3223",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3224",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3225",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3226",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3227",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3228",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3229",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3230",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3231",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3232",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3233",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3234",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C, TEMPERATURE  CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3235",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3236",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3237",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3238",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3239",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3240",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3241",
+     "class": "4.1",
+     "psn": "2-BROMO-2-NITROPROPANE-1,3-DIOL",
+     "remark": ""
+    },
+    {
+     "unno": "3242",
+     "class": "4.1",
+     "psn": "AZODICARBONAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3251",
+     "class": "4.1",
+     "psn": "ISOSORBIDE-5-MONONITRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3254",
+     "class": "4.2",
+     "psn": "TRIBUTYLPHOSPHANE",
+     "remark": ""
+    },
+    {
+     "unno": "3255",
+     "class": "4.2",
+     "psn": "tert-BUTYL HYPOCHLORITE",
+     "remark": ""
+    },
+    {
+     "unno": "3256",
+     "class": "3",
+     "psn": "ELEVATED TEMPERATURE LIQUID, FLAMMABLE, N.O.S. with flashpoint above 60°C, at or above its flashpoint",
+     "remark": ""
+    },
+    {
+     "unno": "3257",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE LIQUID, N.O.S. at or above 100°C and below its flashpoint (including molten metals, molten salts, etc.)",
+     "remark": ""
+    },
+    {
+     "unno": "3258",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE SOLID, N.O.S. at or above 240°C",
+     "remark": ""
+    },
+    {
+     "unno": "3269",
+     "class": "3",
+     "psn": "POLYESTER RESIN KIT",
+     "remark": ""
+    },
+    {
+     "unno": "3294",
+     "class": "6.1",
+     "psn": "HYDROGEN CYANIDE, SOLUTION IN ALCOHOL with not more than 45% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3300",
+     "class": "2.3",
+     "psn": "ETHYLENE OXIDE AND CARBON DIOXIDE MIXTURE with more than 87% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3303",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3306",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3307",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3308",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3309",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, FLAMMABLE, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3310",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3311",
+     "class": "2.2",
+     "psn": "GAS, REFRIGERATED LIQUID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3313",
+     "class": "4.2",
+     "psn": "ORGANIC PIGMENTS, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3314",
+     "class": "9",
+     "psn": "PLASTICS MOULDING COMPOUND in dough, sheet or extruded rope form, evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "3315",
+     "class": "6.1",
+     "psn": "CHEMICAL SAMPLE, TOXIC",
+     "remark": ""
+    },
+    {
+     "unno": "3319",
+     "class": "4.1",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 2% but not more than 10% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3341",
+     "class": "4.2",
+     "psn": "THIOUREA DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3342",
+     "class": "4.2",
+     "psn": "XANTHATES",
+     "remark": ""
+    },
+    {
+     "unno": "3343",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, FLAMMABLE, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3344",
+     "class": "4.1",
+     "psn": "PENTAERYTHRITE TETRANITRATE (PENTAERYTHRITOL TETRANITRATE; PETN)\nMIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 10% but not more than 20% PETN, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3357",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3375",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE EMULSION or SUSPENSION or GEL, intermediate for blasting explosives",
+     "remark": ""
+    },
+    {
+     "unno": "3377",
+     "class": "5.1",
+     "psn": "SODIUM PERBORATE MONOHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3378",
+     "class": "5.1",
+     "psn": "SODIUM CARBONATE PEROXYHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3379",
+     "class": "3",
+     "psn": "DESENSITIZED EXPLOSIVE, LIQUID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3380",
+     "class": "4.1",
+     "psn": "DESENSITIZED EXPLOSIVE, SOLID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3391",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3392",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3393",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3394",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3397",
+     "class": "4.3",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, WATERREACTIVE, SELFHEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3400",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3432",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3468",
+     "class": "2.1",
+     "psn": "HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM\nCONTAINED IN EQUIPMENT or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM PACKED WITH EQUIPMENT",
+     "remark": ""
+    },
+    {
+     "unno": "3480",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES (including lithium ion polymer batteries)",
+     "remark": "See the remark L / N\nNon DG(SP188) prohibit"
+    },
+    {
+     "unno": "3481",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES CONTAINED IN EQUIPMENT",
+     "remark": "See the remark L / N\nNon DG(SP188) prohibit"
+    },
+    {
+     "unno": "3485",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, DRY, CORROSIVE or CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "3486",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 10% but not more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "3487",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED, CORROSIVE or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE, CORROSIVE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "3502",
+     "class": "2.2",
+     "psn": "CHEMICAL UNDER PRESSURE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3507",
+     "class": "6.1",
+     "psn": "URANIUM HEXAFLUORIDE, RADIOACTIVE MATERIAL, EXCEPTED PACKAGE, less than 0.1 kg per package, non-fissile or fissile-excepted",
+     "remark": ""
+    },
+    {
+     "unno": "3509",
+     "class": "9",
+     "psn": "PACKAGING, DISCARDED, EMPTY, UNCLEANED",
+     "remark": ""
+    },
+    {
+     "unno": "3515",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3518",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3519",
+     "class": "2.3",
+     "psn": "BORON TRIFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3520",
+     "class": "2.3",
+     "psn": "CHLORINE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3521",
+     "class": "2.3",
+     "psn": "SILICON TETRAFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3532",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, STABILIZED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3533",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, SOLID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3534",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3536",
+     "class": "9",
+     "psn": "LITHIUM BATTERIES INSTALLED IN CARGO TRANSPORT UNIT lithium ion batteries or lithium metal batteries",
+     "remark": ""
+    },
+    {
+     "unno": "3542",
+     "class": "4.2",
+     "psn": "ARTICLES CONTAINING A SUBSTANCE LIABLE TO SPONTANEOUS COMBUSTION, N.O.S",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "1",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "2",
+     "psn": "",
+     "remark": "See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "ALL",
+     "class": "5.1",
+     "psn": "PROHIBIT INDIA / BANGLADESH / SRIRANKA / PAKISTAN   (INNSA / INMUN / BDCGP / LKCMB / PKKHI )",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "5.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "6.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "7",
+     "psn": "",
+     "remark": ""
+    }
+   ],
+   "added": [
+    "1090",
+    "1093",
+    "1146",
+    "1154",
+    "1159",
+    "1160",
+    "1164",
+    "1203",
+    "1208",
+    "1275",
+    "1295",
+    "1298",
+    "1344",
+    "1463",
+    "1477",
+    "1490",
+    "1978",
+    "2045",
+    "2056",
+    "2203",
+    "2270",
+    "2398",
+    "2556",
+    "2557",
+    "3170",
+    "3241",
+    "3251",
+    "C5.2:ALL"
+   ],
+   "removed": [
+    "1408",
+    "2031",
+    "3101"
+   ],
+   "remark": "추가 28건(UN1090, UN1093, UN1146, UN1154, UN1159, UN1160 외) / 삭제 3건(UN1408, UN2031, UN3101)"
+  },
+  {
+   "version": "VER.10",
+   "date": "2025-10-24",
+   "count": 322,
+   "entries": [
+    {
+     "unno": "0055",
+     "class": "1",
+     "psn": "CASES, CARTRIDGE, EMPTY, WITH PRIMER",
+     "remark": "KI1 service PUS-SIN/JKT \n/ Manufacturer-Hanhwa, PS only\n/ 'See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "0349",
+     "class": "1",
+     "psn": "ARTICLES, EXPLOSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "0513",
+     "class": "1",
+     "psn": "DETONATORS, ELECTRONIC programmable for blasting",
+     "remark": ""
+    },
+    {
+     "unno": "1003",
+     "class": "2.2",
+     "psn": "AIR, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1017",
+     "class": "2.3",
+     "psn": "CHLORINE",
+     "remark": ""
+    },
+    {
+     "unno": "1030",
+     "class": "2.1",
+     "psn": "1,1-DIFLUOROETHANE (REFRIGERANT GAS R 152a)",
+     "remark": ""
+    },
+    {
+     "unno": "1032",
+     "class": "2.1",
+     "psn": "DIMETHYLAMINE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1045",
+     "class": "2.3",
+     "psn": "FLUORINE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1048",
+     "class": "2.3",
+     "psn": "HYDROGEN BROMIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1049",
+     "class": "2.1",
+     "psn": "HYDROGEN, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1053",
+     "class": "2.3",
+     "psn": "HYDROGEN SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1057",
+     "class": "2.1",
+     "psn": "LIGHTERS or LIGHTER REFILLS containing flammable gas",
+     "remark": ""
+    },
+    {
+     "unno": "1062",
+     "class": "2.3",
+     "psn": "METHYL BROMIDE with not more than 2.0% chloropicrin",
+     "remark": ""
+    },
+    {
+     "unno": "1064",
+     "class": "2.3",
+     "psn": "METHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "1067",
+     "class": "2.3",
+     "psn": "DINITROGEN TETROXIDE (NITROGEN DIOXIDE)",
+     "remark": ""
+    },
+    {
+     "unno": "1073",
+     "class": "2.2",
+     "psn": "OXYGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1079",
+     "class": "2.3",
+     "psn": "SULPHUR DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1089",
+     "class": "3",
+     "psn": "ACETALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1090",
+     "class": "3",
+     "psn": "ACETONE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1092",
+     "class": "6.1",
+     "psn": "ACROLEIN, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1093",
+     "class": "3",
+     "psn": "ACRYLONITRILE, STABILIZED",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1100",
+     "class": "3",
+     "psn": "ALLYL CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1108",
+     "class": "3",
+     "psn": "1-PENTENE (n-AMYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "1131",
+     "class": "3",
+     "psn": "CARBON DISULPHIDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted) \n/ See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1144",
+     "class": "3",
+     "psn": "CROTONYLENE",
+     "remark": ""
+    },
+    {
+     "unno": "1146",
+     "class": "3",
+     "psn": "CYCLOPENTANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1154",
+     "class": "3",
+     "psn": "DIETHYLAMINE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1155",
+     "class": "3",
+     "psn": "DIETHYL ETHER (ETHYL ETHER)",
+     "remark": ""
+    },
+    {
+     "unno": "1159",
+     "class": "3",
+     "psn": "DIISOPROPYL ETHER",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1160",
+     "class": "3",
+     "psn": "DIMETHYLAMINE, AQUEOUS SOLUTION",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1164",
+     "class": "3",
+     "psn": "DIMETHYL SULPHIDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1167",
+     "class": "3",
+     "psn": "DIVINYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1194",
+     "class": "3",
+     "psn": "ETHYL NITRITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1203",
+     "class": "3",
+     "psn": "MOTOR SPIRIT or GASOLINE or PETROL",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1208",
+     "class": "3",
+     "psn": "HEXANES",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1218",
+     "class": "3",
+     "psn": "ISOPRENE, STABILIZED",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted) \n/ See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1221",
+     "class": "3",
+     "psn": "ISOPROPYLAMINE",
+     "remark": ""
+    },
+    {
+     "unno": "1242",
+     "class": "4.3",
+     "psn": "METHYLDICHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "1243",
+     "class": "3",
+     "psn": "METHYL FORMATE",
+     "remark": ""
+    },
+    {
+     "unno": "1244",
+     "class": "6.1",
+     "psn": "METHYLHDRAZINE",
+     "remark": ""
+    },
+    {
+     "unno": "1259",
+     "class": "6.1",
+     "psn": "NICKEL CARBONYL",
+     "remark": ""
+    },
+    {
+     "unno": "1275",
+     "class": "3",
+     "psn": "PROPIONALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1280",
+     "class": "3",
+     "psn": "PROPYLENE OXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1295",
+     "class": "4.3",
+     "psn": "TRICHLOROSILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1298",
+     "class": "3",
+     "psn": "TRIMETHYLCHLOROSILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1302",
+     "class": "3",
+     "psn": "VINYL ETHYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1303",
+     "class": "3",
+     "psn": "VINYLIDENE CHLORIDE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1336",
+     "class": "4.1",
+     "psn": "NITROGUANIDINE(PICRITE),WETTED with not less than 20% water, by mess",
+     "remark": ""
+    },
+    {
+     "unno": "1344",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "1347",
+     "class": "4.1",
+     "psn": "SILVER PICRATE, WETTED with not less than 30% water, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1361",
+     "class": "4.2",
+     "psn": "CARBON animal or vegetable origin",
+     "remark": "See the remark E\n(Non DG(SP925) items are also prohibited)"
+    },
+    {
+     "unno": "1362",
+     "class": "4.2",
+     "psn": "CARBON, ACTIVATED",
+     "remark": ""
+    },
+    {
+     "unno": "1363",
+     "class": "4.2",
+     "psn": "COPRA",
+     "remark": ""
+    },
+    {
+     "unno": "1364",
+     "class": "4.2",
+     "psn": "COTTON WASTE, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1365",
+     "class": "4.2",
+     "psn": "COTTON, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1369",
+     "class": "4.2",
+     "psn": "p-NITROSODIMETHYLANILINE",
+     "remark": ""
+    },
+    {
+     "unno": "1372",
+     "class": "4.2",
+     "psn": "FIBRES, ANIMAL or FIBRES, VEGETABLE burnt, wet or damp",
+     "remark": ""
+    },
+    {
+     "unno": "1373",
+     "class": "4.2",
+     "psn": "FIBRES or FABRICS, ANIMAL or VEGETABLE or SYNTHETIC, N.O.S. with oil",
+     "remark": ""
+    },
+    {
+     "unno": "1374",
+     "class": "4.2",
+     "psn": "FISH MEAL, UNSTABILIZED or FISHSCRAP, UNSTABILIZED High hazard. Unrestricted moisture content, Unrestricted fat content in excess of 12%, by mass ; unrestricted fat content in excess of 15%, by mass, in the case of anti-oxidant treated fishmeal or fishscrap",
+     "remark": ""
+    },
+    {
+     "unno": "1376",
+     "class": "4.2",
+     "psn": "IRON OXIDE, SPENT or IRON SPONGE, SPENT obtained from coal gas purification",
+     "remark": ""
+    },
+    {
+     "unno": "1378",
+     "class": "4.2",
+     "psn": "METAL CATALYST, WETTED with a visible excess of liquid",
+     "remark": ""
+    },
+    {
+     "unno": "1379",
+     "class": "4.2",
+     "psn": "PAPER, UNSATURATED OIL TREATED incompletely dried(including carbon paper)",
+     "remark": ""
+    },
+    {
+     "unno": "1380",
+     "class": "4.2",
+     "psn": "PENTABORANE",
+     "remark": ""
+    },
+    {
+     "unno": "1381",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE or YELLOW, DRY or UNDER WATER or IN SOLUTION",
+     "remark": "See the remark M\nISO TANK & UNDERWATER CONDITION ONLY \n/ See the remark N \n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1382",
+     "class": "4.2",
+     "psn": "POTASSIUM SULPHIDE, ANHYDROUS or POTASSIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1383",
+     "class": "4.2",
+     "psn": "PYROPHORIC METAL, N.O.S. or PYROPHORIC ALLOY, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1384",
+     "class": "4.2",
+     "psn": "SODIUM DITHIONITE (SODIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1385",
+     "class": "4.2",
+     "psn": "SODIUM SULPHIDE, ANHYDROUS or SODIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1386",
+     "class": "4.2",
+     "psn": "SEED CAKE containing vegetable oil (a) mechanically expelled seeds, containing more than 10% oil or more than 20% oil and moisture combined",
+     "remark": ""
+    },
+    {
+     "unno": "1387",
+     "class": "4.2",
+     "psn": "WOOL WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1402",
+     "class": "4.3",
+     "psn": "CALCIUM CARBIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1407",
+     "class": "4.3",
+     "psn": "CAESIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1415",
+     "class": "4.3",
+     "psn": "LITHIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1418",
+     "class": "4.3",
+     "psn": "MAGNESIUM POWDER or MAGNESIUM ALLOYS POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1431",
+     "class": "4.2",
+     "psn": "SODIUM METHYLATE",
+     "remark": ""
+    },
+    {
+     "unno": "1436",
+     "class": "4.3",
+     "psn": "ZINC DUST, ZINC POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1442",
+     "class": "5.1",
+     "psn": "AMMONIUM PERCHLORATE",
+     "remark": ""
+    },
+    {
+     "unno": "1463",
+     "class": "5.1",
+     "psn": "CHROMIUM TRIOXIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1477",
+     "class": "5.1",
+     "psn": "NITRATES, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1479",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1490",
+     "class": "5.1",
+     "psn": "POTASSIUM PERMANGANATE",
+     "remark": ""
+    },
+    {
+     "unno": "1512",
+     "class": "5.1",
+     "psn": "ZINC AMMONIUM NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1613",
+     "class": "6.1",
+     "psn": "HYDROCYANIC ACID, AQUEOUS SOLUTION (HYDROGEN CYANIDE, AQUEOUS SOLUTION) with not more than 20% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1642",
+     "class": "6.1",
+     "psn": "MERCURY OXYCYANIDE, DESENSITIZED",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1649",
+     "class": "6.1",
+     "psn": "MOTOR FUEL ANTI-KNOCK MIXTURE",
+     "remark": ""
+    },
+    {
+     "unno": "1660",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1746",
+     "class": "5.1",
+     "psn": "BROMINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1748",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE,DRY or CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "1749",
+     "class": "2.3",
+     "psn": "CHLORINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1791",
+     "class": "8",
+     "psn": "HYPOCHLORITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1854",
+     "class": "4.2",
+     "psn": "BARIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1855",
+     "class": "4.2",
+     "psn": "CALCIUM, PYROPHORIC or CALCIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1856",
+     "class": "4.2",
+     "psn": "RAGS, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1857",
+     "class": "4.2",
+     "psn": "TEXTILE WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1873",
+     "class": "5.1",
+     "psn": "PERCHLORIC ACID with more than 50% but not more than 72% acid, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1887",
+     "class": "6.1",
+     "psn": "BROMOCHLOROMETHANE",
+     "remark": ""
+    },
+    {
+     "unno": "1923",
+     "class": "4.2",
+     "psn": "CALCIUM DITHIONITE (CALCIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1929",
+     "class": "4.2",
+     "psn": "POTASSIUM DITHIONITE (POTASSIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1932",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "1942",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE with not more than 0.2% combustible substances, including any organic substance calculated as carbon, to the exclusion of any other added substance",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1955",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1961",
+     "class": "2.1",
+     "psn": "ETHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1964",
+     "class": "2.1",
+     "psn": "HYDROCARBON GAS MIXTURE, COMPRESSED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1966",
+     "class": "2.1",
+     "psn": "HYDROGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1971",
+     "class": "2.1",
+     "psn": "METHANE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1972",
+     "class": "2.1",
+     "psn": "METHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1975",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE AND DINITROGEN TETROXIDE MIXTURE (NITRIC OXIDE AND NITROGEN DIOXIDE MIXTURE)",
+     "remark": ""
+    },
+    {
+     "unno": "1978",
+     "class": "2.1",
+     "psn": "PROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "1991",
+     "class": "3",
+     "psn": "CHLOROPRENE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "2002",
+     "class": "4.2",
+     "psn": "CELLULOID, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "2004",
+     "class": "4.2",
+     "psn": "MAGNESIUM DIAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2006",
+     "class": "4.2",
+     "psn": "PLASTICS, NITROCELLULOSE-BASED, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2008",
+     "class": "4.2",
+     "psn": "ZIRCONIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2009",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, DRY finished sheets, strip or coiled wire",
+     "remark": ""
+    },
+    {
+     "unno": "2015",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE, STABILIZED or HYDROGEN PEROXIDE, AQUEOUS SOLUTION, STABILIZED with more than 60% hydrogen peroxide",
+     "remark": ""
+    },
+    {
+     "unno": "2031",
+     "class": "8",
+     "psn": "NITRIC ACID other than red fuming, with more than 70% nitric acid",
+     "remark": "ADD ON 24TH OCT. 2025"
+    },
+    {
+     "unno": "2034",
+     "class": "2.1",
+     "psn": "HYDROGEN AND METHANE MIXTURE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2045",
+     "class": "3",
+     "psn": "ISOBUTYL ALDEHYDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2056",
+     "class": "3",
+     "psn": "TETRAHYDROFURAN",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2067",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2071",
+     "class": "9",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": ""
+    },
+    {
+     "unno": "2186",
+     "class": "2.3",
+     "psn": "HYDROGEN CHLORIDE, REFRIGERATED LIQUID",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2188",
+     "class": "2.3",
+     "psn": "ARSINE",
+     "remark": ""
+    },
+    {
+     "unno": "2190",
+     "class": "2.3",
+     "psn": "OXYGEN DIFLUORIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2199",
+     "class": "2.3",
+     "psn": "PHOSPHINE",
+     "remark": ""
+    },
+    {
+     "unno": "2203",
+     "class": "2.1",
+     "psn": "SILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2204",
+     "class": "2.3",
+     "psn": "CARBONYL SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2208",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 10% but more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "2210",
+     "class": "4.2",
+     "psn": "MAGNESIUM HYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2211",
+     "class": "9",
+     "psn": "POLIMERIC BEADS, EXPANDABLE evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "2212",
+     "class": "9",
+     "psn": "ASBESTOS, AMPHIBOLE (amosite, tremolite, actinolite, anthophyllite, crocidolite)",
+     "remark": ""
+    },
+    {
+     "unno": "2217",
+     "class": "4.2",
+     "psn": "SEED CAKE with not more than 1.5% oil and not more than 11% moisture",
+     "remark": ""
+    },
+    {
+     "unno": "2270",
+     "class": "3",
+     "psn": "ETHYLAMINE, AQUEOUS SOLUTION with not less than 50% but not more than 70% ethylamine",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2315",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "2318",
+     "class": "4.2",
+     "psn": "SODIUM HYDROSULPHIDE with less than 25% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "2356",
+     "class": "3",
+     "psn": "2-CHLOROPROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "2363",
+     "class": "3",
+     "psn": "ETHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "2371",
+     "class": "3",
+     "psn": "ISOPENTENES",
+     "remark": ""
+    },
+    {
+     "unno": "2389",
+     "class": "3",
+     "psn": "FURAN",
+     "remark": ""
+    },
+    {
+     "unno": "2398",
+     "class": "3",
+     "psn": "METHYL tert-BUTYL ETHER",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2417",
+     "class": "2.3",
+     "psn": "CARBONYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2418",
+     "class": "2.3",
+     "psn": "SULPHUR TETRAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2421",
+     "class": "2.3",
+     "psn": "NITROGEN TRIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2426",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE, LIQUID (hot concentrated solution)",
+     "remark": ""
+    },
+    {
+     "unno": "2441",
+     "class": "4.2",
+     "psn": "TITANIUM TRICHLORIDE, PYROPHORIC or TITANIUM TRICHLORIDE MIXTURE, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "2447",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE, MOLTEN",
+     "remark": ""
+    },
+    {
+     "unno": "2455",
+     "class": "2.2",
+     "psn": "METHYL NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2456",
+     "class": "3",
+     "psn": "2-CHLOROPROPENE",
+     "remark": ""
+    },
+    {
+     "unno": "2459",
+     "class": "3",
+     "psn": "2-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2465",
+     "class": "5.1",
+     "psn": "DICHLOROISOCYANURIC ACID, DRY or DICHLOROISOCYANURIC ACID SALTS",
+     "remark": ""
+    },
+    {
+     "unno": "2468",
+     "class": "5.1",
+     "psn": "TRICHLOROISOCYANURIC ACID, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2478",
+     "class": "3",
+     "psn": "ISOCYANATES, FLAMMABLE, TOXIC, N.O.S. or ISOCYANATE SOLUTION, FLAMMABLE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2534",
+     "class": "2.3",
+     "psn": "METHYLCHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2545",
+     "class": "4.2",
+     "psn": "HAFNIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2546",
+     "class": "4.2",
+     "psn": "TITANIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2548",
+     "class": "2.3",
+     "psn": "CHLORINE PENTAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2556",
+     "class": "4.1",
+     "psn": "NITROCELLULOSE WITH ALCOHOL (not less than 25% alcohol, by mass, and not more than 12.6% nitrogen, by dry mass)",
+     "remark": ""
+    },
+    {
+     "unno": "2557",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "2561",
+     "class": "3",
+     "psn": "3-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2626",
+     "class": "5.1",
+     "psn": "CHLORIC ACID, AQUEOUS SOLUTION with not more than 10% chloric acid",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2627",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2749",
+     "class": "3",
+     "psn": "TETRAMETHYLSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2793",
+     "class": "4.2",
+     "psn": "FERROUS METAL BORINGS, SHAVINGS, TURNINGS or CUTTINGS in a form liable to self-heating",
+     "remark": ""
+    },
+    {
+     "unno": "2845",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2846",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2870",
+     "class": "4.2",
+     "psn": "ALUMINIUM BOROHYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2880",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "2881",
+     "class": "4.2",
+     "psn": "METAL CATALYST, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2901",
+     "class": "2.3",
+     "psn": "BROMINE CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2940",
+     "class": "4.2",
+     "psn": "9-PHOSPHABICYCLONONANES (CYCLOOCTADIENEPHOSPHINES)",
+     "remark": ""
+    },
+    {
+     "unno": "2950",
+     "class": "4.3",
+     "psn": "MAGNESIUM GRANULES, COATED paticle size not less than 149 microns",
+     "remark": ""
+    },
+    {
+     "unno": "2956",
+     "class": "4.1",
+     "psn": "5-tert-BUTYL-2,4,6-TRINITRO-m-XYLENE(MUSK XYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "2983",
+     "class": "3",
+     "psn": "ETHYLENE OXIDE AND PROPYLENE OXIDE MIXTURE with not more than 30% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3064",
+     "class": "3",
+     "psn": "NITROGLYCERIN SOLUTION IN ALCOHOL with more than 1% but not more than 5% nitroglycerin",
+     "remark": ""
+    },
+    {
+     "unno": "3083",
+     "class": "2.3",
+     "psn": "PERCHLORYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3085",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3087",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, TOXIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3088",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3090",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES (including lithium alloy batteries)",
+     "remark": "See the remark E\n(Non DG(SP188) items are also prohibited)"
+    },
+    {
+     "unno": "3091",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES CONTAINED IN EQUIPMENT or LITHIUM METAL BATTERIES PACKED WITH EQUIPMENT (including lithium alloy batteries)",
+     "remark": ""
+    },
+    {
+     "unno": "3097",
+     "class": "4.1",
+     "psn": "FLAMMABLE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3100",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3102",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3103",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3104",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3105",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3106",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3107",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3108",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3109",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3110",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3111",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3112",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3113",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3114",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3115",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3116",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3117",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3118",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3119",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3120",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3121",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, WATER-REACTIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3126",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3127",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3128",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3129",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3130",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3131",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3132",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3133",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3134",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3135",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3137",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3138",
+     "class": "2.1",
+     "psn": "ETHYLENE, ACETYLENE AND PROPYLENE MIXTURE, REFRIGERATED LIQUID containing at least 71.5% ethylene, \nwith not more than 22.5% acetylene and not more than 6% propylene",
+     "remark": ""
+    },
+    {
+     "unno": "3149",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE AND PEROXYACETIC ACID MIXTURE, STABILIZED with acid(s), water and not more than 5%\nperoxyacetic acid, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "3151",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, LIQUID or POLYHALOGENATED TERPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3152",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, SOLID or POLYHALOGENATED TERPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3162",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3166",
+     "class": "9",
+     "psn": "VEHICLE, FLAMMABLE GAS POWERED or VEHICLE, FLAMMABLE LIQUID POWERED or VEHICLE, FUEL CELL, FLAMMABLE GAS POWERED or VEHICLE, FUEL CELL, FLAMMABLE LIQUID POWERED",
+     "remark": "Only Prohibited LPG POWERED VEHICLE / See the remark N"
+    },
+    {
+     "unno": "3170",
+     "class": "4.3",
+     "psn": "ALUMINIUM SMELTING BY-PRODUCTS",
+     "remark": ""
+    },
+    {
+     "unno": "3171",
+     "class": "9",
+     "psn": "BATTERY-POWERED VEHICLE or BATTERY-POWERED EQUIPMENT",
+     "remark": "Only Prohibited Elec. Car / See the remark L / N"
+    },
+    {
+     "unno": "3174",
+     "class": "4.2",
+     "psn": "TITANIUM DISULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3183",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3184",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3185",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3186",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3187",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3188",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3189",
+     "class": "4.2",
+     "psn": "METAL POWDER, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3190",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3191",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3192",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3194",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3200",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3205",
+     "class": "4.2",
+     "psn": "ALKALINE EARTH METAL ALCOHOLATES, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3206",
+     "class": "4.2",
+     "psn": "ALKALI METAL ALCOHOLATES, SELF-HEATING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3209",
+     "class": "4.3",
+     "psn": "METALLIC SUBSTANCE, WATERREACTIVE, SELFHEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3212",
+     "class": "5.1",
+     "psn": "HYPOCHLORITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3219",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, AQUEOUS SOLUTION, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3221",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3222",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3223",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3224",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3225",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3226",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3227",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3228",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3229",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3230",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3231",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3232",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3233",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3234",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C, TEMPERATURE  CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3235",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3236",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3237",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3238",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3239",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3240",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3241",
+     "class": "4.1",
+     "psn": "2-BROMO-2-NITROPROPANE-1,3-DIOL",
+     "remark": ""
+    },
+    {
+     "unno": "3242",
+     "class": "4.1",
+     "psn": "AZODICARBONAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3251",
+     "class": "4.1",
+     "psn": "ISOSORBIDE-5-MONONITRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3254",
+     "class": "4.2",
+     "psn": "TRIBUTYLPHOSPHANE",
+     "remark": ""
+    },
+    {
+     "unno": "3255",
+     "class": "4.2",
+     "psn": "tert-BUTYL HYPOCHLORITE",
+     "remark": ""
+    },
+    {
+     "unno": "3256",
+     "class": "3",
+     "psn": "ELEVATED TEMPERATURE LIQUID, FLAMMABLE, N.O.S. with flashpoint above 60°C, at or above its flashpoint",
+     "remark": ""
+    },
+    {
+     "unno": "3257",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE LIQUID, N.O.S. at or above 100°C and below its flashpoint (including molten metals, molten salts, etc.)",
+     "remark": ""
+    },
+    {
+     "unno": "3258",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE SOLID, N.O.S. at or above 240°C",
+     "remark": ""
+    },
+    {
+     "unno": "3269",
+     "class": "3",
+     "psn": "POLYESTER RESIN KIT",
+     "remark": ""
+    },
+    {
+     "unno": "3294",
+     "class": "6.1",
+     "psn": "HYDROGEN CYANIDE, SOLUTION IN ALCOHOL with not more than 45% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3300",
+     "class": "2.3",
+     "psn": "ETHYLENE OXIDE AND CARBON DIOXIDE MIXTURE with more than 87% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3303",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3306",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3307",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3308",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3309",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, FLAMMABLE, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3310",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3311",
+     "class": "2.2",
+     "psn": "GAS, REFRIGERATED LIQUID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3313",
+     "class": "4.2",
+     "psn": "ORGANIC PIGMENTS, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3314",
+     "class": "9",
+     "psn": "PLASTICS MOULDING COMPOUND in dough, sheet or extruded rope form, evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "3315",
+     "class": "6.1",
+     "psn": "CHEMICAL SAMPLE, TOXIC",
+     "remark": ""
+    },
+    {
+     "unno": "3319",
+     "class": "4.1",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 2% but not more than 10% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3341",
+     "class": "4.2",
+     "psn": "THIOUREA DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3342",
+     "class": "4.2",
+     "psn": "XANTHATES",
+     "remark": ""
+    },
+    {
+     "unno": "3343",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, FLAMMABLE, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3344",
+     "class": "4.1",
+     "psn": "PENTAERYTHRITE TETRANITRATE (PENTAERYTHRITOL TETRANITRATE; PETN)\nMIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 10% but not more than 20% PETN, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3357",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3375",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE EMULSION or SUSPENSION or GEL, intermediate for blasting explosives",
+     "remark": ""
+    },
+    {
+     "unno": "3377",
+     "class": "5.1",
+     "psn": "SODIUM PERBORATE MONOHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3378",
+     "class": "5.1",
+     "psn": "SODIUM CARBONATE PEROXYHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3379",
+     "class": "3",
+     "psn": "DESENSITIZED EXPLOSIVE, LIQUID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3380",
+     "class": "4.1",
+     "psn": "DESENSITIZED EXPLOSIVE, SOLID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3391",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3392",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3393",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3394",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3397",
+     "class": "4.3",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, WATERREACTIVE, SELFHEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3400",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3432",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3468",
+     "class": "2.1",
+     "psn": "HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM\nCONTAINED IN EQUIPMENT or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM PACKED WITH EQUIPMENT",
+     "remark": ""
+    },
+    {
+     "unno": "3480",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES (including lithium ion polymer batteries)",
+     "remark": "See the remark L / N"
+    },
+    {
+     "unno": "3481",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES CONTAINED IN EQUIPMENT",
+     "remark": "See the remark L / N"
+    },
+    {
+     "unno": "3485",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, DRY, CORROSIVE or CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "3486",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 10% but not more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "3487",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED, CORROSIVE or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE, CORROSIVE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "3502",
+     "class": "2.2",
+     "psn": "CHEMICAL UNDER PRESSURE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3507",
+     "class": "6.1",
+     "psn": "URANIUM HEXAFLUORIDE, RADIOACTIVE MATERIAL, EXCEPTED PACKAGE, less than 0.1 kg per package, non-fissile or fissile-excepted",
+     "remark": ""
+    },
+    {
+     "unno": "3509",
+     "class": "9",
+     "psn": "PACKAGING, DISCARDED, EMPTY, UNCLEANED",
+     "remark": ""
+    },
+    {
+     "unno": "3515",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3518",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3519",
+     "class": "2.3",
+     "psn": "BORON TRIFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3520",
+     "class": "2.3",
+     "psn": "CHLORINE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3521",
+     "class": "2.3",
+     "psn": "SILICON TETRAFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3532",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, STABILIZED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3533",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, SOLID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3534",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3536",
+     "class": "9",
+     "psn": "LITHIUM BATTERIES INSTALLED IN CARGO TRANSPORT UNIT lithium ion batteries or lithium metal batteries",
+     "remark": ""
+    },
+    {
+     "unno": "3542",
+     "class": "4.2",
+     "psn": "ARTICLES CONTAINING A SUBSTANCE LIABLE TO SPONTANEOUS COMBUSTION, N.O.S",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "1",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "2",
+     "psn": "",
+     "remark": "See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "ALL",
+     "class": "5.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "6.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "7",
+     "psn": "",
+     "remark": ""
+    }
+   ],
+   "added": [
+    "2031",
+    "3166"
+   ],
+   "removed": [
+    "1406",
+    "C5.1:ALL"
+   ],
+   "remark": "추가 2건(UN2031, UN3166) / 삭제 2건(UN1406, Class 5.1 전체)"
+  },
+  {
+   "version": "VER.11",
+   "date": "2025-12-26",
+   "count": 325,
+   "entries": [
+    {
+     "unno": "0055",
+     "class": "1",
+     "psn": "CASES, CARTRIDGE, EMPTY, WITH PRIMER",
+     "remark": "KI1 service PUS-SIN/JKT \n/ Manufacturer-Hanhwa, PS only\n/ 'See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "0349",
+     "class": "1",
+     "psn": "ARTICLES, EXPLOSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "0513",
+     "class": "1",
+     "psn": "DETONATORS, ELECTRONIC programmable for blasting",
+     "remark": ""
+    },
+    {
+     "unno": "1003",
+     "class": "2.2",
+     "psn": "AIR, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1017",
+     "class": "2.3",
+     "psn": "CHLORINE",
+     "remark": ""
+    },
+    {
+     "unno": "1030",
+     "class": "2.1",
+     "psn": "1,1-DIFLUOROETHANE (REFRIGERANT GAS R 152a)",
+     "remark": ""
+    },
+    {
+     "unno": "1032",
+     "class": "2.1",
+     "psn": "DIMETHYLAMINE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1045",
+     "class": "2.3",
+     "psn": "FLUORINE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1048",
+     "class": "2.3",
+     "psn": "HYDROGEN BROMIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1049",
+     "class": "2.1",
+     "psn": "HYDROGEN, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1053",
+     "class": "2.3",
+     "psn": "HYDROGEN SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1057",
+     "class": "2.1",
+     "psn": "LIGHTERS or LIGHTER REFILLS containing flammable gas",
+     "remark": ""
+    },
+    {
+     "unno": "1062",
+     "class": "2.3",
+     "psn": "METHYL BROMIDE with not more than 2.0% chloropicrin",
+     "remark": ""
+    },
+    {
+     "unno": "1064",
+     "class": "2.3",
+     "psn": "METHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "1067",
+     "class": "2.3",
+     "psn": "DINITROGEN TETROXIDE (NITROGEN DIOXIDE)",
+     "remark": ""
+    },
+    {
+     "unno": "1073",
+     "class": "2.2",
+     "psn": "OXYGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1079",
+     "class": "2.3",
+     "psn": "SULPHUR DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1089",
+     "class": "3",
+     "psn": "ACETALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1090",
+     "class": "3",
+     "psn": "ACETONE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1092",
+     "class": "6.1",
+     "psn": "ACROLEIN, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1093",
+     "class": "3",
+     "psn": "ACRYLONITRILE, STABILIZED",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1100",
+     "class": "3",
+     "psn": "ALLYL CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1108",
+     "class": "3",
+     "psn": "1-PENTENE (n-AMYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "1131",
+     "class": "3",
+     "psn": "CARBON DISULPHIDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted) \n/ See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1144",
+     "class": "3",
+     "psn": "CROTONYLENE",
+     "remark": ""
+    },
+    {
+     "unno": "1146",
+     "class": "3",
+     "psn": "CYCLOPENTANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1154",
+     "class": "3",
+     "psn": "DIETHYLAMINE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1155",
+     "class": "3",
+     "psn": "DIETHYL ETHER (ETHYL ETHER)",
+     "remark": ""
+    },
+    {
+     "unno": "1159",
+     "class": "3",
+     "psn": "DIISOPROPYL ETHER",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1160",
+     "class": "3",
+     "psn": "DIMETHYLAMINE, AQUEOUS SOLUTION",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1164",
+     "class": "3",
+     "psn": "DIMETHYL SULPHIDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1167",
+     "class": "3",
+     "psn": "DIVINYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1194",
+     "class": "3",
+     "psn": "ETHYL NITRITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1203",
+     "class": "3",
+     "psn": "MOTOR SPIRIT or GASOLINE or PETROL",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1208",
+     "class": "3",
+     "psn": "HEXANES",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1218",
+     "class": "3",
+     "psn": "ISOPRENE, STABILIZED",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted) \n/ See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1221",
+     "class": "3",
+     "psn": "ISOPROPYLAMINE",
+     "remark": ""
+    },
+    {
+     "unno": "1242",
+     "class": "4.3",
+     "psn": "METHYLDICHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "1243",
+     "class": "3",
+     "psn": "METHYL FORMATE",
+     "remark": ""
+    },
+    {
+     "unno": "1244",
+     "class": "6.1",
+     "psn": "METHYLHDRAZINE",
+     "remark": ""
+    },
+    {
+     "unno": "1259",
+     "class": "6.1",
+     "psn": "NICKEL CARBONYL",
+     "remark": ""
+    },
+    {
+     "unno": "1275",
+     "class": "3",
+     "psn": "PROPIONALDEHYDE",
+     "remark": ""
+    },
+    {
+     "unno": "1280",
+     "class": "3",
+     "psn": "PROPYLENE OXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1295",
+     "class": "4.3",
+     "psn": "TRICHLOROSILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1298",
+     "class": "3",
+     "psn": "TRIMETHYLCHLOROSILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "1302",
+     "class": "3",
+     "psn": "VINYL ETHYL ETHER, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1303",
+     "class": "3",
+     "psn": "VINYLIDENE CHLORIDE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "1336",
+     "class": "4.1",
+     "psn": "NITROGUANIDINE(PICRITE),WETTED with not less than 20% water, by mess",
+     "remark": ""
+    },
+    {
+     "unno": "1344",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "1347",
+     "class": "4.1",
+     "psn": "SILVER PICRATE, WETTED with not less than 30% water, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1361",
+     "class": "4.2",
+     "psn": "CARBON animal or vegetable origin",
+     "remark": "See the remark E\n(Non DG(SP925) items are also prohibited)"
+    },
+    {
+     "unno": "1362",
+     "class": "4.2",
+     "psn": "CARBON, ACTIVATED",
+     "remark": ""
+    },
+    {
+     "unno": "1363",
+     "class": "4.2",
+     "psn": "COPRA",
+     "remark": ""
+    },
+    {
+     "unno": "1364",
+     "class": "4.2",
+     "psn": "COTTON WASTE, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1365",
+     "class": "4.2",
+     "psn": "COTTON, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1369",
+     "class": "4.2",
+     "psn": "p-NITROSODIMETHYLANILINE",
+     "remark": ""
+    },
+    {
+     "unno": "1372",
+     "class": "4.2",
+     "psn": "FIBRES, ANIMAL or FIBRES, VEGETABLE burnt, wet or damp",
+     "remark": ""
+    },
+    {
+     "unno": "1373",
+     "class": "4.2",
+     "psn": "FIBRES or FABRICS, ANIMAL or VEGETABLE or SYNTHETIC, N.O.S. with oil",
+     "remark": ""
+    },
+    {
+     "unno": "1374",
+     "class": "4.2",
+     "psn": "FISH MEAL, UNSTABILIZED or FISHSCRAP, UNSTABILIZED High hazard. Unrestricted moisture content, Unrestricted fat content in excess of 12%, by mass ; unrestricted fat content in excess of 15%, by mass, in the case of anti-oxidant treated fishmeal or fishscrap",
+     "remark": ""
+    },
+    {
+     "unno": "1376",
+     "class": "4.2",
+     "psn": "IRON OXIDE, SPENT or IRON SPONGE, SPENT obtained from coal gas purification",
+     "remark": ""
+    },
+    {
+     "unno": "1378",
+     "class": "4.2",
+     "psn": "METAL CATALYST, WETTED with a visible excess of liquid",
+     "remark": ""
+    },
+    {
+     "unno": "1379",
+     "class": "4.2",
+     "psn": "PAPER, UNSATURATED OIL TREATED incompletely dried(including carbon paper)",
+     "remark": ""
+    },
+    {
+     "unno": "1380",
+     "class": "4.2",
+     "psn": "PENTABORANE",
+     "remark": ""
+    },
+    {
+     "unno": "1381",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE or YELLOW, DRY or UNDER WATER or IN SOLUTION",
+     "remark": "See the remark M\nISO TANK & UNDERWATER CONDITION ONLY \n/ See the remark N \n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "1382",
+     "class": "4.2",
+     "psn": "POTASSIUM SULPHIDE, ANHYDROUS or POTASSIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1383",
+     "class": "4.2",
+     "psn": "PYROPHORIC METAL, N.O.S. or PYROPHORIC ALLOY, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1384",
+     "class": "4.2",
+     "psn": "SODIUM DITHIONITE (SODIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1385",
+     "class": "4.2",
+     "psn": "SODIUM SULPHIDE, ANHYDROUS or SODIUM SULPHIDE with less than 30% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "1386",
+     "class": "4.2",
+     "psn": "SEED CAKE containing vegetable oil (a) mechanically expelled seeds, containing more than 10% oil or more than 20% oil and moisture combined",
+     "remark": ""
+    },
+    {
+     "unno": "1387",
+     "class": "4.2",
+     "psn": "WOOL WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1402",
+     "class": "4.3",
+     "psn": "CALCIUM CARBIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1407",
+     "class": "4.3",
+     "psn": "CAESIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1415",
+     "class": "4.3",
+     "psn": "LITHIUM",
+     "remark": ""
+    },
+    {
+     "unno": "1418",
+     "class": "4.3",
+     "psn": "MAGNESIUM POWDER or MAGNESIUM ALLOYS POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1431",
+     "class": "4.2",
+     "psn": "SODIUM METHYLATE",
+     "remark": ""
+    },
+    {
+     "unno": "1436",
+     "class": "4.3",
+     "psn": "ZINC DUST, ZINC POWDER",
+     "remark": ""
+    },
+    {
+     "unno": "1442",
+     "class": "5.1",
+     "psn": "AMMONIUM PERCHLORATE",
+     "remark": ""
+    },
+    {
+     "unno": "1463",
+     "class": "5.1",
+     "psn": "CHROMIUM TRIOXIDE, ANHYDROUS",
+     "remark": ""
+    },
+    {
+     "unno": "1477",
+     "class": "5.1",
+     "psn": "NITRATES, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1479",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1490",
+     "class": "5.1",
+     "psn": "POTASSIUM PERMANGANATE",
+     "remark": ""
+    },
+    {
+     "unno": "1512",
+     "class": "5.1",
+     "psn": "ZINC AMMONIUM NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1613",
+     "class": "6.1",
+     "psn": "HYDROCYANIC ACID, AQUEOUS SOLUTION (HYDROGEN CYANIDE, AQUEOUS SOLUTION) with not more than 20% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1642",
+     "class": "6.1",
+     "psn": "MERCURY OXYCYANIDE, DESENSITIZED",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1649",
+     "class": "6.1",
+     "psn": "MOTOR FUEL ANTI-KNOCK MIXTURE",
+     "remark": ""
+    },
+    {
+     "unno": "1660",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1746",
+     "class": "5.1",
+     "psn": "BROMINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1748",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE,DRY or CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "1749",
+     "class": "2.3",
+     "psn": "CHLORINE TRIFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "1791",
+     "class": "8",
+     "psn": "HYPOCHLORITE SOLUTION",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1854",
+     "class": "4.2",
+     "psn": "BARIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1855",
+     "class": "4.2",
+     "psn": "CALCIUM, PYROPHORIC or CALCIUM ALLOYS, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "1856",
+     "class": "4.2",
+     "psn": "RAGS, OILY",
+     "remark": ""
+    },
+    {
+     "unno": "1857",
+     "class": "4.2",
+     "psn": "TEXTILE WASTE, WET",
+     "remark": ""
+    },
+    {
+     "unno": "1873",
+     "class": "5.1",
+     "psn": "PERCHLORIC ACID with more than 50% but not more than 72% acid, by mass",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1887",
+     "class": "6.1",
+     "psn": "BROMOCHLOROMETHANE",
+     "remark": ""
+    },
+    {
+     "unno": "1923",
+     "class": "4.2",
+     "psn": "CALCIUM DITHIONITE (CALCIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1929",
+     "class": "4.2",
+     "psn": "POTASSIUM DITHIONITE (POTASSIUM HYDROSULPHITE)",
+     "remark": ""
+    },
+    {
+     "unno": "1932",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "1942",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE with not more than 0.2% combustible substances, including any organic substance calculated as carbon, to the exclusion of any other added substance",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "1955",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1961",
+     "class": "2.1",
+     "psn": "ETHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1964",
+     "class": "2.1",
+     "psn": "HYDROCARBON GAS MIXTURE, COMPRESSED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "1966",
+     "class": "2.1",
+     "psn": "HYDROGEN, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1971",
+     "class": "2.1",
+     "psn": "METHANE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "1972",
+     "class": "2.1",
+     "psn": "METHANE, REFRIGERATED LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "1975",
+     "class": "2.3",
+     "psn": "NITRIC OXIDE AND DINITROGEN TETROXIDE MIXTURE (NITRIC OXIDE AND NITROGEN DIOXIDE MIXTURE)",
+     "remark": ""
+    },
+    {
+     "unno": "1978",
+     "class": "2.1",
+     "psn": "PROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "1991",
+     "class": "3",
+     "psn": "CHLOROPRENE, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "2002",
+     "class": "4.2",
+     "psn": "CELLULOID, SCRAP",
+     "remark": ""
+    },
+    {
+     "unno": "2004",
+     "class": "4.2",
+     "psn": "MAGNESIUM DIAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2006",
+     "class": "4.2",
+     "psn": "PLASTICS, NITROCELLULOSE-BASED, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2008",
+     "class": "4.2",
+     "psn": "ZIRCONIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2009",
+     "class": "4.2",
+     "psn": "ZIRCONIUM, DRY finished sheets, strip or coiled wire",
+     "remark": ""
+    },
+    {
+     "unno": "2015",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE, STABILIZED or HYDROGEN PEROXIDE, AQUEOUS SOLUTION, STABILIZED with more than 60% hydrogen peroxide",
+     "remark": ""
+    },
+    {
+     "unno": "2031",
+     "class": "8",
+     "psn": "NITRIC ACID other than red fuming",
+     "remark": ""
+    },
+    {
+     "unno": "2034",
+     "class": "2.1",
+     "psn": "HYDROGEN AND METHANE MIXTURE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2045",
+     "class": "3",
+     "psn": "ISOBUTYL ALDEHYDE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2056",
+     "class": "3",
+     "psn": "TETRAHYDROFURAN",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2067",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2071",
+     "class": "9",
+     "psn": "AMMONIUM NITRATE BASED FERTILIZER",
+     "remark": ""
+    },
+    {
+     "unno": "2186",
+     "class": "2.3",
+     "psn": "HYDROGEN CHLORIDE, REFRIGERATED LIQUID",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2188",
+     "class": "2.3",
+     "psn": "ARSINE",
+     "remark": ""
+    },
+    {
+     "unno": "2190",
+     "class": "2.3",
+     "psn": "OXYGEN DIFLUORIDE, COMPRESSED",
+     "remark": ""
+    },
+    {
+     "unno": "2199",
+     "class": "2.3",
+     "psn": "PHOSPHINE",
+     "remark": ""
+    },
+    {
+     "unno": "2203",
+     "class": "2.1",
+     "psn": "SILANE",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2204",
+     "class": "2.3",
+     "psn": "CARBONYL SULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2208",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY with more than 10% but more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "2210",
+     "class": "4.2",
+     "psn": "MAGNESIUM HYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2211",
+     "class": "9",
+     "psn": "POLIMERIC BEADS, EXPANDABLE evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "2212",
+     "class": "9",
+     "psn": "ASBESTOS, AMPHIBOLE (amosite, tremolite, actinolite, anthophyllite, crocidolite)",
+     "remark": ""
+    },
+    {
+     "unno": "2217",
+     "class": "4.2",
+     "psn": "SEED CAKE with not more than 1.5% oil and not more than 11% moisture",
+     "remark": ""
+    },
+    {
+     "unno": "2270",
+     "class": "3",
+     "psn": "ETHYLAMINE, AQUEOUS SOLUTION with not less than 50% but not more than 70% ethylamine",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2315",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "2318",
+     "class": "4.2",
+     "psn": "SODIUM HYDROSULPHIDE with less than 25% water of crystallization",
+     "remark": ""
+    },
+    {
+     "unno": "2356",
+     "class": "3",
+     "psn": "2-CHLOROPROPANE",
+     "remark": ""
+    },
+    {
+     "unno": "2363",
+     "class": "3",
+     "psn": "ETHYL MERCAPTAN",
+     "remark": ""
+    },
+    {
+     "unno": "2371",
+     "class": "3",
+     "psn": "ISOPENTENES",
+     "remark": ""
+    },
+    {
+     "unno": "2389",
+     "class": "3",
+     "psn": "FURAN",
+     "remark": ""
+    },
+    {
+     "unno": "2398",
+     "class": "3",
+     "psn": "METHYL tert-BUTYL ETHER",
+     "remark": "See the ramark M\n(Only ISO Tank Permitted)"
+    },
+    {
+     "unno": "2417",
+     "class": "2.3",
+     "psn": "CARBONYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2418",
+     "class": "2.3",
+     "psn": "SULPHUR TETRAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2421",
+     "class": "2.3",
+     "psn": "NITROGEN TRIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2426",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE, LIQUID (hot concentrated solution)",
+     "remark": ""
+    },
+    {
+     "unno": "2441",
+     "class": "4.2",
+     "psn": "TITANIUM TRICHLORIDE, PYROPHORIC or TITANIUM TRICHLORIDE MIXTURE, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "2447",
+     "class": "4.2",
+     "psn": "PHOSPHORUS, WHITE, MOLTEN",
+     "remark": ""
+    },
+    {
+     "unno": "2455",
+     "class": "2.2",
+     "psn": "METHYL NITRITE",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2456",
+     "class": "3",
+     "psn": "2-CHLOROPROPENE",
+     "remark": ""
+    },
+    {
+     "unno": "2459",
+     "class": "3",
+     "psn": "2-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2465",
+     "class": "5.1",
+     "psn": "DICHLOROISOCYANURIC ACID, DRY or DICHLOROISOCYANURIC ACID SALTS",
+     "remark": ""
+    },
+    {
+     "unno": "2468",
+     "class": "5.1",
+     "psn": "TRICHLOROISOCYANURIC ACID, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2478",
+     "class": "3",
+     "psn": "ISOCYANATES, FLAMMABLE, TOXIC, N.O.S. or ISOCYANATE SOLUTION, FLAMMABLE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2534",
+     "class": "2.3",
+     "psn": "METHYLCHLOROSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2545",
+     "class": "4.2",
+     "psn": "HAFNIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2546",
+     "class": "4.2",
+     "psn": "TITANIUM POWDER, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2548",
+     "class": "2.3",
+     "psn": "CHLORINE PENTAFLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2556",
+     "class": "4.1",
+     "psn": "NITROCELLULOSE WITH ALCOHOL (not less than 25% alcohol, by mass, and not more than 12.6% nitrogen, by dry mass)",
+     "remark": ""
+    },
+    {
+     "unno": "2557",
+     "class": "4.1",
+     "psn": "TRINITROPHENOL (PICRIC ACID), WETTED with not less than 30% water, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "2561",
+     "class": "3",
+     "psn": "3-METHYL-1-BUTENE",
+     "remark": ""
+    },
+    {
+     "unno": "2626",
+     "class": "5.1",
+     "psn": "CHLORIC ACID, AQUEOUS SOLUTION with not more than 10% chloric acid",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2627",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "2749",
+     "class": "3",
+     "psn": "TETRAMETHYLSILANE",
+     "remark": ""
+    },
+    {
+     "unno": "2793",
+     "class": "4.2",
+     "psn": "FERROUS METAL BORINGS, SHAVINGS, TURNINGS or CUTTINGS in a form liable to self-heating",
+     "remark": ""
+    },
+    {
+     "unno": "2845",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2846",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "2870",
+     "class": "4.2",
+     "psn": "ALUMINIUM BOROHYDRIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2880",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "2881",
+     "class": "4.2",
+     "psn": "METAL CATALYST, DRY",
+     "remark": ""
+    },
+    {
+     "unno": "2901",
+     "class": "2.3",
+     "psn": "BROMINE CHLORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "2940",
+     "class": "4.2",
+     "psn": "9-PHOSPHABICYCLONONANES (CYCLOOCTADIENEPHOSPHINES)",
+     "remark": ""
+    },
+    {
+     "unno": "2950",
+     "class": "4.3",
+     "psn": "MAGNESIUM GRANULES, COATED paticle size not less than 149 microns",
+     "remark": ""
+    },
+    {
+     "unno": "2956",
+     "class": "4.1",
+     "psn": "5-tert-BUTYL-2,4,6-TRINITRO-m-XYLENE(MUSK XYLENE)",
+     "remark": ""
+    },
+    {
+     "unno": "2983",
+     "class": "3",
+     "psn": "ETHYLENE OXIDE AND PROPYLENE OXIDE MIXTURE with not more than 30% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3064",
+     "class": "3",
+     "psn": "NITROGLYCERIN SOLUTION IN ALCOHOL with more than 1% but not more than 5% nitroglycerin",
+     "remark": ""
+    },
+    {
+     "unno": "3083",
+     "class": "2.3",
+     "psn": "PERCHLORYL FLUORIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3085",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3087",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, TOXIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3088",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3090",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES (including lithium alloy batteries)",
+     "remark": "See the remark E\n(Non DG(SP188) items are also prohibited)"
+    },
+    {
+     "unno": "3091",
+     "class": "9",
+     "psn": "LITHIUM METAL BATTERIES CONTAINED IN EQUIPMENT or LITHIUM METAL BATTERIES PACKED WITH EQUIPMENT (including lithium alloy batteries)",
+     "remark": ""
+    },
+    {
+     "unno": "3097",
+     "class": "4.1",
+     "psn": "FLAMMABLE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3100",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3102",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3103",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3104",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3105",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3106",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3107",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3108",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3109",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3110",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3111",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3112",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE B, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3113",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3114",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE C, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3115",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3116",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE D, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3117",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3118",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE E, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3119",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, LIQUID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3120",
+     "class": "5.2",
+     "psn": "ORGANIC PEROXIDE TYPE F, SOLID, TEMPERATURE CONTROLLED",
+     "remark": ""
+    },
+    {
+     "unno": "3121",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, WATER-REACTIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3126",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3127",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3128",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3129",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3130",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE LIQUID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3131",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3132",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3133",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3134",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3135",
+     "class": "4.3",
+     "psn": "WATER-REACTIVE SOLID, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3137",
+     "class": "5.1",
+     "psn": "OXIDIZING SOLID, FLAMMABLE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3138",
+     "class": "2.1",
+     "psn": "ETHYLENE, ACETYLENE AND PROPYLENE MIXTURE, REFRIGERATED LIQUID containing at least 71.5% ethylene, \nwith not more than 22.5% acetylene and not more than 6% propylene",
+     "remark": ""
+    },
+    {
+     "unno": "3149",
+     "class": "5.1",
+     "psn": "HYDROGEN PEROXIDE AND PEROXYACETIC ACID MIXTURE, STABILIZED with acid(s), water and not more than 5%\nperoxyacetic acid, STABILIZED",
+     "remark": ""
+    },
+    {
+     "unno": "3151",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, LIQUID or POLYHALOGENATED TERPHENYLS, LIQUID",
+     "remark": ""
+    },
+    {
+     "unno": "3152",
+     "class": "9",
+     "psn": "POLYHALOGENATED BIPHENYLS, SOLID or POLYHALOGENATED TERPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3162",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3166",
+     "class": "9",
+     "psn": "VEHICLE, FLAMMABLE GAS POWERED or VEHICLE, FLAMMABLE LIQUID POWERED or VEHICLE, FUEL CELL, FLAMMABLE GAS POWERED or VEHICLE, FUEL CELL, FLAMMABLE LIQUID POWERED",
+     "remark": "Only Prohibited LPG POWERED VEHICLE & See the remark N"
+    },
+    {
+     "unno": "3170",
+     "class": "4.3",
+     "psn": "ALUMINIUM SMELTING BY-PRODUCTS",
+     "remark": ""
+    },
+    {
+     "unno": "3171",
+     "class": "9",
+     "psn": "BATTERY-POWERED VEHICLE or BATTERY-POWERED EQUIPMENT",
+     "remark": "Only Battery Separation and RFDG conditions & See the remark L / N"
+    },
+    {
+     "unno": "3174",
+     "class": "4.2",
+     "psn": "TITANIUM DISULPHIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3183",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3184",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3185",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, ORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3186",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3187",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3188",
+     "class": "4.2",
+     "psn": "SELF-HEATING LIQUID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3189",
+     "class": "4.2",
+     "psn": "METAL POWDER, SELF-HEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3190",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3191",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, TOXIC, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3192",
+     "class": "4.2",
+     "psn": "SELF-HEATING SOLID, CORROSIVE, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3194",
+     "class": "4.2",
+     "psn": "PYROPHORIC LIQUID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3200",
+     "class": "4.2",
+     "psn": "PYROPHORIC SOLID, INORGANIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3205",
+     "class": "4.2",
+     "psn": "ALKALINE EARTH METAL ALCOHOLATES, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3206",
+     "class": "4.2",
+     "psn": "ALKALI METAL ALCOHOLATES, SELF-HEATING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3209",
+     "class": "4.3",
+     "psn": "METALLIC SUBSTANCE, WATERREACTIVE, SELFHEATING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3212",
+     "class": "5.1",
+     "psn": "HYPOCHLORITES, INORGANIC, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3219",
+     "class": "5.1",
+     "psn": "NITRITES, INORGANIC, AQUEOUS SOLUTION, N.O.S.",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3221",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3222",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B",
+     "remark": ""
+    },
+    {
+     "unno": "3223",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3224",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C",
+     "remark": ""
+    },
+    {
+     "unno": "3225",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3226",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D",
+     "remark": ""
+    },
+    {
+     "unno": "3227",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3228",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E",
+     "remark": ""
+    },
+    {
+     "unno": "3229",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3230",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F",
+     "remark": ""
+    },
+    {
+     "unno": "3231",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3232",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE B, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3233",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE C, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3234",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE C, TEMPERATURE  CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3235",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3236",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE D, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3237",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3238",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE E, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3239",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE LIQUID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3240",
+     "class": "4.1",
+     "psn": "SELF-REACTIVE SOLID TYPE F, TEMPERATURE CONTROLLED",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3241",
+     "class": "4.1",
+     "psn": "2-BROMO-2-NITROPROPANE-1,3-DIOL",
+     "remark": ""
+    },
+    {
+     "unno": "3242",
+     "class": "4.1",
+     "psn": "AZODICARBONAMIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3251",
+     "class": "4.1",
+     "psn": "ISOSORBIDE-5-MONONITRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3254",
+     "class": "4.2",
+     "psn": "TRIBUTYLPHOSPHANE",
+     "remark": ""
+    },
+    {
+     "unno": "3255",
+     "class": "4.2",
+     "psn": "tert-BUTYL HYPOCHLORITE",
+     "remark": ""
+    },
+    {
+     "unno": "3256",
+     "class": "3",
+     "psn": "ELEVATED TEMPERATURE LIQUID, FLAMMABLE, N.O.S. with flashpoint above 60°C, at or above its flashpoint",
+     "remark": ""
+    },
+    {
+     "unno": "3257",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE LIQUID, N.O.S. at or above 100°C and below its flashpoint (including molten metals, molten salts, etc.)",
+     "remark": ""
+    },
+    {
+     "unno": "3258",
+     "class": "9",
+     "psn": "ELEVATED TEMPERATURE SOLID, N.O.S. at or above 240°C",
+     "remark": ""
+    },
+    {
+     "unno": "3269",
+     "class": "3",
+     "psn": "POLYESTER RESIN KIT",
+     "remark": ""
+    },
+    {
+     "unno": "3294",
+     "class": "6.1",
+     "psn": "HYDROGEN CYANIDE, SOLUTION IN ALCOHOL with not more than 45% hydrogen cyanide",
+     "remark": "SP900 - See the remark I"
+    },
+    {
+     "unno": "3300",
+     "class": "2.3",
+     "psn": "ETHYLENE OXIDE AND CARBON DIOXIDE MIXTURE with more than 87% ethylene oxide",
+     "remark": ""
+    },
+    {
+     "unno": "3303",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3306",
+     "class": "2.3",
+     "psn": "COMPRESSED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3307",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3308",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3309",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, FLAMMABLE, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3310",
+     "class": "2.3",
+     "psn": "LIQUEFIED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3311",
+     "class": "2.2",
+     "psn": "GAS, REFRIGERATED LIQUID, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3313",
+     "class": "4.2",
+     "psn": "ORGANIC PIGMENTS, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3314",
+     "class": "9",
+     "psn": "PLASTICS MOULDING COMPOUND in dough, sheet or extruded rope form, evolving flammable vapour",
+     "remark": "See the remark J"
+    },
+    {
+     "unno": "3315",
+     "class": "6.1",
+     "psn": "CHEMICAL SAMPLE, TOXIC",
+     "remark": ""
+    },
+    {
+     "unno": "3319",
+     "class": "4.1",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 2% but not more than 10% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3341",
+     "class": "4.2",
+     "psn": "THIOUREA DIOXIDE",
+     "remark": ""
+    },
+    {
+     "unno": "3342",
+     "class": "4.2",
+     "psn": "XANTHATES",
+     "remark": ""
+    },
+    {
+     "unno": "3343",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, FLAMMABLE, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3344",
+     "class": "4.1",
+     "psn": "PENTAERYTHRITE TETRANITRATE (PENTAERYTHRITOL TETRANITRATE; PETN)\nMIXTURE, DESENSITIZED, SOLID, N.O.S. with more than 10% but not more than 20% PETN, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3357",
+     "class": "3",
+     "psn": "NITROGLYCERIN MIXTURE, DESENSITIZED, LIQUID, N.O.S. with not more than 30% nitroglycerin, by mass",
+     "remark": ""
+    },
+    {
+     "unno": "3375",
+     "class": "5.1",
+     "psn": "AMMONIUM NITRATE EMULSION or SUSPENSION or GEL, intermediate for blasting explosives",
+     "remark": ""
+    },
+    {
+     "unno": "3377",
+     "class": "5.1",
+     "psn": "SODIUM PERBORATE MONOHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3378",
+     "class": "5.1",
+     "psn": "SODIUM CARBONATE PEROXYHYDRATE",
+     "remark": ""
+    },
+    {
+     "unno": "3379",
+     "class": "3",
+     "psn": "DESENSITIZED EXPLOSIVE, LIQUID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3380",
+     "class": "4.1",
+     "psn": "DESENSITIZED EXPLOSIVE, SOLID, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3391",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3392",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC",
+     "remark": ""
+    },
+    {
+     "unno": "3393",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3394",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, LIQUID, PYROPHORIC, WATER-REACTIVE",
+     "remark": ""
+    },
+    {
+     "unno": "3397",
+     "class": "4.3",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, WATERREACTIVE, SELFHEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3400",
+     "class": "4.2",
+     "psn": "ORGANOMETALLIC SUBSTANCE, SOLID, SELF-HEATING",
+     "remark": ""
+    },
+    {
+     "unno": "3432",
+     "class": "9",
+     "psn": "POLYCHLORINATED BIPHENYLS, SOLID",
+     "remark": ""
+    },
+    {
+     "unno": "3468",
+     "class": "2.1",
+     "psn": "HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM\nCONTAINED IN EQUIPMENT or HYDROGEN IN A METAL HYDRIDE STORAGE SYSTEM PACKED WITH EQUIPMENT",
+     "remark": ""
+    },
+    {
+     "unno": "3480",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES (including lithium ion polymer batteries)",
+     "remark": "See the remark L / N"
+    },
+    {
+     "unno": "3481",
+     "class": "9",
+     "psn": "LITHIUM ION BATTERIES CONTAINED IN EQUIPMENT",
+     "remark": "See the remark L / N"
+    },
+    {
+     "unno": "3485",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, DRY, CORROSIVE or CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 39% available chlorine (8.8% available oxygen)",
+     "remark": ""
+    },
+    {
+     "unno": "3486",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE MIXTURE, DRY, CORROSIVE with more than 10% but not more than 39% available chlorine",
+     "remark": ""
+    },
+    {
+     "unno": "3487",
+     "class": "5.1",
+     "psn": "CALCIUM HYPOCHLORITE, HYDRATED, CORROSIVE or CALCIUM HYPOCHLORITE, HYDRATED MIXTURE, CORROSIVE with not less than 5.5% but not more than 16% water",
+     "remark": ""
+    },
+    {
+     "unno": "3502",
+     "class": "2.2",
+     "psn": "CHEMICAL UNDER PRESSURE, TOXIC, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3507",
+     "class": "6.1",
+     "psn": "URANIUM HEXAFLUORIDE, RADIOACTIVE MATERIAL, EXCEPTED PACKAGE, less than 0.1 kg per package, non-fissile or fissile-excepted",
+     "remark": ""
+    },
+    {
+     "unno": "3509",
+     "class": "9",
+     "psn": "PACKAGING, DISCARDED, EMPTY, UNCLEANED",
+     "remark": ""
+    },
+    {
+     "unno": "3515",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3518",
+     "class": "2.3",
+     "psn": "ADSORBED GAS, TOXIC, OXIDIZING, CORROSIVE, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3519",
+     "class": "2.3",
+     "psn": "BORON TRIFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3520",
+     "class": "2.3",
+     "psn": "CHLORINE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3521",
+     "class": "2.3",
+     "psn": "SILICON TETRAFLUORIDE, ADSORBED",
+     "remark": ""
+    },
+    {
+     "unno": "3532",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, STABILIZED, N.O.S.",
+     "remark": ""
+    },
+    {
+     "unno": "3533",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, SOLID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3534",
+     "class": "4.1",
+     "psn": "POLYMERIZING SUBSTANCE, LIQUID, TEMPERATURE CONTROLLED, N.O.S.",
+     "remark": "See the remark B"
+    },
+    {
+     "unno": "3536",
+     "class": "9",
+     "psn": "LITHIUM BATTERIES INSTALLED IN CARGO TRANSPORT UNIT lithium ion batteries or lithium metal batteries",
+     "remark": ""
+    },
+    {
+     "unno": "3542",
+     "class": "4.2",
+     "psn": "ARTICLES CONTAINING A SUBSTANCE LIABLE TO SPONTANEOUS COMBUSTION, N.O.S",
+     "remark": ""
+    },
+    {
+     "unno": "3556",
+     "class": "9",
+     "psn": "VEHICLE, LITHIUM ION BATTERY POWERED",
+     "remark": ""
+    },
+    {
+     "unno": "3557",
+     "class": "9",
+     "psn": "VEHICLE, LITHIUM METAL BATTERY POWERED",
+     "remark": ""
+    },
+    {
+     "unno": "3558",
+     "class": "9",
+     "psn": "VEHICLE, SODIUM ION BATTERY POWERED",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "1",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "2",
+     "psn": "",
+     "remark": "See the remark N\n(SKR / HAL vessel only)"
+    },
+    {
+     "unno": "ALL",
+     "class": "5.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "6.2",
+     "psn": "",
+     "remark": ""
+    },
+    {
+     "unno": "ALL",
+     "class": "7",
+     "psn": "",
+     "remark": ""
+    }
+   ],
+   "added": [
+    "3556",
+    "3557",
+    "3558"
+   ],
+   "removed": [],
+   "remark": "추가 3건(UN3556, UN3557, UN3558)"
+  }
+ ]
+}
