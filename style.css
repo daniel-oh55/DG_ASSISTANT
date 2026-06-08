@@ -4424,3 +4424,25 @@ iframe.skiptranslate, .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }  
 body { top: 0 !important; position: static !important; }
 .goog-text-highlight { background: none !important; box-shadow: none !important; }
 .goog-tooltip, .goog-tooltip * { display: none !important; }
+
+/* ── 관리자 리포트 ─────────────────────────────────────────── */
+.rpt-subtabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.rpt-subtab { padding: 7px 14px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; cursor: pointer; font-size: 13px; color: #475569; }
+.rpt-subtab.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; font-weight: 600; }
+.rpt-section { display: none; }
+.rpt-section.active { display: block; }
+.rpt-filters { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.rpt-filters label { font-size: 13px; color: #475569; display: flex; align-items: center; gap: 5px; }
+.rpt-filters select { padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+.rpt-summary { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.rpt-kpi { background: #1e3a5f; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 14px; }
+.rpt-kpi b { font-size: 18px; }
+.rpt-kpi-sm { background: #eef2f7; color: #334155; padding: 6px 12px; border-radius: 8px; font-size: 13px; }
+.rpt-bars { display: flex; flex-direction: column; gap: 8px; }
+.rpt-bar-row { display: flex; align-items: center; gap: 10px; }
+.rpt-bar-label { flex: 0 0 200px; font-size: 13px; color: #334155; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rpt-bar { flex: 1; background: #eef2f7; border-radius: 6px; height: 20px; overflow: hidden; }
+.rpt-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, #2563eb, #1e3a5f); border-radius: 6px; }
+.rpt-bar-val { flex: 0 0 120px; font-size: 12px; color: #64748b; }
+.rpt-audit-result { margin-top: 14px; }
+@media (max-width: 640px) { .rpt-bar-label { flex-basis: 110px; } .rpt-bar-val { flex-basis: 90px; } }

@@ -3056,6 +3056,7 @@ function fqInit(scope) {
   fqBindTabs(scope);
   fqBindFaq(scope);
   fqBindBoard(scope);
+  fqBindReport(scope);
   fqRenderFaq();
   fqRenderPosts();
   fqUpdateAdminUI();
@@ -3076,8 +3077,109 @@ function fqBindTabs(scope) {
       // 탭 전환 시 공용 DB에서 최신 데이터 새로고침
       if (tab === 'faq') fqSyncFaqRemote();
       else if (tab === 'board') fqSyncPostsRemote();
+      else if (tab === 'report') { if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote(); if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote(); fqReportRender(); }
     });
   });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 관리자 리포트 — 문의 통계 + 답변 검토
+// ═══════════════════════════════════════════════════════════════
+// 문의 항목의 날짜 추정 (ts 필드 우선, 없으면 id의 base36 타임스탬프)
+function fqItemDate(i) {
+  if (i && i.ts) { const d = new Date(i.ts); if (!isNaN(d)) return d; }
+  const m = String((i && i.id) || '').match(/^faq_eml_([0-9a-z]+)_/i);
+  if (m) { const ms = parseInt(m[1], 36); if (ms > 1577836800000 && ms < 4102444800000) return new Date(ms); }
+  return null;
+}
+// 통계 대상: 등록된 이메일 문의(FAQ items source==='email') + 게시판 글
+function fqReportInquiries() {
+  const out = [];
+  (FQ_FAQ_DATA.items || []).filter(i => i.source === 'email').forEach(i => {
+    out.push({ date: fqItemDate(i), cat: i.cat || '기타', src: '이메일' });
+  });
+  (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).forEach(p => {
+    out.push({ date: p.createdAt ? new Date(p.createdAt) : null, cat: p.category || '기타', src: '게시판' });
+  });
+  return out;
+}
+function fqReportRender() {
+  const yearSel = document.getElementById('rptYear');
+  if (!yearSel) return;
+  const inq = fqReportInquiries();
+  const years = [...new Set(inq.map(x => x.date && x.date.getFullYear()).filter(Boolean))].sort((a, b) => b - a);
+  const curY = yearSel.value;
+  yearSel.innerHTML = '<option value="">전체 연도</option>' + years.map(y => `<option value="${y}">${y}년</option>`).join('');
+  if (curY && years.includes(+curY)) yearSel.value = curY;
+  const fy = yearSel.value;
+  const fq = (document.getElementById('rptQuarter') || {}).value || '';
+  const fm = (document.getElementById('rptMonth') || {}).value || '';
+  const filtered = inq.filter(x => {
+    if (fy || fq || fm) { if (!x.date) return false; }
+    if (fy && x.date.getFullYear() !== +fy) return false;
+    if (fq && (Math.floor(x.date.getMonth() / 3) + 1) !== +fq) return false;
+    if (fm && (x.date.getMonth() + 1) !== +fm) return false;
+    return true;
+  });
+  const byCat = {}; filtered.forEach(x => { byCat[x.cat] = (byCat[x.cat] || 0) + 1; });
+  const rows = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const total = filtered.length;
+  const bySrc = {}; filtered.forEach(x => { bySrc[x.src] = (bySrc[x.src] || 0) + 1; });
+  const periodLabel = `${fy ? fy + '년' : '전체기간'}${fq ? ' ' + fq + '분기' : ''}${fm ? ' ' + fm + '월' : ''}`;
+  const sumEl = document.getElementById('rptSummary');
+  if (sumEl) sumEl.innerHTML =
+    `<span class="rpt-kpi"><b>${total}</b>건 문의</span>` +
+    Object.entries(bySrc).map(([s, n]) => `<span class="rpt-kpi-sm">${fqEsc(s)} ${n}건</span>`).join('') +
+    `<span class="rpt-kpi-sm">${fqEsc(periodLabel)}</span>`;
+  const max = rows.length ? rows[0][1] : 1;
+  const barsEl = document.getElementById('rptBars');
+  if (barsEl) barsEl.innerHTML = rows.length
+    ? rows.map(([c, n]) => `<div class="rpt-bar-row"><span class="rpt-bar-label">${fqEsc(c)}</span><span class="rpt-bar"><span class="rpt-bar-fill" style="width:${Math.round(n / max * 100)}%"></span></span><span class="rpt-bar-val">${n}건 · ${total ? Math.round(n / total * 100) : 0}%</span></div>`).join('')
+    : '<div class="fq-empty">해당 기간에 등록된 문의가 없습니다.</div>';
+}
+// AI 답변 검토 (오류·모순 탐지) — faq-ai mode='audit'
+async function fqRunAudit() {
+  const out = document.getElementById('rptAuditResult');
+  const btn = document.getElementById('rptAuditBtn');
+  if (!out) return;
+  const items = (FQ_FAQ_DATA.items || []).filter(i => (i.q && i.a));
+  if (items.length < 2) { out.innerHTML = '<div class="fq-empty">검토할 답변 데이터가 충분하지 않습니다.</div>'; return; }
+  const ctx = items.slice(0, 60).map(i => ({ q: i.q, a: (i.a || '').slice(0, 1200), cat: i.cat }));
+  out.innerHTML = '<div class="fq-ai-loading">🔎 쌓인 답변들을 점검해 오류·모순을 찾고 있습니다…</div>';
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/faq-ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'audit', context: ctx })
+    });
+    let j = {}; try { j = await res.json(); } catch (e) {}
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    out.innerHTML = '<div class="fq-ai-result">' + fqRenderText(j.audit || '(결과 없음)') + '</div>' +
+      '<div class="fq-ai-disclaimer">⚠️ AI 검토 의견입니다. 실제 수정 전 담당자가 IMDG Code·사내 규정과 대조해 확인하세요.</div>';
+  } catch (e) {
+    out.innerHTML = '<div class="fq-ai-error">검토 실패: ' + fqEsc(e.message) + '</div>';
+  } finally { if (btn) btn.disabled = false; }
+}
+function fqBindReport(scope) {
+  // 서브탭 전환
+  scope.querySelectorAll('[data-rpt]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.rpt;
+      scope.querySelectorAll('[data-rpt]').forEach(b => b.classList.toggle('active', b.dataset.rpt === t));
+      scope.querySelectorAll('[data-rpt-panel]').forEach(p => p.classList.toggle('active', p.dataset.rptPanel === t));
+    });
+  });
+  ['rptYear', 'rptQuarter', 'rptMonth'].forEach(id => {
+    const el = scope.querySelector('#' + id);
+    if (el) el.addEventListener('change', fqReportRender);
+  });
+  const reset = scope.querySelector('#rptResetBtn');
+  if (reset) reset.addEventListener('click', () => {
+    ['rptYear', 'rptQuarter', 'rptMonth'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    fqReportRender();
+  });
+  const audit = scope.querySelector('#rptAuditBtn');
+  if (audit) audit.addEventListener('click', fqRunAudit);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3455,7 +3557,8 @@ async function fqSubmitEmail() {
   const item = {
     id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
     cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email',
-    emails: emails, reply: reply, inquiry: inquiry   // 회신 보내기·재편집용 원문
+    emails: emails, reply: reply, inquiry: inquiry,   // 회신 보내기·재편집용 원문
+    ts: Date.now()   // 통계용 등록시각
   };
   const ok = await fqUpsertFaqItem(item);   // 로컬 즉시 반영 + 공용 DB 저장 (중복이면 false)
   ['fqEmSubject', 'fqEmInquiry', 'fqEmTo', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });

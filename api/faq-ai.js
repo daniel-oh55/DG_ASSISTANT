@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
     }
 
     const body = req.body || {};
-    const mode = body.mode === 'reply' ? 'reply' : 'answer';
+    const mode = body.mode === 'reply' ? 'reply' : (body.mode === 'audit' ? 'audit' : 'answer');
     const { question, context, subject, inquiry, dgData, unnos } = body;
 
     const ctx = Array.isArray(context) ? context : [];
@@ -67,6 +67,24 @@ ${String(subject || '').trim() || '(제목 없음)'}
 
 [받은 문의 - 내용]
 ${String(inquiry || '').trim() || '(본문 없음 — 제목 기준으로 작성)'}`;
+    } else if (mode === 'audit') {
+      // ── 답변 오류·모순 검토 ──
+      prompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 품질 검토 AI입니다.
+아래 [사내 DG FAQ·문의답변 모음]을 검토해, 담당자가 확인·수정해야 할 문제를 찾아 **한국어**로 보고하세요.
+
+찾을 항목:
+1) **상호 모순** — 서로 다른 항목이 같은 사안에 대해 다르게 안내(예: 한 곳은 선적 가능, 다른 곳은 금지).
+2) **규정 오류** — IMDG Code 기준으로 명백히 틀린 내용(클래스·UN번호·격리·포장 등).
+3) **애매/위험 안내** — 단정적이거나 근거가 불충분해 오해·사고 소지가 있는 답변.
+
+출력 형식(마크다운):
+- 문제가 있으면 각 건을 **번호 목록**으로: **[유형]** 관련 질문 제목(들) → 무엇이 문제인지 한두 줄 → 권고(어떻게 고치거나 확인할지).
+- 확실하지 않은 의심 건은 "검토 필요"로 표시하고 단정하지 마세요. 사실을 지어내지 마세요.
+- 문제를 찾지 못하면 "검토 결과 뚜렷한 모순·오류는 발견되지 않았습니다."라고만 답하세요.
+- 마지막에 한 줄: "※ AI 검토 의견이며, 최종 수정은 담당자가 IMDG Code·사내 규정과 대조해 확인하세요."
+
+[사내 DG FAQ·문의답변 모음]
+${ctxText || '(제공된 자료 없음)'}`;
     } else {
       // ── FAQ AI 답변 (기존 동작) ──
       if (!question || !String(question).trim()) {
@@ -119,6 +137,9 @@ ${String(question).trim()}`;
 
     if (mode === 'reply') {
       return res.status(200).json({ ok: true, model, reply: text, used: ctx.length });
+    }
+    if (mode === 'audit') {
+      return res.status(200).json({ ok: true, model, audit: text, used: ctx.length });
     }
     return res.status(200).json({ ok: true, model, answer: text, used: ctx.length });
   } catch (err) {
