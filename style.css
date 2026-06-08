@@ -4485,3 +4485,12 @@ body { top: 0 !important; position: static !important; }
 .skr-diff-add ul, .skr-diff-del ul { margin: 6px 0 0; padding-left: 18px; }
 .skr-diff-add li, .skr-diff-del li { font-size: 12px; margin: 2px 0; line-height: 1.4; }
 .skr-diff-add { margin-bottom: 10px; }
+
+/* 이메일 문의 카테고리 수동 변경 드롭다운 */
+.fq-cat-select { font-size: 12px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #334155; max-width: 180px; cursor: pointer; }
+.fq-cat-select:hover { border-color: #2563eb; }
+/* 이메일 파일 드래그앤드롭 영역 */
+.fq-drop { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 16px; text-align: center; color: #64748b; font-size: 13px; background: #f8fafc; cursor: pointer; margin-bottom: 8px; transition: all .15s; }
+.fq-drop span { font-size: 12px; color: #94a3b8; }
+.fq-drop:hover { border-color: #94a3b8; }
+.fq-drop.drag { border-color: #2563eb; background: #eff6ff; color: #1e3a5f; }

@@ -625,6 +625,11 @@ function activateTab(targetId) {
     if (targetId === 'tab-notes') {
         fetchNotes();
     }
+    if (targetId === 'tab-report' && typeof fqReportRender === 'function') {
+        if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote();
+        if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote();
+        fqReportRender();
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -3039,6 +3044,8 @@ function fqClassifyKeyword(text) {
   const t = String(text || '');
   const pick = kw => FQ_SEED_CATS.find(c => c.includes(kw));
   const rules = [
+    // 혼적/격리 문의는 '물질의 위험성'이 아니라 '적재·격리' 주제 → 클래스 규칙(부식/인화 등)보다 우선
+    [/격리|segregation|stowage|적재|혼적|혼합|함께\s*(선적|적재|운송)|동일\s*컨테이너|같은\s*컨테이너|\bSGG\b|compartment/i, '적재'],
     [/리튬|lithium|배터리|battery|UN ?-?34(80|81)|UN ?-?309[01]|\bSP ?-?188\b|[12]차\s*전지|power\s*bank|보조\s*배터리/i, '리튬'],
     [/전기차|\bEV\b|차량|vehicle|UN ?-?3166|UN ?-?355[67]|전동(휠체어|자전거)|지게차|forklift/i, '차량'],
     [/숯|charcoal|활성탄|activated\s*carbon|carbon\s*black|카본\s*블랙|과탄산|percarbonate|UN ?-?136[12]|UN ?-?3378/i, '금지'],
@@ -3053,7 +3060,6 @@ function fqClassifyKeyword(text) {
     [/항만|\bport\b|상해|닝보|칭다오|샤먼|천진|terminal|CAS\s*(no|번호)|하역\s*(불가|제한)/i, '항만'],
     [/MSDS|\bSDS\b|DGD|위험물\s*신고서|B\/L|bill\s*of\s*lading|manifest|적하목록|\bVGM\b|declaration|서류/i, '서류'],
     [/PRE-?CHECK|프리\s*체크|사전\s*검토|부킹|승인\s*(절차|요청)|application/i, '절차'],
-    [/격리|segregation|stowage|적재|혼적|혼합|\bSGG\b|compartment/i, '적재'],
     [/\bLQ\b|\bEQ\b|limited\s*quantity|excepted\s*quantity|special\s*provision|\bSP ?-?\d/i, '특별'],
     [/EmS|UN ?-?38\.3|packing\s*instruction|\bP\d{3}\b|tank\s*container|portable\s*tank|overpack|N\.?O\.?S|\bDGL\b|컬럼|column/i, 'IMDG'],
     [/\bclass ?-?[1-9]\b|폭발|explosive|compatibility|독성|toxic|감염|infectious|방사|radioactive/i, 'Class'],
@@ -3146,7 +3152,6 @@ function fqBindTabs(scope) {
       // 탭 전환 시 공용 DB에서 최신 데이터 새로고침
       if (tab === 'faq') fqSyncFaqRemote();
       else if (tab === 'board') fqSyncPostsRemote();
-      else if (tab === 'report') { if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote(); if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote(); fqReportRender(); }
     });
   });
 }
@@ -3313,6 +3318,18 @@ function fqBindFaq(scope) {
   if (emSubmit) emSubmit.addEventListener('click', fqSubmitEmail);
   const emFile = scope.querySelector('#fqEmFile');
   if (emFile) emFile.addEventListener('change', fqReadEmailFile);
+  // 드래그앤드롭 등록
+  const emDrop = scope.querySelector('#fqEmDrop');
+  if (emDrop) {
+    ['dragenter', 'dragover'].forEach(ev => emDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); emDrop.classList.add('drag'); }));
+    ['dragleave', 'dragend'].forEach(ev => emDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); emDrop.classList.remove('drag'); }));
+    emDrop.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation(); emDrop.classList.remove('drag');
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) fqProcessEmailFile(f);
+    });
+    emDrop.addEventListener('click', () => { const fi = document.getElementById('fqEmFile'); if (fi) fi.click(); });
+  }
   const emDraft = scope.querySelector('#fqEmDraftBtn');
   if (emDraft) emDraft.addEventListener('click', fqDraftReply);
   const emSend = scope.querySelector('#fqEmSendBtn');
@@ -3489,6 +3506,21 @@ function fqPopulateEmailCats() {
   const cats = [FQ_AUTO_CAT, ...FQ_SEED_CATS.filter(c => c !== '전체')];
   sel.innerHTML = cats.map(c => `<option value="${fqEsc(c)}"${c === FQ_AUTO_CAT ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
 }
+// 카테고리 드롭다운 옵션 (현재 선택값 표시)
+function fqEmailCatOptions(sel) {
+  return FQ_SEED_CATS.filter(c => c !== '전체')
+    .map(c => `<option value="${fqEsc(c)}"${c === sel ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
+}
+// 등록된 이메일 문의의 카테고리 수동 변경 → 저장
+async function fqChangeEmailCat(id, cat) {
+  const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (!m) return;
+  m.cat = cat;
+  fqRenderEmailList();
+  if (typeof fqRenderFaq === 'function') fqRenderFaq();
+  try { await fqPushFaqRemote(); fqToast('✓ 카테고리 변경 저장됨', 'success'); }
+  catch (e) { fqToast('카테고리 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
+}
 // 등록된 이메일 문의 목록 (source === 'email') — 📧 아이콘 클릭 시 표시
 function fqRenderEmailList() {
   const box = document.getElementById('fqEmailList');
@@ -3504,7 +3536,7 @@ function fqRenderEmailList() {
     <div class="fq-item" data-id="${fqEsc(m.id)}">
       <div class="fq-q" onclick="fqToggleFaqItem('${fqEsc(m.id)}')">
         <div style="flex:1;"><div class="fq-q-text">${fqEsc(m.q)}</div></div>
-        <span class="fq-q-tag">${fqEsc(m.cat || '')}</span>
+        <select class="fq-cat-select" title="카테고리 변경" onclick="event.stopPropagation()" onchange="fqChangeEmailCat('${fqEsc(m.id)}', this.value)">${fqEmailCatOptions(m.cat)}</select>
         <span class="fq-q-arrow">▼</span>
       </div>
       <div class="fq-a">${fqRenderText(m.a || '')}
@@ -3639,6 +3671,9 @@ function fqExtractEmails(text) {
 }
 function fqReadEmailFile(e) {
   const file = e.target.files && e.target.files[0];
+  if (file) fqProcessEmailFile(file);
+}
+function fqProcessEmailFile(file) {
   if (!file) return;
   const isMsg = /\.msg$/i.test(file.name);
   const reader = new FileReader();

@@ -86,6 +86,11 @@
     <span class="menu-text">문의 게시판</span>
 </li>
 
+<li class="menu-item" data-target="tab-report">
+    <span class="menu-icon">▣</span>
+    <span class="menu-text">관리자 리포트</span>
+</li>
+
 </ul>
 <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle theme">
     <span class="theme-toggle-option theme-toggle-bright">BRIGHT MODE</span>
@@ -459,7 +464,6 @@
     <div class="fq-tabs">
       <button class="fq-tab active" data-fq-tab="faq">📚 FAQ</button>
       <button class="fq-tab" data-fq-tab="board">💬 상세문의 게시판</button>
-      <button class="fq-tab" data-fq-tab="report">📊 관리자 리포트</button>
     </div>
 
     <!-- FAQ 패널 -->
@@ -491,6 +495,7 @@
         <div class="fq-em-form-toggle" id="fqEmFormToggle">➕ 새 이메일 문의 등록 <span class="fq-em-arrow">▲ 접기</span></div>
         <div id="fqEmFormFields">
         <label class="fq-field-label" for="fqEmFile">이메일 파일 첨부 (.eml / .txt / .msg · 선택)</label>
+        <div id="fqEmDrop" class="fq-drop">📎 이메일 파일(.eml / .msg / .txt)을 여기로 <b>끌어다 놓기</b><br><span>또는 아래에서 파일 선택</span></div>
         <input type="file" id="fqEmFile" accept=".eml,.txt,.msg,message/rfc822,text/plain">
         <label class="fq-field-label" for="fqEmSubject">제목 (질문) <span class="fq-req">*</span></label>
         <input type="text" id="fqEmSubject" maxlength="200" placeholder="예: UN3082 해양오염물질 닝보 선적 가능 여부">
@@ -601,41 +606,45 @@
 
       <div class="fq-posts" id="fqPostsList"></div>
     </div>
-
-    <!-- 관리자 리포트 패널 -->
-    <div class="fq-panel" data-fq-panel="report">
-      <div class="rpt-subtabs">
-        <button class="rpt-subtab active" data-rpt="stat">📊 문의 통계</button>
-        <button class="rpt-subtab" data-rpt="audit">⚠️ 답변 오류·모순 검토</button>
-      </div>
-
-      <!-- 문의 통계 -->
-      <div class="rpt-section active" data-rpt-panel="stat">
-        <div class="rpt-filters">
-          <label>연도 <select id="rptYear"></select></label>
-          <label>분기 <select id="rptQuarter">
-            <option value="">전체</option><option value="1">1분기(1~3월)</option><option value="2">2분기(4~6월)</option><option value="3">3분기(7~9월)</option><option value="4">4분기(10~12월)</option>
-          </select></label>
-          <label>월 <select id="rptMonth">
-            <option value="">전체</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
-          </select></label>
-          <button class="fq-btn ghost" id="rptResetBtn">필터 초기화</button>
-        </div>
-        <div class="rpt-summary" id="rptSummary"></div>
-        <div class="rpt-bars" id="rptBars"></div>
-        <p class="fq-hint">※ 통계 대상: 등록된 <b>이메일 문의</b> + <b>상세문의 게시판</b> 글(날짜 기준). 시드 FAQ 지식은 제외됩니다.</p>
-      </div>
-
-      <!-- 답변 오류·모순 검토 -->
-      <div class="rpt-section" data-rpt-panel="audit">
-        <p class="fq-email-guide">쌓인 FAQ·문의답변을 AI가 점검해 <b>서로 모순되는 내용</b>·<b>규정 오류(IMDG 기준)</b>·<b>애매하거나 위험한 안내</b>를 찾아 검토를 요청합니다. 결과는 담당자 검토용 참고 의견입니다.</p>
-        <button class="fq-btn primary" id="rptAuditBtn">🔎 답변 검토 실행</button>
-        <div class="rpt-audit-result" id="rptAuditResult"></div>
-      </div>
-    </div>
   </div>
 
   <div class="fq-toast" id="fqToast"></div>
+  </div>
+</section>
+
+<!-- 관리자 리포트 (독립 메뉴) -->
+<section id="tab-report" class="tab-content">
+  <div class="container">
+    <header>
+      <h1>관리자 리포트 <span>Admin Report</span></h1>
+      <p class="subtitle">문의 통계 · 답변 오류·모순 검토</p>
+    </header>
+    <div class="rpt-subtabs">
+      <button class="rpt-subtab active" data-rpt="stat">📊 문의 통계</button>
+      <button class="rpt-subtab" data-rpt="audit">⚠️ 답변 오류·모순 검토</button>
+    </div>
+
+    <div class="rpt-section active" data-rpt-panel="stat">
+      <div class="rpt-filters">
+        <label>연도 <select id="rptYear"></select></label>
+        <label>분기 <select id="rptQuarter">
+          <option value="">전체</option><option value="1">1분기(1~3월)</option><option value="2">2분기(4~6월)</option><option value="3">3분기(7~9월)</option><option value="4">4분기(10~12월)</option>
+        </select></label>
+        <label>월 <select id="rptMonth">
+          <option value="">전체</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        </select></label>
+        <button class="fq-btn ghost" id="rptResetBtn">필터 초기화</button>
+      </div>
+      <div class="rpt-summary" id="rptSummary"></div>
+      <div class="rpt-bars" id="rptBars"></div>
+      <p class="fq-hint">※ 통계 대상: 등록된 <b>이메일 문의</b> + <b>상세문의 게시판</b> 글(날짜 기준). 시드 FAQ 지식은 제외됩니다.</p>
+    </div>
+
+    <div class="rpt-section" data-rpt-panel="audit">
+      <p class="fq-email-guide">쌓인 FAQ·문의답변을 AI가 점검해 <b>서로 모순되는 내용</b>·<b>규정 오류(IMDG 기준)</b>·<b>애매하거나 위험한 안내</b>를 찾아 검토를 요청합니다. 결과는 담당자 검토용 참고 의견입니다.</p>
+      <button class="fq-btn primary" id="rptAuditBtn">🔎 답변 검토 실행</button>
+      <div class="rpt-audit-result" id="rptAuditResult"></div>
+    </div>
   </div>
 </section>
 
