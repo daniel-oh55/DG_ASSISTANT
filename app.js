@@ -3199,9 +3199,9 @@ async function fqDraftReply() {
   replyEl.value = '🤖 기존 DG 데이터를 분석해 회신 초안을 작성 중입니다…';
   if (btn) btn.disabled = true;
   try {
-    const res = await fetch('/api/faq-reply', {
+    const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject, inquiry, context: top })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
