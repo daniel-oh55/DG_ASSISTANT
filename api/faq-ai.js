@@ -52,8 +52,68 @@ module.exports = async function handler(req, res) {
     }
 
     const body = req.body || {};
-    const mode = body.mode === 'reply' ? 'reply' : (body.mode === 'audit' ? 'audit' : 'answer');
+    const mode = ['reply', 'audit', 'news'].includes(body.mode) ? body.mode : 'answer';
     const { question, context, subject, inquiry, dgData, unnos, segInfo } = body;
+
+    // ───────────────────────── 위험물 사고 뉴스 (news) ─────────────────────────
+    if (mode === 'news') {
+      const decode = s => String(s || '')
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
+        .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d)).trim();
+      const queries = [
+        '컨테이너 화재 위험물', '위험물 폭발 사고', '물류창고 화재 위험물',
+        '위험물 운송 사고', 'dangerous goods container fire'
+      ];
+      const results = await Promise.all(queries.map(async q => {
+        try {
+          const rr = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`,
+            { headers: { 'User-Agent': 'Mozilla/5.0' } });
+          if (!rr.ok) return [];
+          const xml = await rr.text();
+          const out = []; const re = /<item>([\s\S]*?)<\/item>/g; let m;
+          while ((m = re.exec(xml)) && out.length < 15) {
+            const b = m[1];
+            const title = decode((b.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
+            const link = decode((b.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '');
+            const pub = decode((b.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || '');
+            const source = decode((b.match(/<source[^>]*>([\s\S]*?)<\/source>/) || [])[1] || '');
+            if (title && link) out.push({ title, link, pub, source });
+          }
+          return out;
+        } catch (_) { return []; }
+      }));
+      // 병합 + 중복 제거 (제목 정규화)
+      const seen = new Set(); const merged = [];
+      for (const it of results.flat()) {
+        const base = it.title.replace(/\s*-\s*[^-]+$/, '');   // " - 출처" 제거
+        const norm = base.toLowerCase().replace(/[^0-9a-z가-힣]/g, '').slice(0, 30);
+        if (!norm || seen.has(norm)) continue;
+        // 앞 12자 겹치면 유사 중복으로 간주
+        const pre = norm.slice(0, 12);
+        if ([...seen].some(s => s.slice(0, 12) === pre)) continue;
+        seen.add(norm);
+        merged.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0 });
+      }
+      merged.sort((a, b) => b.ts - a.ts);
+      const news = merged.slice(0, 10);
+      // Gemini로 위험물/선적금지 의견 (실패해도 헤드라인은 제공)
+      if (news.length) {
+        try {
+          const list = news.map((n, i) => `${i + 1}. ${n.title}`).join('\n');
+          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
+형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견"}]
+- 헤드라인만으로 신중히 추정하고, 불확실하면 '추정'이라고 표시. 과장 금지.
+
+${list}`, 0.2);
+          const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
+          const arr = JSON.parse(jsonText);
+          arr.forEach(o => { const idx = (+o.i) - 1; if (news[idx]) { news[idx].dg = o.dg; news[idx].hazard = o.hazard; news[idx].opinion = o.opinion; } });
+        } catch (e) { console.error('[news] opinion fail', e.message); }
+      }
+      return res.status(200).json({ ok: true, count: news.length, news });
+    }
 
     const ctx = Array.isArray(context) ? context : [];
     const ctxText = ctx

@@ -622,6 +622,7 @@
     <div class="rpt-subtabs">
       <button class="rpt-subtab active" data-rpt="stat">📊 문의 통계</button>
       <button class="rpt-subtab" data-rpt="audit">⚠️ 답변 오류·모순 검토</button>
+      <button class="rpt-subtab" data-rpt="news">📰 위험물 사고 뉴스</button>
     </div>
 
     <div class="rpt-section active" data-rpt-panel="stat">
@@ -644,6 +645,15 @@
       <p class="fq-email-guide">쌓인 FAQ·문의답변을 AI가 점검해 <b>서로 모순되는 내용</b>·<b>규정 오류(IMDG 기준)</b>·<b>애매하거나 위험한 안내</b>를 찾아 검토를 요청합니다. 결과는 담당자 검토용 참고 의견입니다.</p>
       <button class="fq-btn primary" id="rptAuditBtn">🔎 답변 검토 실행</button>
       <div class="rpt-audit-result" id="rptAuditResult"></div>
+    </div>
+
+    <div class="rpt-section" data-rpt-panel="news">
+      <p class="fq-email-guide">컨테이너물류 화재·폭발 등 위험물 사고와, 위험물 분류 물질의 육상 사고 뉴스를 <b>하루 한 번</b> 모아 헤드라인으로 보여줍니다. 헤드라인을 누르면 해당 기사로 이동합니다. 각 뉴스 아래에 <b>관련 위험물·위험성·선적 금지 검토 의견</b>(AI 참고)을 함께 제공합니다.</p>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <button class="fq-btn primary" id="rptNewsRefresh">🔄 새로고침</button>
+        <span class="fq-hint" id="rptNewsUpdated"></span>
+      </div>
+      <div class="rpt-news-list" id="rptNewsList"></div>
     </div>
   </div>
 </section>

@@ -3235,6 +3235,47 @@ async function fqRunAudit() {
     out.innerHTML = '<div class="fq-ai-error">검토 실패: ' + fqEsc(e.message) + '</div>';
   } finally { if (btn) btn.disabled = false; }
 }
+// ── 위험물 사고 뉴스 (하루 1회 조회, 헤드라인+위험물/선적금지 의견) ──
+const FQ_NEWS_CACHE_KEY = 'fq_dg_news_v1';
+function fqTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function fqRenderNewsList(news, updated) {
+  const box = document.getElementById('rptNewsList');
+  const up = document.getElementById('rptNewsUpdated');
+  if (up) up.textContent = updated ? `최근 업데이트: ${updated}` : '';
+  if (!box) return;
+  if (!news || !news.length) { box.innerHTML = '<div class="fq-empty">표시할 사고 뉴스가 없습니다. 🔄 새로고침을 눌러보세요.</div>'; return; }
+  box.innerHTML = news.map(n => `
+    <div class="news-item">
+      <a class="news-title" href="${fqEsc(n.link)}" target="_blank" rel="noopener">${fqEsc(n.title)}</a>
+      <div class="news-meta">${fqEsc(n.source || '')}${n.pub ? ' · ' + fqEsc(new Date(n.pub).toLocaleDateString('ko')) : ''}</div>
+      ${(n.dg || n.hazard || n.opinion) ? `<div class="news-opinion">
+        ${n.dg ? `<span class="news-dg">⚠️ ${fqEsc(n.dg)}</span>` : ''}
+        ${n.hazard ? `<div>위험성: ${fqEsc(n.hazard)}</div>` : ''}
+        ${n.opinion ? `<div>📌 선적 검토 의견: ${fqEsc(n.opinion)}</div>` : ''}
+      </div>` : ''}
+    </div>`).join('');
+}
+async function fqLoadNews(force) {
+  const box = document.getElementById('rptNewsList');
+  if (!force) {
+    try { const c = JSON.parse(localStorage.getItem(FQ_NEWS_CACHE_KEY) || '{}'); if (c.date === fqTodayStr() && c.news) { fqRenderNewsList(c.news, c.date); return; } } catch (e) {}
+  }
+  if (box) box.innerHTML = '<div class="fq-ai-loading">📰 위험물 사고 뉴스를 수집·분석 중입니다…</div>';
+  try {
+    const res = await fetch('/api/faq-ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'news' }) });
+    let j = {}; try { j = await res.json(); } catch (e) {}
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    const today = fqTodayStr();
+    try { localStorage.setItem(FQ_NEWS_CACHE_KEY, JSON.stringify({ date: today, news: j.news })); } catch (e) {}
+    fqRenderNewsList(j.news, today);
+  } catch (e) {
+    if (box) box.innerHTML = '<div class="fq-ai-error">뉴스를 불러오지 못했습니다: ' + fqEsc(e.message) + '</div>';
+  }
+}
+function fqRenderNews() {
+  try { const c = JSON.parse(localStorage.getItem(FQ_NEWS_CACHE_KEY) || '{}'); if (c.date === fqTodayStr() && c.news) { fqRenderNewsList(c.news, c.date); return; } } catch (e) {}
+  fqLoadNews(false);
+}
 function fqBindReport(scope) {
   // 서브탭 전환
   scope.querySelectorAll('[data-rpt]').forEach(btn => {
@@ -3242,8 +3283,11 @@ function fqBindReport(scope) {
       const t = btn.dataset.rpt;
       scope.querySelectorAll('[data-rpt]').forEach(b => b.classList.toggle('active', b.dataset.rpt === t));
       scope.querySelectorAll('[data-rpt-panel]').forEach(p => p.classList.toggle('active', p.dataset.rptPanel === t));
+      if (t === 'news') fqRenderNews();
     });
   });
+  const newsRefresh = scope.querySelector('#rptNewsRefresh');
+  if (newsRefresh) newsRefresh.addEventListener('click', () => fqLoadNews(true));
   ['rptYear', 'rptQuarter', 'rptMonth'].forEach(id => {
     const el = scope.querySelector('#' + id);
     if (el) el.addEventListener('change', fqReportRender);

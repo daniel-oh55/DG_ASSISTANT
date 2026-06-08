@@ -4494,3 +4494,12 @@ body { top: 0 !important; position: static !important; }
 .fq-drop span { font-size: 12px; color: #94a3b8; }
 .fq-drop:hover { border-color: #94a3b8; }
 .fq-drop.drag { border-color: #2563eb; background: #eff6ff; color: #1e3a5f; }
+
+/* 위험물 사고 뉴스 */
+.rpt-news-list { display: flex; flex-direction: column; gap: 12px; }
+.news-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; background: #fff; }
+.news-title { font-size: 14px; font-weight: 600; color: #1e3a5f; text-decoration: none; }
+.news-title:hover { text-decoration: underline; }
+.news-meta { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+.news-opinion { margin-top: 8px; font-size: 12px; color: #475569; background: #f8fafc; border-left: 3px solid #2563eb; padding: 7px 10px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+.news-dg { display: inline-block; font-weight: 600; color: #b45309; margin-bottom: 3px; }
