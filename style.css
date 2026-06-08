@@ -4409,3 +4409,18 @@ header span {
   /* 다크 모드 자동 대응 — 임베드한 페이지의 prefers-color-scheme에 자동 적응 */
   /* (선택 — 필요 시 별도 색 정의) */
 }
+
+/* ── 언어 선택 (우측상단 고정 · 소형) ───────────────────────── */
+.lang-switch { position: fixed; top: 8px; right: 10px; z-index: 100000; font-size: 12px; line-height: 1.3; }
+.lang-toggle { background: rgba(255,255,255,.94); border: 1px solid #cbd5e1; border-radius: 16px; padding: 3px 10px; font-size: 12px; cursor: pointer; box-shadow: 0 1px 5px rgba(0,0,0,.18); color: #1e293b; white-space: nowrap; }
+.lang-toggle:hover { background: #fff; }
+.lang-menu { position: absolute; top: 30px; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.2); overflow: hidden; min-width: 130px; }
+.lang-menu button { display: block; width: 100%; text-align: left; padding: 7px 13px; border: 0; background: #fff; font-size: 12px; cursor: pointer; color: #1e293b; }
+.lang-menu button:hover { background: #f1f5f9; }
+/* Google 번역 기본 UI(상단 배너/툴팁 등) 숨김 — 우리 셀렉터만 사용 */
+.goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt { display: none !important; }
+iframe.skiptranslate, .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }  /* 신/구 상단 배너 */
+.goog-te-gadget { display: none !important; }
+body { top: 0 !important; position: static !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+.goog-tooltip, .goog-tooltip * { display: none !important; }

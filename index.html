@@ -19,6 +19,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 언어 선택 (어느 화면에서든 항상 우측상단 고정 · 소형). notranslate: 버튼 자체는 번역 제외 -->
+    <div id="langSwitch" class="lang-switch notranslate" translate="no">
+      <button type="button" id="langToggle" class="lang-toggle" title="언어 / Language">🌐 <span id="langCurrent">한국어</span> ▾</button>
+      <div id="langMenu" class="lang-menu" hidden>
+        <button type="button" data-lang="ko">한국어</button>
+        <button type="button" data-lang="en">English</button>
+        <button type="button" data-lang="zh-CN">中文</button>
+        <button type="button" data-lang="ja">日本語</button>
+        <button type="button" data-lang="vi">Tiếng Việt</button>
+        <button type="button" data-lang="id">Bahasa Indonesia</button>
+        <button type="button" data-lang="th">ภาษาไทย</button>
+      </div>
+    </div>
+    <div id="google_translate_element" style="display:none;"></div>
+
     <!-- 1. 앱 전체를 감싸는 래퍼 (Flexbox를 사용하여 좌우 분할) -->
     <div class="app-wrapper">
         
@@ -580,5 +595,46 @@
     <!-- 스크립트 연결은 항상 body가 끝나기 직전에 위치해야 DOM 로딩 에러를 방지합니다. -->
 
     <script src="app.js"></script>
+
+    <!-- 다국어 번역 (Google 번역 위젯 기반 · 전체 화면/동적내용 자동 번역) -->
+    <script>
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+          { pageLanguage: 'ko', includedLanguages: 'en,zh-CN,ja,vi,id,th,ko', autoDisplay: false },
+          'google_translate_element'
+        );
+      }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script>
+      (function () {
+        var LANGS = { 'ko': '한국어', 'en': 'English', 'zh-CN': '中文', 'ja': '日本語', 'vi': 'Tiếng Việt', 'id': 'Bahasa Indonesia', 'th': 'ภาษาไทย' };
+        function currentLang() { var m = document.cookie.match(/googtrans=\/[^\/]*\/([^;]+)/); return m ? decodeURIComponent(m[1]) : 'ko'; }
+        function setCookie(lang) {
+          var host = location.hostname;
+          if (lang === 'ko') { // 원문(한국어)으로 복원 — 쿠키 삭제
+            ['', '; domain=' + host, '; domain=.' + host].forEach(function (d) {
+              document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/' + d;
+            });
+          } else {
+            document.cookie = 'googtrans=/ko/' + lang + '; path=/';
+            document.cookie = 'googtrans=/ko/' + lang + '; path=/; domain=' + host;
+          }
+        }
+        function apply(lang) { setCookie(lang); location.reload(); }
+        document.addEventListener('DOMContentLoaded', function () {
+          var cur = currentLang();
+          var curEl = document.getElementById('langCurrent'); if (curEl) curEl.textContent = LANGS[cur] || '한국어';
+          var toggle = document.getElementById('langToggle'), menu = document.getElementById('langMenu');
+          if (toggle && menu) {
+            toggle.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; });
+            document.addEventListener('click', function () { menu.hidden = true; });
+            menu.querySelectorAll('button[data-lang]').forEach(function (b) {
+              b.addEventListener('click', function (e) { e.stopPropagation(); apply(b.getAttribute('data-lang')); });
+            });
+          }
+        });
+      })();
+    </script>
 </body>
 </html>
