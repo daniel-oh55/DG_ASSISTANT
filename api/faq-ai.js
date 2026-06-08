@@ -21,29 +21,36 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, message: 'GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.' });
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-    // Gemini 호출 헬퍼 — temperature 지정 + 일시 과부하(503)/한도(429) 자동 재시도
+    // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로)
+    const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
+    // Gemini 호출 헬퍼 — temperature 지정 + 503/429/404 시 다음 모델로 폴백
     async function gen(promptText, temperature) {
       let lastStatus = 0;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (attempt) await sleep(1200 * attempt);   // 1.2s, 2.4s 백오프
-        const r = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: promptText }] }],
-            generationConfig: { temperature: temperature }
-          })
-        });
-        const t = await r.text();
-        if (r.ok) {
-          const j = JSON.parse(t);
-          return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+      for (const mdl of MODELS) {
+        const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          if (attempt) await sleep(800);
+          const r = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: promptText }] }],
+              generationConfig: { temperature: temperature }
+            })
+          });
+          const t = await r.text();
+          if (r.ok) {
+            const j = JSON.parse(t);
+            return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+          }
+          lastStatus = r.status;
+          console.error('[api/faq-ai] Gemini error', mdl, r.status, t.slice(0, 150));
+          if (r.status === 503 || r.status === 429) continue;        // 같은 모델 1회 재시도
+          if (r.status === 404 || r.status === 400) break;            // 모델 문제 → 다음 모델
+          throw new Error('Gemini API 호출 실패');                     // 그 외(키 등) → 중단
         }
-        lastStatus = r.status;
-        console.error('[api/faq-ai] Gemini error', r.status, t.slice(0, 200));
-        if (r.status !== 503 && r.status !== 429) break;   // 일시 오류만 재시도
+        // 이 모델 소진 → 다음 모델로 폴백
       }
       if (lastStatus === 503 || lastStatus === 429) {
         const e = new Error('AI 서버가 일시적으로 혼잡합니다(잠시 후 다시 시도해 주세요).'); e.code = 503; throw e;
