@@ -438,7 +438,7 @@
         <button class="fq-btn ghost" id="fqExpandAll">모두 펴기</button>
         <button class="fq-btn ghost" id="fqCollapseAll">모두 접기</button>
         <button class="fq-btn accent" id="fqAiBtn">🤖 AI에게 문의</button>
-        <button class="fq-btn accent" id="fqEmailUploadBtn">📧 이메일 문의</button>
+        <button class="fq-btn accent" id="fqEmailUploadBtn">📧 이메일 문의 등록</button>
         <button class="fq-btn ghost" id="fqAdminBtn">🔐 관리자</button>
       </div>
 
@@ -465,8 +465,13 @@
         <input type="text" id="fqEmSubject" maxlength="200" placeholder="예: UN3082 해양오염물질 닝보 선적 가능 여부">
         <label class="fq-field-label" for="fqEmInquiry">문의 내용</label>
         <textarea id="fqEmInquiry" placeholder="고객이 보내온 문의 내용 (선택)"></textarea>
-        <label class="fq-field-label" for="fqEmReply">회신 (답변) 내용 <span class="fq-req">*</span></label>
-        <textarea id="fqEmReply" placeholder="담당자가 회신한 답변 내용"></textarea>
+        <label class="fq-field-label" for="fqEmTo">받는사람(수신) 메일주소 <span style="font-weight:400;color:#888;">· 회신 보내기 수신인 (쉼표로 구분 · 파일 첨부 시 자동 추출)</span></label>
+        <input type="text" id="fqEmTo" placeholder="예: customer@abc.com, sales@abc.com">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;">
+          <label class="fq-field-label" for="fqEmReply" style="margin:0;">회신 (답변) 내용 <span class="fq-req">*</span></label>
+          <button type="button" class="fq-btn accent" id="fqEmDraftBtn">🤖 AI 회신 초안 작성</button>
+        </div>
+        <textarea id="fqEmReply" placeholder="담당자 회신 내용 — 🤖 버튼을 누르면 기존 DG 데이터를 분석해 초안을 자동 작성합니다"></textarea>
         <div class="fq-email-row">
           <div>
             <label class="fq-field-label" for="fqEmCat">카테고리</label>

@@ -3142,6 +3142,8 @@ function fqBindFaq(scope) {
   if (emSubmit) emSubmit.addEventListener('click', fqSubmitEmail);
   const emFile = scope.querySelector('#fqEmFile');
   if (emFile) emFile.addEventListener('change', fqReadEmailFile);
+  const emDraft = scope.querySelector('#fqEmDraftBtn');
+  if (emDraft) emDraft.addEventListener('click', fqDraftReply);
 }
 
 // ── AI에게 문의 (FAQ·문의답변 DB 기반 LLM 답변) ──
@@ -3174,6 +3176,41 @@ async function fqAskAi() {
   } catch (e) {
     ansEl.innerHTML = '<div class="fq-ai-error">답변 생성 실패: ' + fqEsc(e.message) + '<br>잠시 후 다시 시도해 주세요.</div>';
   }
+}
+
+// ── AI 회신 초안 작성 (기존 FAQ·문의답변 DB 분석 → 이메일 회신 초안) ──
+async function fqDraftReply() {
+  const subject = (document.getElementById('fqEmSubject').value || '').trim();
+  const inquiry = (document.getElementById('fqEmInquiry').value || '').trim();
+  const replyEl = document.getElementById('fqEmReply');
+  if (!subject && !inquiry) { fqToast('제목이나 문의 내용을 먼저 입력(또는 이메일 파일 첨부)하세요', 'warn'); return; }
+  // 문의와 관련도 높은 사내 자료 선별 (fqAskAi와 동일 방식)
+  const q = subject + '\n' + inquiry;
+  const items = FQ_FAQ_DATA.items || [];
+  const qWords = q.toLowerCase().split(/[\s,./]+/).filter(w => w.length > 1);
+  const scored = items.map(it => {
+    const hay = (it.q + ' ' + (it.a || '') + ' ' + ((it.tags || []).join(' '))).toLowerCase();
+    let s = 0; qWords.forEach(w => { if (hay.includes(w)) s++; });
+    return { it, s };
+  }).sort((a, b) => b.s - a.s);
+  const top = scored.slice(0, 24).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
+  const btn = document.getElementById('fqEmDraftBtn');
+  const prev = replyEl.value;
+  replyEl.value = '🤖 기존 DG 데이터를 분석해 회신 초안을 작성 중입니다…';
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/faq-reply', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, inquiry, context: top })
+    });
+    let j = {}; try { j = await res.json(); } catch (e) {}
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    replyEl.value = (j.reply || '').trim();
+    fqToast('✓ AI 회신 초안 완료 — 내용을 검토·수정한 뒤 등록하거나 회신 보내기 하세요', 'success');
+  } catch (e) {
+    replyEl.value = prev;
+    fqToast('회신 초안 작성 실패: ' + e.message, 'warn');
+  } finally { if (btn) btn.disabled = false; }
 }
 
 // ── 이메일 업로드 / 이메일 문의 목록 ──
@@ -3210,15 +3247,38 @@ function fqRenderEmailList() {
     box.innerHTML = '<div class="fq-empty">등록된 이메일 문의가 없습니다. 위에서 이메일을 업로드해 등록하세요.</div>';
     return;
   }
-  box.innerHTML = mails.map(m => `
+  box.innerHTML = mails.map(m => {
+    const toCount = (m.emails || []).length;
+    return `
     <div class="fq-item" data-id="${fqEsc(m.id)}">
       <div class="fq-q" onclick="fqToggleFaqItem('${fqEsc(m.id)}')">
         <div style="flex:1;"><div class="fq-q-text">${fqEsc(m.q)}</div></div>
         <span class="fq-q-tag">${fqEsc(m.cat || '')}</span>
         <span class="fq-q-arrow">▼</span>
       </div>
-      <div class="fq-a">${fqRenderText(m.a || '')}</div>
-    </div>`).join('');
+      <div class="fq-a">${fqRenderText(m.a || '')}
+        <div class="fq-email-actions" style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="fq-btn primary" onclick="fqSendReply('${fqEsc(m.id)}')">✉️ 회신 보내기</button>
+          <span style="font-size:12px;color:#888;">${toCount ? `수신 ${toCount}명 · 참조 dg@sinokor.co.kr` : '⚠️ 저장된 수신주소 없음 — 재등록 시 받는사람란을 채워주세요'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+// 등록된 문의에 대해 아웃룩 회신창 열기 (수신=메일 내 모든 주소, 참조=dg@, 발신=기본계정 wtlee@)
+function fqSendReply(id) {
+  const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
+  const to = (m.emails || []).join(';');   // Outlook 다중 수신인 구분자
+  const cc = 'dg@sinokor.co.kr';
+  const subject = 'RE: ' + (m.q || '');
+  const body = (m.reply || m.a || '');
+  if (!to) { fqToast('저장된 수신 메일주소가 없습니다. 해당 문의를 다시 등록하며 받는사람란을 채워주세요', 'warn'); return; }
+  // 발신(From)은 mailto로 지정 불가 → Outlook 기본 계정(현재 wtlee@sinokor.co.kr)으로 발송됨.
+  //   (추후 로그인 기능 추가 시 로그인 id(메일주소)를 발신자로 사용하도록 확장 예정)
+  const url = 'mailto:' + to + '?cc=' + cc + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = url;
+  fqToast('✉️ 아웃룩 회신창을 엽니다 (수신·참조·내용 자동 입력)', 'success');
 }
 // ── Outlook .msg (OLE/CFB 복합문서) 파서 — 제목·본문 추출 ──
 function fqParseMsg(arrayBuffer) {
@@ -3304,6 +3364,18 @@ function fqParseEml(text) {
   return { subject, body };
 }
 
+// 텍스트에서 이메일 주소를 모두 추출 (중복 제거, 회신 수신인/참조용)
+function fqExtractEmails(text) {
+  const re = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g;
+  const seen = new Set(), out = [];
+  (String(text || '').match(re) || []).forEach(e => {
+    const k = e.toLowerCase();
+    // 발신(wtlee)·참조(dg@) 자기주소는 수신인에서 제외 (참조는 별도 고정)
+    if (k === 'wtlee@sinokor.co.kr' || k === 'dg@sinokor.co.kr') return;
+    if (!seen.has(k)) { seen.add(k); out.push(e); }
+  });
+  return out;
+}
 function fqReadEmailFile(e) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
@@ -3311,19 +3383,26 @@ function fqReadEmailFile(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      let subject = '', body = '';
+      let subject = '', body = '', emailSrc = '';
       if (isMsg) {
         const r = fqParseMsg(ev.target.result);
         subject = r.subject; body = r.body;
+        emailSrc = (r.from || '') + '\n' + (r.subject || '') + '\n' + body;
       } else {
-        const r = fqParseEml(String(ev.target.result || ''));
-        subject = r.subject; body = r.body || String(ev.target.result || '');
+        const raw = String(ev.target.result || '');
+        const r = fqParseEml(raw);
+        subject = r.subject; body = r.body || raw;
+        emailSrc = raw;   // 헤더(From/To/Cc)+본문 전체에서 주소 추출
       }
       const subjEl = document.getElementById('fqEmSubject');
       const inq = document.getElementById('fqEmInquiry');
       if (subjEl && subject) subjEl.value = subject;
       if (inq) inq.value = body.length > 20000 ? body.slice(0, 20000) + '\n...(이하 생략)' : body;
-      fqToast('📎 이메일을 불러왔습니다. 회신(답변)란을 채우고 등록하세요', 'success');
+      // 받는사람(수신) 메일주소 자동 채우기
+      const toEl = document.getElementById('fqEmTo');
+      const emails = fqExtractEmails(emailSrc);
+      if (toEl && emails.length) toEl.value = emails.join(', ');
+      fqToast(`📎 이메일을 불러왔습니다${emails.length ? ` · 수신주소 ${emails.length}개 추출` : ''}. 🤖 회신 초안 작성 후 등록하세요`, 'success');
     } catch (err) {
       fqToast('이메일 파일 분석 실패: ' + err.message, 'warn');
     }
@@ -3345,12 +3424,16 @@ async function fqSubmitEmail() {
   const bodyPart = inquiry ? ('**문의 내용**\n' + inquiry + '\n\n**답변**\n') : '';
   // 자동 분류 선택 시 내용 기반으로 카테고리 태그 부여
   if (cat === FQ_AUTO_CAT) cat = fqClassifyKeyword(subject + '\n' + inquiry + '\n' + reply);
+  // 받는사람(수신) 메일주소 — 회신 보내기 버튼에서 사용
+  const toRaw = (document.getElementById('fqEmTo') ? document.getElementById('fqEmTo').value : '') || '';
+  const emails = fqExtractEmails(toRaw);
   const item = {
     id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
-    cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email'
+    cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email',
+    emails: emails, reply: reply, inquiry: inquiry   // 회신 보내기·재편집용 원문
   };
   const ok = await fqUpsertFaqItem(item);   // 로컬 즉시 반영 + 공용 DB 저장 (중복이면 false)
-  ['fqEmSubject', 'fqEmInquiry', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['fqEmSubject', 'fqEmInquiry', 'fqEmTo', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
   fqRenderEmailList();   // 📧 이메일 문의 목록 갱신 (메인 FAQ엔 노출 안 함)
   if (ok) {
