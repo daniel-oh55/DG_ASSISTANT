@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
 
     const body = req.body || {};
     const mode = body.mode === 'reply' ? 'reply' : (body.mode === 'audit' ? 'audit' : 'answer');
-    const { question, context, subject, inquiry, dgData, unnos } = body;
+    const { question, context, subject, inquiry, dgData, unnos, segInfo } = body;
 
     const ctx = Array.isArray(context) ? context : [];
     const ctxText = ctx
@@ -61,52 +61,40 @@ module.exports = async function handler(req, res) {
       const subjText = String(subject || '').trim() || '(제목 없음)';
       const inqText = String(inquiry || '').trim() || '(본문 없음 — 제목 기준으로 작성)';
 
-      const sources = `[사내 DG FAQ·문의답변 데이터베이스]
+      // 시스템이 IMDG 일반 격리표로 계산한 결정론적 판정(있으면 권위 결론으로 사용)
+      let segText = '(혼적/격리 판정 해당 없음 — 단일 품목이거나 클래스 미확인)';
+      if (segInfo && segInfo.verdict) {
+        segText = `판정: ${segInfo.verdict}\n대상: ${(segInfo.cargos || []).join(' / ')}`
+          + (segInfo.detail && segInfo.detail.length ? `\n클래스 간 격리코드: ${segInfo.detail.join(', ')}` : '');
+      }
+      const sources = `[격리표 판정 결과 — 시스템이 IMDG 일반 격리표로 계산함(권위 있는 결론, 임의로 뒤집지 말 것)]
+${segText}
+
+[사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
 
 [조회된 위험물 상세 — DG_TABLE (문의 내 UN번호: ${unText})]
 ${dgText}`;
 
-      // 1단계: 초안 생성 (간결·종합판단)
-      const draftPrompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
-아래 자료를 **종합 판단**해 받은 문의에 대한 한국어 회신 본문을 **간결하게** 작성하세요.
+      const replyPrompt = `당신은 장금상선/흥아라인 운항팀 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
+받은 문의에 대해 한국어 회신 본문을 **간결하게** 작성하세요.
 
-판단 근거 순서: ① 사내 DB의 회사 정책(선적금지·혼적 제한 등) ② 조회된 위험물 상세(class·격리그룹) ③ IMDG Code 격리표/격리그룹.
-- 혼적 가능여부는 각 UN의 class를 보고 IMDG 격리요건을 적용해 가능/조건부/불가를 판정.
-- 결론은 **하나로 명확히**. 추측 남발 금지, 불확실하면 담당자 확인 권고.
-
-${sources}
-
-[문의 제목] ${subjText}
-[문의 내용] ${inqText}
-
-요구: 인사말 → 핵심 답변(결론+간단 근거) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.`;
-
-      // 1단계: 독립 초안 2개 생성 (불일치 = 모델이 흔들리는 지점 → 검출용)
-      const [draftA, draftB] = await Promise.all([gen(draftPrompt, 0.4), gen(draftPrompt, 0.4)]);
-
-      // 2단계: 대조·통합(reconcile) — 결론이 갈리면 단정 금지, 신중 안내로 일관성 확보
-      const reconcilePrompt = `같은 문의에 대해 독립적으로 작성된 두 회신 초안입니다. [근거 자료]·IMDG Code와 대조해 검증하고 **하나의 일관된 최종 회신**으로 통합하세요.
-
-원칙(중요):
-- 두 초안의 핵심 결론(예: 선적/혼적 "가능" vs "불가")이 **일치하면** 그 결론으로 간결히 정리.
-- 결론이 **서로 다르거나** 근거가 불충분하면, 어느 한쪽을 **단정하지 말고** "현재 자료만으로는 확정이 어려워 IMDG 격리표 및 담당자 확인이 필요하다"고 신중히 안내하세요. (각 물질의 class·부위험성·격리그룹 등 확인된 사실은 제시)
-- 사실/규정 오류는 바로잡고, 추측·과장 금지. 간결한 이메일체(인사말 → 핵심 결론·근거 → 맺음말). 본문 텍스트만 출력.
-- 마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."
+판정 규칙(중요):
+- 혼적/격리 가능여부는 위 [격리표 판정 결과]를 **그대로 결론**으로 사용하세요. 물성(독성·부식성 등)만 보고 임의로 "불가"로 뒤집지 마세요.
+- 단, 사내 DB에 해당 품목의 **회사 선적금지/특별 격리 규정**이 명시돼 있으면 그 제한을 함께 반영하세요(회사 규정이 더 엄격할 수 있음).
+- 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요.
+- 결론은 하나로 명확히. 추측 금지.
 
 ${sources}
 
 [문의 제목] ${subjText}
 [문의 내용] ${inqText}
 
-[초안 A]
-${draftA}
+형식: 인사말 → 핵심 결론(+간단 근거: 각 UN class와 격리표 결과) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
+마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."`;
 
-[초안 B]
-${draftB}`;
-
-      const finalReply = await gen(reconcilePrompt, 0);
-      return res.status(200).json({ ok: true, model, reply: finalReply || draftA, used: ctx.length, verified: true });
+      const finalReply = await gen(replyPrompt, 0);
+      return res.status(200).json({ ok: true, model, reply: finalReply, used: ctx.length, seg: segInfo ? segInfo.verdict : null });
     }
 
     // ───────────────────────── 답변 검토(audit) ─────────────────────────

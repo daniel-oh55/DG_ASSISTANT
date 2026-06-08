@@ -3351,6 +3351,63 @@ async function fqAskAi() {
   }
 }
 
+// ── IMDG 일반 격리표 (7.2.4) — 클래스×클래스 격리코드 결정론적 조회 ──
+// 코드: 0=요건없음, 1=Away from, 2=Separated from, 3=완전구획 격리, 4=종방향 구획격리, X=개별품목 확인, *=class1 특수
+const IMDG_SEG_ORDER = ['1', '1.6', '2.1', '2.2', '2.3', '3', '4.1', '4.2', '4.3', '5.1', '5.2', '6.1', '6.2', '7', '8', '9'];
+const IMDG_SEG_TABLE = {
+  '1':   ['*','*',4,2,2,4,4,4,4,4,4,2,4,2,4,'X'],
+  '1.6': ['*','*',4,2,2,4,4,4,4,4,4,2,4,2,4,'X'],
+  '2.1': [4,4,0,0,0,2,1,2,2,2,2,0,4,2,1,0],
+  '2.2': [2,2,0,0,0,1,0,2,1,0,2,0,2,1,0,0],
+  '2.3': [2,2,0,0,0,2,0,2,2,0,2,0,2,1,0,0],
+  '3':   [4,4,2,1,2,0,0,2,2,2,2,0,3,2,0,0],
+  '4.1': [4,4,1,0,0,0,0,1,0,1,2,0,3,2,1,0],
+  '4.2': [4,4,2,2,2,2,1,0,1,2,2,1,3,2,1,0],
+  '4.3': [4,4,2,1,2,2,0,1,0,2,2,0,2,2,1,0],
+  '5.1': [4,4,2,0,0,2,1,2,2,0,2,0,3,1,2,0],
+  '5.2': [4,4,2,2,2,2,2,2,2,2,0,1,3,2,2,0],
+  '6.1': [2,2,0,0,0,0,0,1,0,0,1,0,1,0,0,0],
+  '6.2': [4,4,4,2,2,3,3,3,2,3,3,1,0,3,3,0],
+  '7':   [2,2,2,1,1,2,2,2,2,1,2,0,3,0,2,0],
+  '8':   [4,4,1,0,0,0,1,1,1,2,2,0,3,2,0,0],
+  '9':   ['X','X',0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+};
+function fqNormClass(c) {
+  c = String(c || '').trim();
+  if (/^1\.[1-5]/.test(c)) return '1';
+  if (/^1\.6/.test(c)) return '1.6';
+  const m = c.match(/^(2\.1|2\.2|2\.3|4\.1|4\.2|4\.3|5\.1|5\.2|6\.1|6\.2|[3789])/);
+  if (m) return m[1];
+  return null;
+}
+function fqSegCode(a, b) {
+  const ai = IMDG_SEG_ORDER.indexOf(a), bi = IMDG_SEG_ORDER.indexOf(b);
+  if (ai < 0 || bi < 0) return null;
+  return IMDG_SEG_TABLE[a][bi];
+}
+// 두 화물(각각 class+sub) 간 가장 엄격한 격리코드와 혼적 판정
+function fqSegregationCheck(rows) {
+  // rows: [{class, sub}], 보통 2개
+  const tokenLists = rows.map(r => [fqNormClass(r.class), fqNormClass(r.sub)].filter(Boolean));
+  let worst = 0, hasX = false, hasStar = false, detail = [];
+  for (let i = 0; i < tokenLists.length; i++) for (let j = i + 1; j < tokenLists.length; j++) {
+    for (const ca of tokenLists[i]) for (const cb of tokenLists[j]) {
+      const code = fqSegCode(ca, cb);
+      if (code === 'X') hasX = true;
+      else if (code === '*') hasStar = true;
+      else if (typeof code === 'number') { worst = Math.max(worst, code); detail.push(`${ca}↔${cb}: 코드 ${code}`); }
+    }
+  }
+  const codeNames = { 0: '격리요건 없음', 1: 'Away from(이격)', 2: 'Separated from(격리)', 3: '완전구획 격리', 4: '종방향 구획 격리' };
+  let verdict, allow;
+  if (hasStar) { verdict = 'Class 1(화약류) 포함 — 개별 규정 확인 필요'; allow = 'check'; }
+  else if (hasX) { verdict = '개별 품목 규정(DG List) 확인 필요'; allow = 'check'; }
+  else if (worst === 0) { verdict = '혼적 가능 (일반 격리표상 격리요건 없음)'; allow = 'yes'; }
+  else if (worst === 1) { verdict = '조건부 — 같은 컨테이너 적재 시 이격(Away from) 필요'; allow = 'cond'; }
+  else { verdict = `혼적 불가 — 격리 필요(${codeNames[worst]})`; allow = 'no'; }
+  return { worst, hasX, hasStar, verdict, allow, detail, codeName: codeNames[worst] };
+}
+
 // ── AI 회신 초안 작성 (기존 FAQ·문의답변 DB 분석 → 이메일 회신 초안) ──
 async function fqDraftReply() {
   const subject = (document.getElementById('fqEmSubject').value || '').trim();
@@ -3385,9 +3442,17 @@ async function fqDraftReply() {
         if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
       } catch (_) { /* DG 상세 조회 실패 시 FAQ·IMDG 일반지식만으로 진행 */ }
     }
+    // 혼적/격리 문의 → IMDG 일반 격리표로 결정론적 판정 (LLM이 뒤집지 못하도록 권위 결과로 전달)
+    let segInfo = null;
+    if (dgData.length >= 2) {
+      const rows = dgData.map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: r.UNNO || r.unno, name: r.Name || r.name }));
+      const chk = fqSegregationCheck(rows);
+      segInfo = { verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail,
+        cargos: rows.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.class}${r.sub ? ', 부위험성 ' + r.sub : ''})`) };
+    }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));

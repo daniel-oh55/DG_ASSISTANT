@@ -2,7 +2,7 @@
  "carrier": "SKR/HAS (Sinokor & Heung-A) 위험물 금지리스트",
  "source": "SKR HAL ONLY 기준",
  "updated": "2026-06-08",
- "note": "VER.9는 원본 파일 미보유로 제외(VER.8↔10 사이). 변경내용 요약만 표시.",
+ "note": "변경내용 요약만 표시(전체 목록은 PDF/엑셀 원본 참조).",
  "versions": [
   {
    "version": "VER.7",
@@ -169,12 +169,27 @@
    "remark": "추가 28건: UN1090, UN1093, UN1146, UN1154, UN1159, UN1160, UN1164, UN1203, UN1208, UN1275, UN1295, UN1298, UN1344, UN1463, UN1477, UN1490, UN1978, UN2045, UN2056, UN2203, UN2270, UN2398, UN2556, UN2557, UN3170, UN3241, UN3251, Class 5.2 전체 / 삭제 3건: UN1408, UN2031, UN3101"
   },
   {
+   "version": "VER.9",
+   "date": "2025-08-29",
+   "count": 323,
+   "added": [
+    "3166"
+   ],
+   "removed": [],
+   "addedDetail": [
+    {
+     "unno": "3166",
+     "psn": "VEHICLE, FLAMMABLE GAS POWERED or VEHICLE, FLAMMABLE LIQUID POWERED or VEHICLE, FUEL CELL, FLAMMABLE GAS POWERED or VEHICLE, FUEL CELL, FLAMMABLE LIQUID POWERED"
+    }
+   ],
+   "remark": "추가 1건: UN3166"
+  },
+  {
    "version": "VER.10",
    "date": "2025-10-24",
    "count": 322,
    "added": [
-    "2031",
-    "3166"
+    "2031"
    ],
    "removed": [
     "1406",
@@ -184,13 +199,9 @@
     {
      "unno": "2031",
      "psn": "NITRIC ACID other than red fuming, with more than 70% nitric acid"
-    },
-    {
-     "unno": "3166",
-     "psn": "VEHICLE, FLAMMABLE GAS POWERED or VEHICLE, FLAMMABLE LIQUID POWERED or VEHICLE, FUEL CELL, FLAMMABLE GAS POWERED or VEHICLE, FUEL CELL, FLAMMABLE LIQUID POWERED"
     }
    ],
-   "remark": "추가 2건: UN2031, UN3166 / 삭제 2건: UN1406, Class 5.1 전체"
+   "remark": "추가 1건: UN2031 / 삭제 2건: UN1406, Class 5.1 전체"
   },
   {
    "version": "VER.11",
