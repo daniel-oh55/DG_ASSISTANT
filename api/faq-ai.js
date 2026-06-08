@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
 
     const body = req.body || {};
     const mode = body.mode === 'reply' ? 'reply' : 'answer';
-    const { question, context, subject, inquiry } = body;
+    const { question, context, subject, inquiry, dgData, unnos } = body;
 
     const ctx = Array.isArray(context) ? context : [];
     const ctxText = ctx
@@ -35,20 +35,32 @@ module.exports = async function handler(req, res) {
       if ((!subject || !String(subject).trim()) && (!inquiry || !String(inquiry).trim())) {
         return res.status(400).json({ ok: false, message: '제목 또는 문의 내용이 필요합니다.' });
       }
+      const dgRows = Array.isArray(dgData) ? dgData : [];
+      const dgText = dgRows.length
+        ? dgRows.map((r, i) => `[DG ${i + 1}] ` + JSON.stringify(r)).join('\n').slice(0, 12000)
+        : '(조회된 DG 상세 없음 — UN번호 미언급 또는 미등록)';
+      const unText = (Array.isArray(unnos) && unnos.length) ? unnos.join(', ') : '(없음)';
       prompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 담당자를 대신해 고객 문의 이메일에 대한 **회신 초안**을 작성하는 보조 AI입니다.
-아래 [사내 DG FAQ·문의답변 데이터베이스]를 최우선 근거로, 받은 문의에 대한 한국어 회신 이메일 본문을 작성하세요.
+아래 자료들을 **종합적으로 판단**해 받은 문의에 대한 한국어 회신 이메일 본문을 작성하세요.
+
+근거 우선순위 및 종합 판단 방법:
+1) [사내 DG FAQ·문의답변 DB] — 회사 정책(선적금지·RFDG 필수·승인 제조사·혼적 제한 등)의 **최우선 근거**.
+2) [조회된 위험물 상세(DG_TABLE)] — 문의에 언급된 UN번호의 class/등급·격리그룹·정식운송품명 등 **실제 데이터**. 혼적·격리·선적가부 판단의 사실 근거로 사용하세요.
+3) **IMDG Code 일반 규정** — 위 자료로 부족하면 IMDG Code의 **격리(Segregation) 규정·클래스 간 격리표·격리그룹**을 적용해 신중히 판단하세요.
 
 작성 규칙:
-- 형식: 정중한 인사말 → 문의에 대한 구체적 답변 → 맺음말(필요 시 추가 확인 안내) 순의 **이메일 본문**으로 작성하세요.
-- 사내 DB에 근거가 있으면 그 내용을 종합해 구체적으로 답하세요. 회사 정책(금지/RFDG 필수/승인 제조사 등)과 IMDG 일반 규정을 구분해 안내하세요.
-- 사내 DB에 직접 근거가 없으면, 일반 IMDG Code 기준으로 신중히 안내하되 단정하지 말고 담당자 최종 확인을 권고하세요. 사실을 지어내지 마세요.
-- 어디까지나 담당자가 검토·수정 후 발송할 **초안**입니다. 과한 확약 표현은 피하세요.
-- 받는사람 이름을 모르면 "안녕하세요, 담당자님." 정도로 시작하세요.
-- 제목·머리말(To/From 등)·서명 블록은 넣지 말고, 메일 본문 텍스트만 출력하세요. (수신/참조/발신은 시스템이 자동 입력합니다.)
+- **혼적(두 가지 이상 위험물 동시 선적) 가능 여부** 질문이면: 각 UN번호의 class/division을 확인하고 **IMDG 격리표에 따른 클래스 간 격리요건**("Away from / Separated from / Separated by a complete compartment or hold from / 숫자코드 1~4" 등)과 격리그룹(예: 산 SGG1, 알칼리 SGG18 등)을 적용해 혼적 **가능/조건부/불가**를 근거와 함께 설명하세요.
+- **선적 가부** 질문이면 회사 선적금지/제한 규정을 먼저 확인해 답하세요.
+- 형식: 정중한 인사말 → 구체적 답변(근거 포함) → 맺음말. **이메일 본문 텍스트만** 출력(제목·머리말 To/From·서명 제외; 수신/참조/발신은 시스템이 자동 입력).
+- 단정 위험이 있으면 담당자 확인을 권고하세요. 사실을 지어내지 마세요. 검토 후 발송할 **초안**입니다.
+- 받는사람 이름을 모르면 "안녕하세요, 담당자님."으로 시작하세요.
 - 마지막 줄에 "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다." 를 덧붙이세요.
 
 [사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
+
+[조회된 위험물 상세 — DG_TABLE (문의 내 UN번호: ${unText})]
+${dgText}
 
 [받은 문의 - 제목]
 ${String(subject || '').trim() || '(제목 없음)'}

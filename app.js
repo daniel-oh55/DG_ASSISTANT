@@ -3144,6 +3144,8 @@ function fqBindFaq(scope) {
   if (emFile) emFile.addEventListener('change', fqReadEmailFile);
   const emDraft = scope.querySelector('#fqEmDraftBtn');
   if (emDraft) emDraft.addEventListener('click', fqDraftReply);
+  const emSend = scope.querySelector('#fqEmSendBtn');
+  if (emSend) emSend.addEventListener('click', fqSendReplyForm);
 }
 
 // ── AI에게 문의 (FAQ·문의답변 DB 기반 LLM 답변) ──
@@ -3193,15 +3195,28 @@ async function fqDraftReply() {
     let s = 0; qWords.forEach(w => { if (hay.includes(w)) s++; });
     return { it, s };
   }).sort((a, b) => b.s - a.s);
-  const top = scored.slice(0, 24).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
+  const top = scored.slice(0, 30).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
   const btn = document.getElementById('fqEmDraftBtn');
   const prev = replyEl.value;
-  replyEl.value = '🤖 기존 DG 데이터를 분석해 회신 초안을 작성 중입니다…';
+  replyEl.value = '🤖 FAQ·선적금지·혼적(IMDG 격리)·DG 상세를 종합해 회신 초안을 작성 중입니다…';
   if (btn) btn.disabled = true;
   try {
+    // 문의에 언급된 UN번호 추출 → DG_TABLE에서 class·격리 등 상세 조회(혼적/금지 판단 근거)
+    const unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    let dgData = [];
+    if (unnos.length) {
+      try {
+        const dr = await fetch('/api/dg-search', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unnos })
+        });
+        const dj = await dr.json().catch(() => ({}));
+        if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
+      } catch (_) { /* DG 상세 조회 실패 시 FAQ·IMDG 일반지식만으로 진행 */ }
+    }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
@@ -3265,20 +3280,30 @@ function fqRenderEmailList() {
     </div>`;
   }).join('');
 }
-// 등록된 문의에 대해 아웃룩 회신창 열기 (수신=메일 내 모든 주소, 참조=dg@, 발신=기본계정 wtlee@)
+// 아웃룩 회신창 열기 (공용) — 수신=메일 내 모든 주소, 참조=dg@, 발신=기본계정(현 wtlee@; mailto는 From 강제 불가)
+//   (추후 로그인 기능 추가 시 로그인 id(메일주소)를 발신자로 사용하도록 확장 예정)
+function fqOpenOutlookReply(toList, subject, body) {
+  const to = (toList || []).filter(Boolean).join(';');   // Outlook 다중 수신인 구분자
+  if (!to) { fqToast('받는사람(수신) 메일주소가 없습니다 — 받는사람란을 채워주세요', 'warn'); return false; }
+  const url = 'mailto:' + to + '?cc=' + encodeURIComponent('dg@sinokor.co.kr')
+    + '&subject=' + encodeURIComponent(subject || '') + '&body=' + encodeURIComponent(body || '');
+  window.location.href = url;
+  fqToast('✉️ 아웃룩 회신창을 엽니다 (수신·참조·내용 자동 입력)', 'success');
+  return true;
+}
+// 등록된 문의 목록에서 회신
 function fqSendReply(id) {
   const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
   if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
-  const to = (m.emails || []).join(';');   // Outlook 다중 수신인 구분자
-  const cc = 'dg@sinokor.co.kr';
-  const subject = 'RE: ' + (m.q || '');
-  const body = (m.reply || m.a || '');
-  if (!to) { fqToast('저장된 수신 메일주소가 없습니다. 해당 문의를 다시 등록하며 받는사람란을 채워주세요', 'warn'); return; }
-  // 발신(From)은 mailto로 지정 불가 → Outlook 기본 계정(현재 wtlee@sinokor.co.kr)으로 발송됨.
-  //   (추후 로그인 기능 추가 시 로그인 id(메일주소)를 발신자로 사용하도록 확장 예정)
-  const url = 'mailto:' + to + '?cc=' + cc + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  window.location.href = url;
-  fqToast('✉️ 아웃룩 회신창을 엽니다 (수신·참조·내용 자동 입력)', 'success');
+  fqOpenOutlookReply(m.emails, 'RE: ' + (m.q || ''), m.reply || m.a || '');
+}
+// 초안 작성 폼에서 바로 회신 (등록 없이) — 폼의 받는사람/제목/회신 내용 사용
+function fqSendReplyForm() {
+  const to = fqExtractEmails((document.getElementById('fqEmTo') || {}).value || '');
+  const subject = 'RE: ' + ((document.getElementById('fqEmSubject') || {}).value || '').trim();
+  const body = ((document.getElementById('fqEmReply') || {}).value || '').trim();
+  if (!body) { fqToast('회신 내용이 비어 있습니다 — 🤖 AI 회신 초안 작성 후 발송하세요', 'warn'); return; }
+  fqOpenOutlookReply(to, subject, body);
 }
 // ── Outlook .msg (OLE/CFB 복합문서) 파서 — 제목·본문 추출 ──
 function fqParseMsg(arrayBuffer) {
