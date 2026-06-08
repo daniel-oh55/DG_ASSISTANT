@@ -1882,23 +1882,24 @@ function fqShowSkrVersion(idx) {
     const v = data.versions[idx]; if (!v) return;
     document.querySelectorAll('.skr-ver').forEach(el => el.classList.toggle('active', +el.dataset.vi === idx));
     const detail = document.getElementById('skrHistDetail');
-    const addSet = new Set(v.added || []);
-    let html = `<div class="skr-detail-head">${fqEsc(v.version)} <span>${fqEsc(v.date || '')} · ${v.count != null ? v.count + '건' : '보관본'}</span></div>`;
-    if ((v.added && v.added.length) || (v.removed && v.removed.length)) {
-        html += '<div class="skr-diff">';
-        if (v.added && v.added.length) html += '<div class="skr-diff-add"><b>+ 추가 ' + v.added.length + '건</b> ' + v.added.map(skrLbl).join(', ') + '</div>';
-        if (v.removed && v.removed.length) html += '<div class="skr-diff-del"><b>− 삭제 ' + v.removed.length + '건</b> ' + v.removed.map(skrLbl).join(', ') + '</div>';
-        html += '</div>';
-    }
-    if (v.archived || !(v.entries && v.entries.length)) {
-        html += '<div class="fq-empty">이 버전은 보관본으로 상세 목록이 없습니다. (PDF 보관본 참조)</div>';
+    const cnt = v.count != null ? (v.count + '건 금지' ) : '보관본';
+    let html = `<div class="skr-detail-head">${fqEsc(v.version)} <span>${fqEsc(v.date || '')} · ${cnt}</span></div>`;
+    const hasChange = (v.added && v.added.length) || (v.removed && v.removed.length);
+    if (!hasChange) {
+        html += `<div class="skr-change-empty">${fqEsc(v.remark || '이전 버전 대비 변경 없음 / 기준본')}</div>`;
     } else {
-        html += '<table class="skr-table"><thead><tr><th>Class</th><th>UNNO</th><th>Proper Shipping Name</th><th>Remark</th></tr></thead><tbody>' +
-            v.entries.map(e => {
-                const key = e.unno === 'ALL' ? ('C' + e.class + ':ALL') : e.unno;
-                const isNew = addSet.has(key);
-                return `<tr class="${isNew ? 'skr-row-new' : ''}"><td>${fqEsc(e.class || '')}</td><td>${fqEsc(e.unno || '')}${isNew ? ' 🆕' : ''}</td><td>${fqEsc(e.psn || '')}</td><td>${fqEsc(e.remark || '')}</td></tr>`;
-            }).join('') + '</tbody></table>';
+        html += '<div class="skr-change-title">이전 버전 대비 변경내용</div>';
+        if (v.added && v.added.length) {
+            const det = v.addedDetail || [];
+            html += '<div class="skr-diff-add"><b>＋ 추가 ' + v.added.length + '건</b><ul>' +
+                (det.length ? det.map(d => `<li><b>${fqEsc(d.unno)}</b>${d.psn ? ' — ' + fqEsc(d.psn) : ''}</li>`).join('')
+                            : v.added.map(k => `<li>${fqEsc(skrLbl(k))}</li>`).join('')) +
+                '</ul></div>';
+        }
+        if (v.removed && v.removed.length) {
+            html += '<div class="skr-diff-del"><b>－ 삭제 ' + v.removed.length + '건</b><ul>' +
+                v.removed.map(k => `<li>${fqEsc(skrLbl(k))}</li>`).join('') + '</ul></div>';
+        }
     }
     detail.innerHTML = html;
 }

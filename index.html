@@ -267,9 +267,10 @@
 
 <section id="tab-carrier-check" class="tab-content">
     <div class="container">
-        <header>
+        <header class="carrier-header">
             <h1>선사별 선적가부 조회 <span>Carrier DG Restriction</span></h1>
             <p class="subtitle">UNNO 기준 SKR/HAL, NSS/DYS 선적 가능 여부 조회</p>
+            <button class="btn skr-hist-btn" id="skrHistBtn" type="button">📜 SKR/HAS 규정 변경 이력</button>
         </header>
 
         <div class="search-area">
@@ -285,7 +286,6 @@
                 <input type="checkbox" id="showOnlyAllowedCarrier">
                 선적 가능한 선사만 보기
             </label>
-            <button class="btn" id="skrHistBtn" type="button">📜 SKR/HAS 규정 변경 이력</button>
         </div>
 
         <div id="carrierCheckResult"></div>

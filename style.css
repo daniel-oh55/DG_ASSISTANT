@@ -4474,3 +4474,14 @@ body { top: 0 !important; position: static !important; }
 .skr-table th { background: #f1f5f9; position: sticky; top: 0; }
 .skr-table .skr-row-new { background: #ecfdf5; }
 @media (max-width: 720px) { .skr-modal-body { flex-direction: column; } .skr-hist-list { flex-basis: auto; max-height: 180px; border-right: 0; border-bottom: 1px solid #e2e8f0; } }
+
+/* 규정 이력 버튼 — 헤더 우측상단, 20% 축소 */
+.carrier-header { position: relative; }
+.skr-hist-btn { position: absolute; top: 2px; right: 0; transform: scale(0.8); transform-origin: top right; white-space: nowrap; }
+@media (max-width: 720px) { .skr-hist-btn { position: static; transform: scale(0.8); transform-origin: left top; margin-top: 8px; } }
+/* 버전 변경내용(요약) 표시 */
+.skr-change-title { font-size: 13px; color: #475569; font-weight: 700; margin-bottom: 8px; }
+.skr-change-empty { color: #64748b; font-size: 13px; padding: 8px 0; }
+.skr-diff-add ul, .skr-diff-del ul { margin: 6px 0 0; padding-left: 18px; }
+.skr-diff-add li, .skr-diff-del li { font-size: 12px; margin: 2px 0; line-height: 1.4; }
+.skr-diff-add { margin-bottom: 10px; }
