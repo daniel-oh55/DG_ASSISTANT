@@ -22,20 +22,33 @@ module.exports = async function handler(req, res) {
     }
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    // Gemini 호출 헬퍼 — temperature 지정(낮을수록 일관/결정적)
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    // Gemini 호출 헬퍼 — temperature 지정 + 일시 과부하(503)/한도(429) 자동 재시도
     async function gen(promptText, temperature) {
-      const r = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: promptText }] }],
-          generationConfig: { temperature: temperature }
-        })
-      });
-      const t = await r.text();
-      if (!r.ok) { console.error('[api/faq-ai] Gemini error:', t); throw new Error('Gemini API 호출 실패'); }
-      const j = JSON.parse(t);
-      return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+      let lastStatus = 0;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt) await sleep(1200 * attempt);   // 1.2s, 2.4s 백오프
+        const r = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: promptText }] }],
+            generationConfig: { temperature: temperature }
+          })
+        });
+        const t = await r.text();
+        if (r.ok) {
+          const j = JSON.parse(t);
+          return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+        }
+        lastStatus = r.status;
+        console.error('[api/faq-ai] Gemini error', r.status, t.slice(0, 200));
+        if (r.status !== 503 && r.status !== 429) break;   // 일시 오류만 재시도
+      }
+      if (lastStatus === 503 || lastStatus === 429) {
+        const e = new Error('AI 서버가 일시적으로 혼잡합니다(잠시 후 다시 시도해 주세요).'); e.code = 503; throw e;
+      }
+      throw new Error('Gemini API 호출 실패');
     }
 
     const body = req.body || {};
@@ -141,6 +154,6 @@ ${String(question).trim()}`;
     return res.status(200).json({ ok: true, model, answer, used: ctx.length });
   } catch (err) {
     console.error('[api/faq-ai] error:', err);
-    return res.status(500).json({ ok: false, message: err.message || 'AI 처리 중 오류가 발생했습니다.' });
+    return res.status(err && err.code === 503 ? 503 : 500).json({ ok: false, message: err.message || 'AI 처리 중 오류가 발생했습니다.' });
   }
 };
