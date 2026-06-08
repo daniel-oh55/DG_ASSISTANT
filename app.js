@@ -3368,7 +3368,7 @@ async function fqDraftReply() {
   const top = scored.slice(0, 30).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
   const btn = document.getElementById('fqEmDraftBtn');
   const prev = replyEl.value;
-  replyEl.value = '🤖 FAQ·선적금지·혼적(IMDG 격리)·DG 상세를 종합해 회신 초안을 작성 중입니다…';
+  replyEl.value = '🤖 회신 초안 작성 중… (종합 판단 → 오류·모순 검증 2단계, 잠시 걸릴 수 있습니다)';
   if (btn) btn.disabled = true;
   try {
     // 문의에 언급된 UN번호 추출 → DG_TABLE에서 class·격리 등 상세 조회(혼적/금지 판단 근거)
