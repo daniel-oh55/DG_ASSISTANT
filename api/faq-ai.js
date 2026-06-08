@@ -82,24 +82,31 @@ ${sources}
 
 요구: 인사말 → 핵심 답변(결론+간단 근거) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.`;
 
-      const draft = await gen(draftPrompt, 0);   // temperature 0 → 결정적
+      // 1단계: 독립 초안 2개 생성 (불일치 = 모델이 흔들리는 지점 → 검출용)
+      const [draftA, draftB] = await Promise.all([gen(draftPrompt, 0.4), gen(draftPrompt, 0.4)]);
 
-      // 2단계: 검증·교정 (오류/모순 제거, 일관성, 간결)
-      const verifyPrompt = `다음 [회신 초안]을 [근거 자료] 및 IMDG Code에 비추어 **검증·교정**하세요.
-점검: ① 사실/규정 오류 ② 자기모순·논리 비일관 ③ 과장·이중 결론. 문제가 있으면 바로잡고, **하나의 일관된 결론**으로 정리하세요.
-결과는 교정된 **최종 회신 본문만** 출력합니다(설명·메타코멘트 금지). 간결한 이메일체(인사말→핵심 결론과 근거→맺음말).
-마지막 줄에 반드시: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."
+      // 2단계: 대조·통합(reconcile) — 결론이 갈리면 단정 금지, 신중 안내로 일관성 확보
+      const reconcilePrompt = `같은 문의에 대해 독립적으로 작성된 두 회신 초안입니다. [근거 자료]·IMDG Code와 대조해 검증하고 **하나의 일관된 최종 회신**으로 통합하세요.
+
+원칙(중요):
+- 두 초안의 핵심 결론(예: 선적/혼적 "가능" vs "불가")이 **일치하면** 그 결론으로 간결히 정리.
+- 결론이 **서로 다르거나** 근거가 불충분하면, 어느 한쪽을 **단정하지 말고** "현재 자료만으로는 확정이 어려워 IMDG 격리표 및 담당자 확인이 필요하다"고 신중히 안내하세요. (각 물질의 class·부위험성·격리그룹 등 확인된 사실은 제시)
+- 사실/규정 오류는 바로잡고, 추측·과장 금지. 간결한 이메일체(인사말 → 핵심 결론·근거 → 맺음말). 본문 텍스트만 출력.
+- 마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."
 
 ${sources}
 
 [문의 제목] ${subjText}
 [문의 내용] ${inqText}
 
-[회신 초안]
-${draft}`;
+[초안 A]
+${draftA}
 
-      const finalReply = await gen(verifyPrompt, 0);
-      return res.status(200).json({ ok: true, model, reply: finalReply || draft, used: ctx.length, verified: true });
+[초안 B]
+${draftB}`;
+
+      const finalReply = await gen(reconcilePrompt, 0);
+      return res.status(200).json({ ok: true, model, reply: finalReply || draftA, used: ctx.length, verified: true });
     }
 
     // ───────────────────────── 답변 검토(audit) ─────────────────────────
