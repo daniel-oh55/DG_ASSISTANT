@@ -3757,6 +3757,90 @@ function fqProcessEmailFile(file) {
   };
   if (isMsg) reader.readAsArrayBuffer(file); else reader.readAsText(file);
 }
+// ── 격리표 검증 보조 (등록 직전 안전장치) ──────────────────────────
+// 글에서 UN번호 추출 (예: "UN 2196", "UN2196", "UN NO. 1052")
+function fqExtractUNNOs(text) {
+  const set = new Set();
+  const re = /\bUN\s*(?:NO\.?|넘버|번호)?\s*[:#]?\s*(\d{3,4})\b/gi;
+  let m;
+  while ((m = re.exec(String(text || '')))) set.add(normalizeUNNO(m[1]));
+  return [...set];
+}
+// 글에서 클래스 토큰 추출 (UN번호가 부족할 때 폴백) — 예: "CLS 2.3", "Class 8", "클래스 6.1"
+function fqExtractClassTokens(text) {
+  const out = [], seen = new Set();
+  const re = /(?:CLS|CLASS|클래스|클라스)\s*[:.]?\s*(1(?:\.[1-6])?|2\.[1-3]|3|4\.[1-3]|5\.[1-2]|6\.[1-2]|7|8|9)\b/gi;
+  let m;
+  while ((m = re.exec(String(text || '')))) { const c = m[1]; if (!seen.has(c)) { seen.add(c); out.push(c); } }
+  return out;
+}
+// 작성한 답변이 "혼적 가능/불가/조건부" 중 무엇을 주장하는지 판별 (회신 본문만 대상)
+function fqDetectAnswerClaim(reply) {
+  const t = String(reply || '').replace(/\s+/g, ' ');
+  const neg = /(?:불가능|불가합니다|불가|금지|불허|어렵습니다|안\s?됩니다)/.test(t) || /격리[^.]{0,12}(?:필수|필요)/.test(t);
+  const pos = /가능합니다/.test(t) || /(?:혼적|동일\s*컨테이너|함께|선적|진행|적재)[^.]{0,14}가능/.test(t);
+  const cond = /(?:조건부|이격|away\s*from)/i.test(t);
+  if (neg && pos) return 'ambiguous';
+  if (neg) return 'no';
+  if (cond) return 'cond';
+  if (pos) return 'yes';
+  return 'unknown';
+}
+// 등록 직전 격리표 검증 — IMDG 격리 엔진(calcPairSeg)으로 재계산해 답변과 대조
+//   반환: { applicable, verdict('yes'|'cond'|'no'|'check'), verdictText, claim, status('pass'|'review'|'conflict') }
+async function fqSegregationGate(subject, inquiry, reply) {
+  const NOPE = { applicable: false };
+  const allText = [subject, inquiry, reply].filter(Boolean).join('\n');
+  let items = [];
+  // 1) UN번호 우선 (DG_TABLE 조회 — Class·SUB·SG코드까지 정확)
+  const unnos = fqExtractUNNOs(allText);
+  if (unnos.length >= 2) {
+    try {
+      const resp = await fetch('/api/dg-search', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unnos })
+      });
+      const j = await resp.json().catch(() => ({}));
+      if (resp.ok && j.ok && Array.isArray(j.data)) {
+        const map = new Map();
+        j.data.forEach(it => { const k = normalizeUNNO(it.UNNO); if (!map.has(k)) map.set(k, prepareEntry(it)); });
+        items = [...map.values()];
+      }
+    } catch (e) { /* 조회 실패 → 클래스 기반 폴백 */ }
+  }
+  // 2) UN으로 2건을 못 모으면 클래스 토큰 기반 폴백 (일반 격리표만 적용)
+  if (items.length < 2) {
+    const cls = fqExtractClassTokens(allText);
+    if (cls.length >= 2) items = cls.map((c, i) => prepareEntry({ UNNO: 'C' + i, Class: c, SUB: '-', Segregation: '' }));
+  }
+  if (items.length < 2) return NOPE;   // 위험물 2건 이상이 아니면 혼적 판정 대상 아님
+
+  // 3) 모든 쌍의 최악 격리레벨 계산 (UI 격리분석과 동일 엔진)
+  let worst = 0, hasStar = false;
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const r = calcPairSeg(items[i], items[j]);
+    if (r.level === '*') hasStar = true;
+    else if (typeof r.level === 'number') worst = Math.max(worst, r.level);
+  }
+  let verdict, verdictText;
+  if (worst >= 2) { verdict = 'no'; verdictText = '혼적 불가 — 격리 필요 (Segregation ' + worst + ')'; }
+  else if (worst === 1) { verdict = 'cond'; verdictText = '조건부 — 같은 컨테이너 적재 시 이격(Away from) 필요'; }
+  else if (hasStar) { verdict = 'check'; verdictText = 'Class 1 특수규정 — 개별 확인 필요'; }
+  else { verdict = 'yes'; verdictText = '혼적 가능 — 별도 격리 규정 없음'; }
+
+  const claim = fqDetectAnswerClaim(reply);
+  let status;
+  const decisiveEngine = (verdict === 'yes' || verdict === 'no');
+  const decisiveClaim = (claim === 'yes' || claim === 'no');
+  if (decisiveEngine && decisiveClaim && verdict !== claim) status = 'conflict';   // 정반대 → 차단
+  else if (verdict === 'cond' && decisiveClaim) status = 'review';                  // 조건부인데 단정한 답
+  else if (verdict === 'check') status = 'review';                                  // Class 1 특수
+  else if (claim === 'unknown' || claim === 'ambiguous') status = 'review';         // 답변 판단 불명확
+  else status = 'pass';
+
+  return { applicable: true, worst, hasStar, verdict, verdictText, claim, status };
+}
+
 async function fqSubmitEmail() {
   const subject = document.getElementById('fqEmSubject').value.trim();
   const inquiry = document.getElementById('fqEmInquiry').value.trim();
@@ -3768,6 +3852,28 @@ async function fqSubmitEmail() {
     const pwd = prompt('담당자 비밀번호를 입력하세요:');
     if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
     sessionStorage.setItem('fq_reply_ok', '1');
+  }
+  // ── 등록 직전 격리표 자동검증 (혼적/격리 문의일 때 강제) ──
+  // IMDG 격리 엔진(calcPairSeg)으로 다시 계산해, 작성한 답변이 규정과 어긋나면 등록을 막는다.
+  const gate = await fqSegregationGate(subject, inquiry, reply);
+  if (gate.applicable) {
+    if (gate.status === 'conflict') {
+      const claimTxt = gate.claim === 'no' ? '혼적 불가' : (gate.claim === 'yes' ? '혼적 가능' : '판단 불명확');
+      const msg = '⚠️ 격리표 자동검증 — 답변이 규정과 다릅니다\n\n'
+        + '· 격리표 판정: ' + gate.verdictText + '\n'
+        + '· 작성한 답변: ' + claimTxt + '으로 안내\n\n'
+        + '두 결과가 서로 다릅니다. 답변이 잘못되었을 수 있으니\n[취소]를 눌러 답변을 수정하세요.\n\n'
+        + '그래도 이대로 등록하려면 [확인]을 누르세요.';
+      if (!confirm(msg)) { fqToast('등록을 멈췄습니다 — 격리표 판정(' + gate.verdictText + ')에 맞게 답변을 확인하세요', 'warn'); return; }
+    } else if (gate.status === 'review') {
+      const msg = '🔎 격리표 자동검증 — 확인이 필요합니다\n\n'
+        + '· 격리표 판정: ' + gate.verdictText + '\n\n'
+        + '답변이 이 판정과 일치하는지 확인하세요.\n'
+        + '등록하려면 [확인], 답변을 더 볼거면 [취소].';
+      if (!confirm(msg)) { fqToast('등록을 멈췄습니다 — 격리표 판정을 확인하세요', 'warn'); return; }
+    } else {
+      fqToast('✓ 격리표 검증 통과 — ' + gate.verdictText, 'success');
+    }
   }
   const bodyPart = inquiry ? ('**문의 내용**\n' + inquiry + '\n\n**답변**\n') : '';
   // 자동 분류 선택 시 내용 기반으로 카테고리 태그 부여
