@@ -2995,6 +2995,7 @@ let FQ_FAQ_DATA = {
 let fqAdminMode = sessionStorage.getItem(FQ_CONFIG.ADMIN_SESSION_KEY) === '1';
 let fqPosts = [];
 let fqCurrentCat = '전체';
+let fqEditingId = null;   // 이메일 문의 수정 중인 항목 id (null이면 신규 등록)
 let fqOpenPostId = null;
 
 // ─── Supabase 전체 공유: 시드(코드 49건) + 동적 항목(공용 DB) 분리 ───
@@ -3358,7 +3359,11 @@ function fqBindFaq(scope) {
   const emToggle = scope.querySelector('#fqEmFormToggle');
   if (emToggle) emToggle.addEventListener('click', fqToggleEmFormFields);
   const emCancel = scope.querySelector('#fqEmCancelBtn');
-  if (emCancel) emCancel.addEventListener('click', () => { document.getElementById('fqEmailForm').hidden = true; });
+  if (emCancel) emCancel.addEventListener('click', () => {
+    document.getElementById('fqEmailForm').hidden = true;
+    // 수정 중이었다면 편집 모드·버튼 라벨 원복
+    if (fqEditingId) { fqEditingId = null; fqResetEmSubmitBtn(); fqRenderEmailList(); }
+  });
   const emSubmit = scope.querySelector('#fqEmSubmitBtn');
   if (emSubmit) emSubmit.addEventListener('click', fqSubmitEmail);
   const emFile = scope.querySelector('#fqEmFile');
@@ -3587,6 +3592,8 @@ function fqRenderEmailList() {
       <div class="fq-a">${fqRenderText(m.a || '')}
         <div class="fq-email-actions" style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <button type="button" class="fq-btn primary" onclick="fqSendReply('${fqEsc(m.id)}')">✉️ 회신 보내기</button>
+          <button type="button" class="fq-btn" onclick="fqEditEmail('${fqEsc(m.id)}')">✏️ 수정</button>
+          <button type="button" class="fq-btn danger" onclick="fqDeleteEmail('${fqEsc(m.id)}')">🗑 삭제</button>
           <span style="font-size:12px;color:#888;">${toCount ? `수신 ${toCount}명 · 참조 dg@sinokor.co.kr` : '⚠️ 저장된 수신주소 없음 — 재등록 시 받는사람란을 채워주세요'}</span>
         </div>
       </div>
@@ -3768,23 +3775,91 @@ async function fqSubmitEmail() {
   // 받는사람(수신) 메일주소 — 회신 보내기 버튼에서 사용
   const toRaw = (document.getElementById('fqEmTo') ? document.getElementById('fqEmTo').value : '') || '';
   const emails = fqExtractEmails(toRaw);
+  // 수정 중이면 기존 항목의 id·등록시각을 유지해 같은 항목을 갱신 (신규면 새 id 발급)
+  const editing = fqEditingId ? (FQ_FAQ_DATA.items || []).find(i => i.id === fqEditingId && i.source === 'email') : null;
   const item = {
-    id: 'faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+    id: editing ? editing.id : ('faq_eml_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6)),
     cat: cat, q: subject, a: bodyPart + reply, tags: ['이메일', by].filter(Boolean), source: 'email',
     emails: emails, reply: reply, inquiry: inquiry,   // 회신 보내기·재편집용 원문
-    ts: Date.now()   // 통계용 등록시각
+    ts: editing && editing.ts ? editing.ts : Date.now()   // 통계용 등록시각 (수정 시 원래 시각 유지)
   };
   const ok = await fqUpsertFaqItem(item);   // 로컬 즉시 반영 + 공용 DB 저장 (중복이면 false)
+  const wasEditing = !!editing;
+  fqEditingId = null;   // 편집 상태 해제
+  fqResetEmSubmitBtn();
   ['fqEmSubject', 'fqEmInquiry', 'fqEmTo', 'fqEmReply', 'fqEmBy'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const fileEl = document.getElementById('fqEmFile'); if (fileEl) fileEl.value = '';
   fqRenderEmailList();   // 📧 이메일 문의 목록 갱신 (메인 FAQ엔 노출 안 함)
   if (ok) {
-    // 등록 완료 → 입력 폼 영역을 접어서 초기화 (목록은 유지). 📧 버튼으로 다시 펼침.
+    // 등록/수정 완료 → 입력 폼 영역을 접어서 초기화 (목록은 유지). 📧 버튼으로 다시 펼침.
     const ff = document.getElementById('fqEmFormFields');
     if (ff) ff.hidden = true;
     fqSetEmFormToggle(false);
-    fqToast(fqRemoteOK ? '✓ 등록 완료 — 입력창을 접었습니다. 📧 목록에서 확인하세요' : '✓ 이메일 문의 등록 (로컬)', 'success');
+    if (wasEditing) fqToast(fqRemoteOK ? '✓ 수정 완료 — 답변이 갱신되었습니다' : '✓ 수정 완료 (로컬)', 'success');
+    else fqToast(fqRemoteOK ? '✓ 등록 완료 — 입력창을 접었습니다. 📧 목록에서 확인하세요' : '✓ 이메일 문의 등록 (로컬)', 'success');
   }
+}
+
+// 등록된 이메일 문의 수정 — 기존 내용을 입력 폼에 채우고 편집 모드로 전환
+function fqEditEmail(id) {
+  const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id && i.source === 'email');
+  if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
+  // 등록과 동일하게 담당자 비밀번호 1회 확인
+  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
+    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');
+  }
+  fqEditingId = id;
+  // 폼 펼치기 + 기존 값 채우기
+  const form = document.getElementById('fqEmailForm');
+  if (form) form.hidden = false;
+  fqPopulateEmailCats();
+  fqSetEmFormToggle(true);
+  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  set('fqEmSubject', m.q);
+  set('fqEmInquiry', m.inquiry);
+  set('fqEmReply', m.reply || m.a);   // reply 원문 없으면 a 본문 사용 (구버전 호환)
+  set('fqEmTo', (m.emails || []).join(', '));
+  set('fqEmBy', (m.tags || []).find(t => t && t !== '이메일') || '');
+  const catSel = document.getElementById('fqEmCat');
+  if (catSel) catSel.value = m.cat || FQ_AUTO_CAT;
+  // 등록 버튼을 '수정 저장'으로 표시
+  const btn = document.getElementById('fqEmSubmitBtn');
+  if (btn) { btn.textContent = '✏️ 수정 저장'; btn.dataset.editing = '1'; }
+  if (form && form.scrollIntoView) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  fqRenderEmailList();
+  fqToast('✏️ 수정 모드 — 내용을 고친 뒤 "수정 저장"을 누르세요', 'success');
+}
+
+// 등록 버튼 라벨/상태를 신규 등록 기본값으로 되돌림
+function fqResetEmSubmitBtn() {
+  const btn = document.getElementById('fqEmSubmitBtn');
+  if (btn) { btn.textContent = '📥 이메일 문의 등록'; delete btn.dataset.editing; }
+}
+
+// 등록된 이메일 문의 삭제 — 확인 + 담당자 비밀번호
+async function fqDeleteEmail(id) {
+  const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id && i.source === 'email');
+  if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
+  if (!confirm('이 이메일 문의 답변을 삭제하시겠습니까?\n\n제목: ' + (m.q || '') + '\n\n되돌릴 수 없습니다.')) return;
+  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
+    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');
+  }
+  // 삭제하려는 항목을 지금 수정 중이었다면 편집 상태 해제
+  if (fqEditingId === id) {
+    fqEditingId = null;
+    fqResetEmSubmitBtn();
+    ['fqEmSubject', 'fqEmInquiry', 'fqEmTo', 'fqEmReply', 'fqEmBy'].forEach(eid => { const el = document.getElementById(eid); if (el) el.value = ''; });
+  }
+  FQ_FAQ_DATA.items = (FQ_FAQ_DATA.items || []).filter(x => x.id !== id);
+  fqSaveFaq();
+  fqRenderEmailList();
+  if (typeof fqRenderFaq === 'function') fqRenderFaq();
+  await fqPushFaqRemote();   // 공용 DB 반영
+  fqToast(fqRemoteOK ? '🗑 삭제됨' : '🗑 삭제됨 (로컬)', 'warn');
 }
 
 function fqRenderFaq() {
