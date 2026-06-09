@@ -107,50 +107,20 @@ module.exports = async function handler(req, res) {
       merged.sort((a, b) => b.ts - a.ts);
       const news = merged.slice(0, 10);
 
-      // ── 본문 수집 (각 기사 본문을 열어 핵심 물질명 추출용 텍스트 확보) ──
       const fetchWithTimeout = async (url, ms, opts) => {
         const ctrl = new AbortController();
         const to = setTimeout(() => ctrl.abort(), ms);
         try { return await fetch(url, Object.assign({ signal: ctrl.signal }, opts || {})); }
         finally { clearTimeout(to); }
       };
-      const htmlToText = (html) => String(html || '')
-        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/&nbsp;|&#160;/gi, ' ')
-        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-        .replace(/\s+/g, ' ').trim();
-      const fetchArticle = async (url) => {
-        try {
-          const r = await fetchWithTimeout(url, 5000, { headers: { 'User-Agent': 'Mozilla/5.0' }, redirect: 'follow' });
-          if (!r || !r.ok) return '';
-          let html = await r.text();
-          let text = htmlToText(html);
-          // 구글뉴스 중간페이지면 실제 기사 URL을 찾아 한 번 더 시도
-          if ((/news\.google\.com/.test(r.url || url)) && text.length < 400) {
-            const m = html.match(/href="(https?:\/\/(?!news\.google\.com)[^"]+)"/i)
-              || html.match(/data-n-au="(https?:\/\/[^"]+)"/i);
-            if (m) {
-              const r2 = await fetchWithTimeout(m[1], 5000, { headers: { 'User-Agent': 'Mozilla/5.0' }, redirect: 'follow' });
-              if (r2 && r2.ok) text = htmlToText(await r2.text());
-            }
-          }
-          return text.slice(0, 2500);
-        } catch (_) { return ''; }
-      };
-      const bodies = news.length ? await Promise.all(news.map(n => fetchArticle(n.link))) : [];
 
-      // ── Gemini: 위험물 의견 + 핵심 물질명(한글/영문) 추출 ──
+      // ── Gemini: 위험물 의견 + 핵심 물질명(한글/영문) 추출 (제목 + 모델 자체 지식) ──
       if (news.length) {
         try {
-          const list = news.map((n, i) =>
-            `${i + 1}. 제목: ${n.title}\n   본문발췌: ${(bodies[i] || '').slice(0, 1200) || '(본문 확보 실패 — 제목과 일반 지식으로 추정)'}`
-          ).join('\n\n');
-          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스입니다(제목+본문발췌). 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
-형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"기사에 등장하는 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
-- substance는 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 불확실하면 빈 문자열.
-- 본문발췌가 없으면 제목과 일반 지식으로 신중히 추정하되, 모르면 빈 문자열로 두고 지어내지 마세요.
+          const list = news.map((n, i) => `${i + 1}. ${n.title}`).join('\n');
+          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
+형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"이 사건과 관련된 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
+- substance는 제목과 당신이 아는 사건 정보로 판단하세요. 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 확실하지 않으면 빈 문자열로 두고 절대 지어내지 마세요.
 
 ${list}`, 0.2);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
