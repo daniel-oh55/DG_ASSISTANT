@@ -93,9 +93,13 @@ module.exports = async function handler(req, res) {
         } catch (_) { return []; }
       }));
       // 병합 + 중복 제거 (제목 정규화)
+      // 행정성·비사건성 뉴스(운송차량 점검·단속·캠페인·교육·협약 등)는 특정 위험물질/사고 내용이 아니어서
+      // 선적 판단에 도움이 안 되므로 제외한다. (실제 사고: 화재·폭발·유출·누출·전복 등은 통과)
+      const IRRELEVANT = /(일제|합동|특별|불시|정기|민관|안전)\s*(점검|검사|단속)|점검\s*(실시|추진|강화|예정|나서|벌|당부)|검사\s*(실시|추진|강화|예정)|단속\s*(실시|강화|벌|나서)|계도|캠페인|홍보|교육|훈련|간담회|협약|업무협약|워크[숍샵]|세미나|설명회|공모|행사|예방\s*활동|안전\s*문화|운송\s*차량.*(점검|검사|단속)|위험물\s*(운송\s*)?차량\s*(일제|점검|검사|단속)/;
       const seen = new Set(); const merged = [];
       for (const it of results.flat()) {
         const base = it.title.replace(/\s*-\s*[^-]+$/, '');   // " - 출처" 제거
+        if (IRRELEVANT.test(base)) continue;                   // 점검·단속·캠페인 등 비사건성 뉴스 제외
         const norm = base.toLowerCase().replace(/[^0-9a-z가-힣]/g, '').slice(0, 30);
         if (!norm || seen.has(norm)) continue;
         // 앞 12자 겹치면 유사 중복으로 간주
