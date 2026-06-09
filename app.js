@@ -3449,7 +3449,24 @@ async function fqDraftReply() {
   if (btn) btn.disabled = true;
   try {
     // 문의에 언급된 UN번호 추출 → DG_TABLE에서 class·격리 등 상세 조회(혼적/금지 판단 근거)
-    const unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    let unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    // 첨부 MSDS(PDF) 분석 → 회신 근거로 활용 + 발견한 UN번호를 격리 판정에 합류
+    let attachAnalyses = [];
+    if (fqEmailAttachments.length) {
+      replyEl.value = `📎 첨부 MSDS ${fqEmailAttachments.length}건 분석 중… (잠시 걸릴 수 있습니다)`;
+      for (const att of fqEmailAttachments) {
+        try {
+          const ar = await fetch('/api/analyze-sds', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file_name: att.name, file_type: 'application/pdf', file_base64: att.b64 })
+          });
+          const aj = await ar.json().catch(() => ({}));
+          if (ar.ok && aj.ok && aj.result) attachAnalyses.push(Object.assign({ name: att.name }, aj.result));
+        } catch (_) { /* 첨부 분석 실패 시 무시하고 진행 */ }
+      }
+      attachAnalyses.forEach(a => { const u = String(a.unno || '').replace(/^0+/, ''); if (/^\d{3,4}$/.test(u)) unnos.push(u); });
+      unnos = [...new Set(unnos)];
+    }
     let dgData = [];
     if (unnos.length) {
       try {
@@ -3471,7 +3488,7 @@ async function fqDraftReply() {
     }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo, attachments: attachAnalyses, lang: (!/[가-힣]/.test(q) && /[A-Za-z]/.test(q)) ? 'en' : 'ko' })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
@@ -3485,6 +3502,61 @@ async function fqDraftReply() {
 
 // ── 이메일 업로드 / 이메일 문의 목록 ──
 const FQ_AUTO_CAT = '🔎 자동 분류 (내용 기반 추천)';
+
+// ── 이메일 첨부(MSDS) 처리 — 회신 초안 작성 시 참고 ──
+let fqEmailAttachments = [];   // 현재 불러온 이메일의 첨부 PDF(MSDS) base64 목록
+// Uint8Array → base64 (대용량 안전: 스택 초과 방지 위해 청크 처리)
+function fqU8ToBase64(u8) {
+  let s = ''; const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH));
+  return btoa(s);
+}
+// 파일명 정리(제어문자·NUL 제거)
+function fqCleanName(x) { return String(x || '').replace(/[ -]+/g, '').trim(); }
+// .msg 첨부 추출 — 37010102(PR_ATTACH_DATA_BIN), 파일명 3707001F(long)/3704001F(short), 디렉터리 순서로 페어링
+function __fqMsgAtt(entries, readStream, utf16) {
+  const data = entries.filter(e => e.type === 2 && /37010102/i.test(e.name));
+  const longN = entries.filter(e => e.type === 2 && /3707001F/i.test(e.name)).map(e => fqCleanName(utf16(readStream(e))));
+  const shortN = entries.filter(e => e.type === 2 && /3704001F/i.test(e.name)).map(e => fqCleanName(utf16(readStream(e))));
+  return data.map((e, i) => ({ name: longN[i] || shortN[i] || ('attachment_' + (i + 1)), bytes: readStream(e) }));
+}
+// .eml MIME 멀티파트에서 PDF 첨부 추출 (best-effort)
+function __fqEmlAtt(raw) {
+  const out = [];
+  try {
+    const top = String(raw || '');
+    const bm = top.match(/boundary="?([^"\r\n;]+)"?/i);
+    if (!bm) return out;
+    top.split('--' + bm[1]).forEach(p => {
+      const sep = p.search(/\r?\n\r?\n/);
+      if (sep < 0) return;
+      const h = p.slice(0, sep);
+      if (!/content-transfer-encoding:\s*base64/i.test(h)) return;
+      const isPdf = /application\/pdf/i.test(h) || /name\*?="?[^"\r\n]*\.pdf/i.test(h);
+      if (!isPdf) return;
+      const nm = h.match(/name\*?="?([^"\r\n;]+\.pdf)/i) || h.match(/filename\*?="?([^"\r\n;]+)/i);
+      const b64 = p.slice(sep).replace(/[^A-Za-z0-9+/=]/g, '');
+      if (b64.length < 100) return;
+      try {
+        const bin = atob(b64);
+        out.push({ name: nm ? fqDecodeRfc2047(nm[1]) : 'attachment.pdf', bytes: Uint8Array.from(bin, c => c.charCodeAt(0)) });
+      } catch (_) {}
+    });
+  } catch (_) {}
+  return out;
+}
+// 첨부 목록에서 PDF(MSDS)만 골라 base64로 (최대 3개, 4MB 이하)
+function fqCollectPdfAttachments(atts) {
+  const out = [];
+  (atts || []).forEach(a => {
+    const b = a.bytes; if (!b || b.length < 5) return;
+    const head = String.fromCharCode(b[0], b[1], b[2], b[3]);
+    const isPdf = head === '%PDF' || /\.pdf$/i.test(a.name || '');
+    if (!isPdf || b.length > 4 * 1024 * 1024) return;
+    out.push({ name: a.name || 'MSDS.pdf', mimeType: 'application/pdf', b64: fqU8ToBase64(b) });
+  });
+  return out.slice(0, 3);
+}
 function fqToggleEmailForm() {
   const f = document.getElementById('fqEmailForm');
   if (!f) return;
@@ -3634,7 +3706,8 @@ function fqParseMsg(arrayBuffer) {
   return {
     subject: getStr('0037001F', '0037001E').replace(/ +$/, '').trim(),
     body: getStr('1000001F', '1000001E').replace(/ +$/, '').trim(),
-    from: getStr('0C1A001F', '0C1A001E').replace(/ +$/, '').trim()
+    from: getStr('0C1A001F', '0C1A001E').replace(/ +$/, '').trim(),
+    attachments: __fqMsgAtt(entries, readStream, utf16)
   };
 }
 
@@ -3658,7 +3731,7 @@ function fqParseEml(text) {
   const subject = sm ? fqDecodeRfc2047(sm[1].trim()) : '';
   const cte = (unfolded.match(/^content-transfer-encoding:\s*(.+)$/im) || [])[1] || '';
   if (/quoted-printable/i.test(cte)) body = body.replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
-  return { subject, body };
+  return { subject, body, attachments: __fqEmlAtt(text) };
 }
 
 // 텍스트에서 이메일 주소를 모두 추출 (중복 제거, 회신 수신인/참조용)
@@ -3684,15 +3757,18 @@ function fqProcessEmailFile(file) {
   reader.onload = ev => {
     try {
       let subject = '', body = '', emailSrc = '';
+      fqEmailAttachments = [];   // 새 이메일 로드 시 이전 첨부 초기화
       if (isMsg) {
         const r = fqParseMsg(ev.target.result);
         subject = r.subject; body = r.body;
         emailSrc = (r.from || '') + '\n' + (r.subject || '') + '\n' + body;
+        fqEmailAttachments = fqCollectPdfAttachments(r.attachments || []);
       } else {
         const raw = String(ev.target.result || '');
         const r = fqParseEml(raw);
         subject = r.subject; body = r.body || raw;
         emailSrc = raw;   // 헤더(From/To/Cc)+본문 전체에서 주소 추출
+        fqEmailAttachments = fqCollectPdfAttachments(r.attachments || []);
       }
       const subjEl = document.getElementById('fqEmSubject');
       const inq = document.getElementById('fqEmInquiry');
@@ -3702,7 +3778,8 @@ function fqProcessEmailFile(file) {
       const toEl = document.getElementById('fqEmTo');
       const emails = fqExtractEmails(emailSrc);
       if (toEl && emails.length) toEl.value = emails.join(', ');
-      fqToast(`📎 이메일을 불러왔습니다${emails.length ? ` · 수신주소 ${emails.length}개 추출` : ''}. 🤖 회신 초안 작성 후 등록하세요`, 'success');
+      const attNote = fqEmailAttachments.length ? ` · 첨부 MSDS ${fqEmailAttachments.length}건` : '';
+      fqToast(`📎 이메일을 불러왔습니다${emails.length ? ` · 수신주소 ${emails.length}개 추출` : ''}${attNote}. 🤖 회신 초안 작성 시 첨부 MSDS도 참고합니다`, 'success');
     } catch (err) {
       fqToast('이메일 파일 분석 실패: ' + err.message, 'warn');
     }

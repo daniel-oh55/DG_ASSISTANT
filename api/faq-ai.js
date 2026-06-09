@@ -200,8 +200,24 @@ ${list}`, 0.2);
         segText = `판정: ${segInfo.verdict}\n대상: ${(segInfo.cargos || []).join(' / ')}`
           + (segInfo.detail && segInfo.detail.length ? `\n클래스 간 격리코드: ${segInfo.detail.join(', ')}` : '');
       }
+      // 첨부 MSDS(SDS) 판독 결과 — 클라이언트가 /api/analyze-sds로 분석해 넘겨준 요약
+      const attRows = Array.isArray(body.attachments) ? body.attachments : [];
+      const attText = attRows.length
+        ? attRows.map((a, i) => `[첨부 MSDS ${i + 1}] ${a.name || ''}
+ - 판독: DG여부=${a.dg_status || '?'}, UN=${a.unno || '-'}, Class=${a.class || '-'}, 부위험성=${a.subsidiary_risk || '-'}, PG=${a.packing_group || '-'}, 해양오염=${a.marine_pollutant || '-'}
+ - 품명/물질: ${a.product_name || '-'} / ${a.substance_name || '-'}
+ - 정식운송명(PSN): ${a.proper_shipping_name || '-'}
+ - 근거: ${String(a.basis || '').slice(0, 300)}`).join('\n\n').slice(0, 8000)
+        : '(첨부 MSDS 없음)';
+
+      // 문의가 전부 영문이면 영문으로 회신 (lang='en')
+      const lang = body.lang === 'en' ? 'en' : 'ko';
+
       const sources = `[격리표 판정 결과 — 시스템이 IMDG 일반 격리표로 계산함(권위 있는 결론, 임의로 뒤집지 말 것)]
 ${segText}
+
+[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
+${attText}
 
 [사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
@@ -209,12 +225,31 @@ ${ctxText || '(제공된 자료 없음)'}
 [조회된 위험물 상세 — DG_TABLE (문의 내 UN번호: ${unText})]
 ${dgText}`;
 
-      const replyPrompt = `당신은 장금상선/흥아라인 운항팀 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
+      const replyPrompt = lang === 'en'
+        ? `You are an assistant drafting a reply on behalf of the Dangerous Goods (DG) desk of Sinokor / Heung-A Line operations team.
+Write a CONCISE reply body in ENGLISH (the inquiry is written in English).
+
+Decision rules (important):
+- Use the [Segregation table verdict] above AS the conclusion for stowage/segregation. Do not override it to "not allowed" based on physical properties (toxicity/corrosivity) alone.
+- If the internal DB states a COMPANY prohibition / special segregation rule for the item, reflect that too (company rules can be stricter).
+- If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values.
+- If the verdict is "needs check", do not assert — explain why.
+- One clear conclusion. No speculation.
+
+${sources}
+
+[Inquiry subject] ${subjText}
+[Inquiry body] ${inqText}
+
+Format: greeting -> key conclusion (+ brief basis: each UN class and the segregation result, referencing the MSDS if attached) -> closing. Concise, body text only.
+Last line: "* This is an AI-generated draft. Final acceptance is subject to the IMDG Code, carrier/terminal/national regulations and confirmation by the person in charge."`
+        : `당신은 장금상선/흥아라인 운항팀 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
 받은 문의에 대해 한국어 회신 본문을 **간결하게** 작성하세요.
 
 판정 규칙(중요):
 - 혼적/격리 가능여부는 위 [격리표 판정 결과]를 **그대로 결론**으로 사용하세요. 물성(독성·부식성 등)만 보고 임의로 "불가"로 뒤집지 마세요.
 - 단, 사내 DB에 해당 품목의 **회사 선적금지/특별 격리 규정**이 명시돼 있으면 그 제한을 함께 반영하세요(회사 규정이 더 엄격할 수 있음).
+- 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요).
 - 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요.
 - 결론은 하나로 명확히. 추측 금지.
 
@@ -223,11 +258,11 @@ ${sources}
 [문의 제목] ${subjText}
 [문의 내용] ${inqText}
 
-형식: 인사말 → 핵심 결론(+간단 근거: 각 UN class와 격리표 결과) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
+형식: 인사말 → 핵심 결론(+간단 근거: 각 UN class와 격리표 결과, 첨부 MSDS가 있으면 그 내용도 참고) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
 마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."`;
 
       const finalReply = await gen(replyPrompt, 0);
-      return res.status(200).json({ ok: true, model, reply: finalReply, used: ctx.length, seg: segInfo ? segInfo.verdict : null });
+      return res.status(200).json({ ok: true, model, reply: finalReply, used: ctx.length, seg: segInfo ? segInfo.verdict : null, attachments: attRows.length, lang });
     }
 
     // ───────────────────────── 답변 검토(audit) ─────────────────────────
