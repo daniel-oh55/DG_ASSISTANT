@@ -2272,6 +2272,30 @@ if (sdsFileInput) {
     sdsFileInput.addEventListener('change', updateSdsFileStatus);
 }
 
+// SDS/MSDS 드래그앤드롭 업로드 — 드롭존(.sds-drop-box)에 PDF를 끌어다 놓으면 파일 입력에 주입(기존 분석 흐름 그대로)
+const sdsDropBox = document.querySelector('.sds-drop-box');
+if (sdsDropBox && sdsFileInput) {
+    ['dragenter', 'dragover'].forEach(ev => sdsDropBox.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation(); sdsDropBox.classList.add('drag');
+    }));
+    ['dragleave', 'dragend'].forEach(ev => sdsDropBox.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation(); sdsDropBox.classList.remove('drag');
+    }));
+    sdsDropBox.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        sdsDropBox.classList.remove('drag');
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!f) return;
+        if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { alert('PDF 파일만 분석할 수 있습니다.'); return; }
+        try {
+            const dt = new DataTransfer();
+            dt.items.add(f);
+            sdsFileInput.files = dt.files;   // 드롭한 PDF를 파일 입력에 주입 → analyzeSdsDocument가 그대로 사용
+        } catch (_) { /* DataTransfer 미지원 시 무시(파일 선택 사용) */ }
+        updateSdsFileStatus();
+    });
+}
+
 // ==========================================================================
 // Theme Manager
 // ==========================================================================
