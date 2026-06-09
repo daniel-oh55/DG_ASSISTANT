@@ -3245,16 +3245,27 @@ function fqRenderNewsList(news, updated) {
   if (up) up.textContent = updated ? `최근 업데이트: ${updated}` : '';
   if (!box) return;
   if (!news || !news.length) { box.innerHTML = '<div class="fq-empty">표시할 사고 뉴스가 없습니다. 🔄 새로고침을 눌러보세요.</div>'; return; }
-  box.innerHTML = news.map(n => `
+  box.innerHTML = news.map(n => {
+    const chemLink = n.chemLink || ('https://pubchem.ncbi.nlm.nih.gov/#query=' + encodeURIComponent(n.substance || ''));
+    const chem = n.substance ? `<span class="news-chem" title="클릭 시 PubChem(미국 국립보건원) 물질정보로 이동">🧪
+        <a class="news-chem-name" href="${fqEsc(chemLink)}" target="_blank" rel="noopener">${fqEsc(n.substance)}</a>
+        ${n.cas ? `<span class="news-chem-id">CAS ${fqEsc(n.cas)}</span>` : ''}
+        ${n.un ? `<span class="news-chem-id un">UN ${fqEsc(n.un)}</span>` : ''}
+      </span>` : '';
+    return `
     <div class="news-item">
-      <a class="news-title" href="${fqEsc(n.link)}" target="_blank" rel="noopener">${fqEsc(n.title)}</a>
+      <div class="news-head">
+        <a class="news-title" href="${fqEsc(n.link)}" target="_blank" rel="noopener">${fqEsc(n.title)}</a>
+        ${chem}
+      </div>
       <div class="news-meta">${fqEsc(n.source || '')}${n.pub ? ' · ' + fqEsc(new Date(n.pub).toLocaleDateString('ko')) : ''}</div>
       ${(n.dg || n.hazard || n.opinion) ? `<div class="news-opinion">
         ${n.dg ? `<span class="news-dg">⚠️ ${fqEsc(n.dg)}</span>` : ''}
         ${n.hazard ? `<div>위험성: ${fqEsc(n.hazard)}</div>` : ''}
         ${n.opinion ? `<div>📌 선적 검토 의견: ${fqEsc(n.opinion)}</div>` : ''}
       </div>` : ''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 async function fqLoadNews(force) {
   const box = document.getElementById('rptNewsList');

@@ -4,7 +4,8 @@
 //   mode 'audit': 답변 오류·모순 검토
 //   (Vercel Hobby 함수 12개 제한 때문에 단일 함수에 통합)
 module.exports.config = {
-  api: { bodyParser: { sizeLimit: '2mb' } }
+  api: { bodyParser: { sizeLimit: '2mb' } },
+  maxDuration: 60   // 뉴스 모드: 본문 수집 + PubChem 조회로 시간이 걸릴 수 있어 상향
 };
 
 module.exports = async function handler(req, res) {
@@ -105,20 +106,102 @@ module.exports = async function handler(req, res) {
       }
       merged.sort((a, b) => b.ts - a.ts);
       const news = merged.slice(0, 10);
-      // Gemini로 위험물/선적금지 의견 (실패해도 헤드라인은 제공)
+
+      // ── 본문 수집 (각 기사 본문을 열어 핵심 물질명 추출용 텍스트 확보) ──
+      const fetchWithTimeout = async (url, ms, opts) => {
+        const ctrl = new AbortController();
+        const to = setTimeout(() => ctrl.abort(), ms);
+        try { return await fetch(url, Object.assign({ signal: ctrl.signal }, opts || {})); }
+        finally { clearTimeout(to); }
+      };
+      const htmlToText = (html) => String(html || '')
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;|&#160;/gi, ' ')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ').trim();
+      const fetchArticle = async (url) => {
+        try {
+          const r = await fetchWithTimeout(url, 5000, { headers: { 'User-Agent': 'Mozilla/5.0' }, redirect: 'follow' });
+          if (!r || !r.ok) return '';
+          let html = await r.text();
+          let text = htmlToText(html);
+          // 구글뉴스 중간페이지면 실제 기사 URL을 찾아 한 번 더 시도
+          if ((/news\.google\.com/.test(r.url || url)) && text.length < 400) {
+            const m = html.match(/href="(https?:\/\/(?!news\.google\.com)[^"]+)"/i)
+              || html.match(/data-n-au="(https?:\/\/[^"]+)"/i);
+            if (m) {
+              const r2 = await fetchWithTimeout(m[1], 5000, { headers: { 'User-Agent': 'Mozilla/5.0' }, redirect: 'follow' });
+              if (r2 && r2.ok) text = htmlToText(await r2.text());
+            }
+          }
+          return text.slice(0, 2500);
+        } catch (_) { return ''; }
+      };
+      const bodies = news.length ? await Promise.all(news.map(n => fetchArticle(n.link))) : [];
+
+      // ── Gemini: 위험물 의견 + 핵심 물질명(한글/영문) 추출 ──
       if (news.length) {
         try {
-          const list = news.map((n, i) => `${i + 1}. ${n.title}`).join('\n');
-          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
-형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견"}]
-- 헤드라인만으로 신중히 추정하고, 불확실하면 '추정'이라고 표시. 과장 금지.
+          const list = news.map((n, i) =>
+            `${i + 1}. 제목: ${n.title}\n   본문발췌: ${(bodies[i] || '').slice(0, 1200) || '(본문 확보 실패 — 제목과 일반 지식으로 추정)'}`
+          ).join('\n\n');
+          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스입니다(제목+본문발췌). 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
+형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"기사에 등장하는 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
+- substance는 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 불확실하면 빈 문자열.
+- 본문발췌가 없으면 제목과 일반 지식으로 신중히 추정하되, 모르면 빈 문자열로 두고 지어내지 마세요.
 
 ${list}`, 0.2);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
           const arr = JSON.parse(jsonText);
-          arr.forEach(o => { const idx = (+o.i) - 1; if (news[idx]) { news[idx].dg = o.dg; news[idx].hazard = o.hazard; news[idx].opinion = o.opinion; } });
+          arr.forEach(o => {
+            const idx = (+o.i) - 1;
+            if (news[idx]) {
+              news[idx].dg = o.dg; news[idx].hazard = o.hazard; news[idx].opinion = o.opinion;
+              news[idx].substance = (o.substance || '').trim();
+              news[idx].substance_en = (o.substance_en || '').trim();
+            }
+          });
         } catch (e) { console.error('[news] opinion fail', e.message); }
       }
+
+      // ── 물질 보강: PubChem(공식 DB)로 CAS·링크 검증 + DG_TABLE로 UN번호 대조 ──
+      let sbAdmin = null;
+      try { sbAdmin = require('./_supabase').supabaseAdmin; } catch (_) {}
+      const fetchJsonT = async (url, ms) => {
+        try { const r = await fetchWithTimeout(url, ms, { headers: { 'User-Agent': 'Mozilla/5.0' } }); if (!r || !r.ok) return null; return await r.json(); }
+        catch (_) { return null; }
+      };
+      const PC = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound';
+      await Promise.all(news.map(async n => {
+        const q0 = (n.substance_en || n.substance || '').trim();
+        if (!q0 || !n.substance) return;   // 표시할 한글 물질명이 있을 때만 보강
+        let cid = null, cas = '', un = '', dgName = '';
+        // 1) 우리 DG_TABLE 먼저 — 정식 규제명칭 + UN번호 (영문명 부분일치)
+        if (sbAdmin) {
+          try {
+            const { data } = await sbAdmin.from('DG_TABLE').select('UNNO,Name').ilike('Name', `%${q0}%`).limit(1);
+            if (data && data.length) { un = String(data[0].UNNO || '').replace(/^0+/, ''); dgName = data[0].Name || ''; }
+          } catch (_) {}
+        }
+        // 2) PubChem — DG 정식명칭이 있으면 그 이름으로(더 정확), 없으면 AI 영문명으로 CAS·링크 확보
+        const q = dgName || q0;
+        const cidJson = await fetchJsonT(`${PC}/name/${encodeURIComponent(q)}/cids/JSON`, 5000);
+        cid = cidJson && cidJson.IdentifierList && cidJson.IdentifierList.CID && cidJson.IdentifierList.CID[0];
+        if (cid) {
+          n.chemLink = `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
+          const synJson = await fetchJsonT(`${PC}/cid/${cid}/synonyms/JSON`, 5000);
+          const syns = (synJson && synJson.InformationList && synJson.InformationList.Information && synJson.InformationList.Information[0] && synJson.InformationList.Information[0].Synonym) || [];
+          cas = syns.find(s => /^\d{2,7}-\d{2}-\d$/.test(String(s).trim())) || '';
+          if (!un) { const unSyn = syns.map(s => String(s).trim()).find(s => /^UN\s?\d{4}$/i.test(s)); if (unSyn) un = (unSyn.match(/\d{4}/) || [''])[0]; }
+        } else {
+          n.chemLink = `https://pubchem.ncbi.nlm.nih.gov/#query=${encodeURIComponent(q)}`;
+        }
+        n.cas = cas;
+        n.un = un;
+      }));
+
       return res.status(200).json({ ok: true, count: news.length, news });
     }
 
