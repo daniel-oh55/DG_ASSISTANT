@@ -2148,6 +2148,8 @@ function renderSdsAnalysisResult(payload) {
             ${renderSdsField('Class', result.class)}
             ${renderSdsField('Subsidiary Risk', result.subsidiary_risk)}
             ${renderSdsField('Packing Group', result.packing_group)}
+            ${renderSdsField('특별규정 (SP)', result.special_provisions)}
+            ${renderSdsField('Watt-hour', result.watt_hour)}
             ${renderSdsField('Marine Pollutant', result.marine_pollutant)}
             ${renderSdsField('Mode Basis', result.transport_mode_basis)}
             ${renderSdsField('Section 14 Found', result.section_14_found ? 'YES' : 'NO')}

@@ -52,6 +52,8 @@ function normalizeResult(result) {
     class: result.class || '-',
     subsidiary_risk: result.subsidiary_risk || '-',
     packing_group: result.packing_group || '-',
+    watt_hour: result.watt_hour || '-',
+    special_provisions: result.special_provisions || '-',
     marine_pollutant: result.marine_pollutant || 'UNKNOWN',
     transport_mode_basis: result.transport_mode_basis || 'IMDG / Sea transport',
     basis: result.basis || '-',
@@ -150,6 +152,11 @@ Important rules:
 - If Section 14 is missing or unclear, return dg_status as "UNCLEAR".
 - If the document says "Not regulated as dangerous goods" specifically for IMDG/Sea transport, return "NON_DG".
 - If UN number, hazard class, or proper shipping name is found for IMDG/Sea transport, return "DG".
+- ALSO handle lithium battery/cell documents (SDS, UN 38.3 test report/summary, datasheet), not only Section 14. Extract the Watt-hour (Wh) rating per cell/battery (and lithium content in grams for lithium metal), and whether the item is a CELL or a BATTERY.
+- Reflect special provisions / exceptions that make an item NOT regulated as dangerous goods for sea transport:
+  * SP188 (lithium batteries/cells): a lithium ION cell <= 20 Wh or battery <= 100 Wh, OR a lithium METAL cell <= 1 g or battery <= 2 g lithium content, that meets the SP188 conditions, is EXCEPTED -> set dg_status = "NON_DG", put "SP188" in special_provisions, and explain the threshold in basis (e.g., "17.96 Wh <= 20 Wh per cell, excepted under SP188"). Still record the reference UN number (UN3480 / UN3481 / UN3090 / UN3091) in unno.
+  * If any other special provision, limited/excepted quantity, or an explicit "not subject to the IMDG Code" statement applies, set "NON_DG" and cite it in special_provisions / basis.
+- When a special provision exempts the item, dg_status MUST be "NON_DG" even though a UN number exists.
 - Do not invent UN numbers or classes.
 - Evidence quotes must be short exact snippets from the document.
 - Return JSON only. No markdown. No code block.
@@ -166,6 +173,8 @@ Return this exact JSON structure:
   "class": "string",
   "subsidiary_risk": "string",
   "packing_group": "string",
+  "watt_hour": "Watt-hour rating per cell/battery if present (e.g. '17.96 Wh'), else empty string",
+  "special_provisions": "applicable special provision(s) such as 'SP188' if any, else empty string",
   "marine_pollutant": "Yes | No | Unknown",
   "transport_mode_basis": "IMDG / Sea transport basis",
   "section_14_found": true,
