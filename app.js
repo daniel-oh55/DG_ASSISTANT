@@ -2488,7 +2488,7 @@ let FQ_FAQ_DATA = {
       "id": "li-3481",
       "cat": "🔋 리튬 배터리",
       "q": "UN3481 (장비에 포함/패킹된 리튬이온 배터리) 절차는?",
-      "a": "UN3481은 UN3480 대비 완화된 조건으로 선적이 가능한 화물입니다. 다만 위험물 취급 시에는 동일하게 승인 제조사 조건이 적용되니 참고 부탁드립니다.\n\n**1. 비위험물 (SP188)**\n- 100Wh 이하 / 셀 20Wh 이하의 경우 NON-DG DRY 진행이 가능합니다.\n- 4개 셀 이하 / 배터리 2개 이하가 동봉된 장비(장비 내장형)는 SP188 적용 검토가 가능합니다.\n\n**2. 위험물 (RFDG)**\n- 100Wh 초과 시 위험물로 분류됩니다.\n- ✅ **삼성/LG/SK 3사 제조 건에 한해 RFDG 진행 가능**\n- 위험물 건은 예외 없이 RFDG가 필수인 점 양해 부탁드립니다.\n\n**3. 9/3481 + 9/3480 동시 (장비 + 별도 동봉 배터리)**\n- 리튬이온 배터리는 포장 형태에 따라 장비 내장/동봉은 **UN3481**, 단독은 **UN3480**으로 각각 분류·신고합니다(둘을 합쳐 \"더 위험한 쪽\"으로 묶지 않습니다).\n- ⚠️ 리튬금속(1차 전지)이 동봉된 경우 해당 전지는 **UN3091**에 해당하며, **UN3091은 당사 전면 금지 품목**이므로 동봉 시 선적이 불가합니다. 사전에 운항팀으로 확인 부탁드립니다.\n\n**4. 공통 확인 사항**\n- UN 38.3 시험성적서는 필수입니다.\n- 장비 구동 시험 및 단락 방지 확인 부탁드립니다.\n- 손상·리콜 배터리는 선적이 어려운 점 양해 바랍니다.",
+      "a": "UN3481은 UN3480 대비 완화된 조건으로 선적이 가능한 화물입니다. 다만 위험물 취급 시에는 동일하게 승인 제조사 조건이 적용되니 참고 부탁드립니다.\n\n**1. 비위험물 (SP188)**\n- 100Wh 이하 / 셀 20Wh 이하의 경우 NON-DG DRY 진행이 가능합니다.\n- 4개 셀 이하 / 배터리 2개 이하가 동봉된 장비(장비 내장형)는 SP188 적용 검토가 가능합니다.\n\n**2. 위험물 (RFDG)**\n- 100Wh 초과 시 위험물로 분류됩니다.\n- ✅ **삼성SDI / SK On / LG에너지솔루션 3사 제조 건에 한해 RFDG 진행 가능** (UN3480과 동일 규정 적용)\n- 위험물 건은 예외 없이 RFDG가 필수인 점 양해 부탁드립니다.\n\n**3. 9/3481 + 9/3480 동시 (장비 + 별도 동봉 배터리)**\n- 리튬이온 배터리는 포장 형태에 따라 장비 내장/동봉은 **UN3481**, 단독은 **UN3480**으로 각각 분류·신고합니다(둘을 합쳐 \"더 위험한 쪽\"으로 묶지 않습니다).\n- ⚠️ 리튬금속(1차 전지)이 동봉된 경우 해당 전지는 **UN3091**에 해당하며, **UN3091은 당사 전면 금지 품목**이므로 동봉 시 선적이 불가합니다. 사전에 운항팀으로 확인 부탁드립니다.\n\n**4. 공통 확인 사항**\n- UN 38.3 시험성적서는 필수입니다.\n- 장비 구동 시험 및 단락 방지 확인 부탁드립니다.\n- 손상·리콜 배터리는 선적이 어려운 점 양해 바랍니다.",
       "tags": [
         "리튬배터리",
         "장비 내장",
@@ -2614,11 +2614,11 @@ let FQ_FAQ_DATA = {
       "id": "fx-flexitank",
       "cat": "🧴 Flexitank / IBC",
       "q": "Flexitank (플렉시 탱크) 선적 시 규정은?",
-      "a": "Flexitank 화물은 COA 권장 절차와 자사 적재 규정을 준수하시면 선적이 가능합니다.\n\n**표준 답신 (영문 파트너 대응)**\n> \"The shipment is acceptable provided that all documents reflect actual condition of container/cargo/flexi tank, and the shipper shall comply with the COA Recommended Code of Practice for the Manufacture of Flexi tanks and Operation of Flexi tank/Container Combinations.\"\n\n**필수 요건 안내**\n1. **20' Dry Van 컨테이너에 Flexitank 1개**로 진행해 주시기 바랍니다 (다중 적입은 불가합니다).\n2. **갑판 적재만 가능합니다** (Underdeck stowage는 금지입니다).\n3. **Booking List / CBF에 \"flexi-tank\"를 표기**해 주시기 바랍니다.\n4. 선박 Stowage 제한으로 Restow가 발생할 경우, 비용은 box operator 측 부담입니다.\n\n**Flexitank 자체 요건**\n- COA Test Criteria를 충족하는 설계여야 합니다.\n- 제조사 권장 적입 절차를 준수해 주시기 바랍니다.\n- 적입 후 누설 시험을 완료해 주시면 감사하겠습니다.\n\n**선적이 어려운 사례 (참고)**\n다음 케이스는 안전·운영상의 사유로 선적이 어려우니 양해 부탁드립니다.\n- 40ft 등 23ft 이상 컨테이너 사용 (20ft만 가능)\n- Underdeck 적재 요청\n- 다중 flexitank (2개 이상)\n- 식품·의약품 등 청결도 요구 화물과 동일 위치 적재",
+      "a": "Flexitank 화물은 COA 권장 절차와 자사 적재 규정을 준수하시면 선적이 가능합니다.\n\n**표준 답신 (영문 파트너 대응)**\n> \"The shipment is acceptable provided that all documents reflect actual condition of container/cargo/flexi tank, and the shipper shall comply with the COA Recommended Code of Practice for the Manufacture of Flexi tanks and Operation of Flexi tank/Container Combinations.\"\n\n**필수 요건 안내**\n1. **20' Dry Van 컨테이너에 Flexitank 1개**로 진행해 주시기 바랍니다 (다중 적입은 불가합니다).\n2. **원칙적으로 갑판(On-deck) 적재**로 진행하나, 선박·화물 특성에 따라 **사전 승인 시 Underdeck 적재도 가능**합니다 (하절기 열팽창·파손 위험 등 고려).\n3. **Booking List / CBF에 \"flexi-tank\"를 표기**해 주시기 바랍니다.\n4. 선박 Stowage 제한으로 Restow가 발생할 경우, 비용은 box operator 측 부담입니다.\n\n**Flexitank 자체 요건**\n- COA Test Criteria를 충족하는 설계여야 합니다.\n- 제조사 권장 적입 절차를 준수해 주시기 바랍니다.\n- 적입 후 누설 시험을 완료해 주시면 감사하겠습니다.\n\n**선적이 어려운 사례 (참고)**\n다음 케이스는 안전·운영상의 사유로 선적이 어려우니 양해 부탁드립니다.\n- 40ft 등 23ft 이상 컨테이너 사용 (20ft만 가능)\n- 다중 flexitank (2개 이상)\n- 식품·의약품 등 청결도 요구 화물과 동일 위치 적재",
       "tags": [
         "Flexitank",
         "플렉시탱크",
-        "Underdeck 금지",
+        "Underdeck 사전승인",
         "20ft 1개"
       ]
     },
@@ -2710,7 +2710,7 @@ let FQ_FAQ_DATA = {
       "id": "stow-seg",
       "cat": "📦 적재 / 격리",
       "q": "적재 / 격리 규정(Stowage & Segregation)은?",
-      "a": "위험물의 적재 및 격리는 IMDG Code 7장 기준을 따르고 있습니다. 아래 내용을 참고해 주시면 도움이 되실 듯합니다.\n\n**Stowage Category 분류**\n- **A** — 데크 / 언더데크 모두 가능\n- **B / C** — 일반 적재\n- **D** — 갑판 적재만 가능\n- **E** — 갑판 적재 (관계자만 접근)\n\n**Segregation (격리) — IMDG 7.2.4**\n| 코드 | 의미 |\n|---|---|\n| 1 | \"Away from\" — 같은 컨테이너 적재 불가, 최소 3m |\n| 2 | \"Separated from\" — 1 컨테이너 거리 |\n| 3 | \"Separated by complete compartment\" — 격벽 분리 |\n| 4 | \"Separated longitudinally by intervening complete compartment\" — 종방향 격벽 + 거리 |\n| X | 같은 컨테이너 가능 |\n\n**Segregation Group**\n- SGG1: Acids (산 — 염산·불산 등)\n- SGG18: Alkalis (염기 — 가성소다 등)\n- SGG6: Cyanides / SGG16: Peroxides\n- 전체 18개 그룹은 IMDG 3.1.4.4 참조\n- 식품·식수와의 격리는 별도 규정이 있습니다 (IMDG 7.3.4).\n\n**자주 문의주시는 사례**\n- CLASS 9 + CLASS 4.1 혼적은 격리 문제가 없어 같은 컨테이너에 적재 가능합니다.\n- CLASS 8 산 + CLASS 8 염기는 Segregation Group 1 vs 18로 \"Separated from\" 격리가 적용됩니다.\n- 인화성 + 산화성 (Class 3 + 5.1)도 \"Separated from\" 격리가 필요합니다.",
+      "a": "위험물의 적재 및 격리는 IMDG Code 7장 기준을 따르고 있습니다. 아래 내용을 참고해 주시면 도움이 되실 듯합니다.\n\n**Stowage Category 분류**\n- **A** — 데크 / 언더데크 모두 가능\n- **B / C** — 일반 적재\n- **D** — 갑판 적재만 가능\n- **E** — 갑판 적재 (관계자만 접근)\n\n**Segregation (격리) — IMDG 7.2.4**\n| 코드 | 의미 |\n|---|---|\n| 1 | \"Away from\" — 같은 컨테이너 적재 불가, 최소 3m |\n| 2 | \"Separated from\" — 1 컨테이너 거리 |\n| 3 | \"Separated by complete compartment\" — 격벽 분리 |\n| 4 | \"Separated longitudinally by intervening complete compartment\" — 종방향 격벽 + 거리 |\n| X | 같은 컨테이너 가능 |\n\n**Segregation Group**\n- SGG1: Acids (산 — 염산·불산 등)\n- SGG18: Alkalis (염기 — 가성소다 등)\n- SGG6: Cyanides / SGG16: Peroxides\n- 전체 18개 그룹은 IMDG 3.1.4.4 참조\n- 식품·식수와의 격리는 별도 규정이 있습니다 (IMDG 7.3.4).\n\n**자주 문의주시는 사례**\n- CLASS 9 + CLASS 4.1 혼적은 격리 문제가 없어 같은 컨테이너에 적재 가능합니다.\n- CLASS 8 산 + CLASS 8 염기(SGG1 vs SGG18)는 \"Away from\" (격리구분 1) 격리가 적용됩니다.\n- 인화성 + 산화성 (Class 3 + 5.1)도 \"Separated from\" 격리가 필요합니다.",
       "tags": [
         "적재",
         "격리",

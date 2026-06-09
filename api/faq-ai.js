@@ -243,8 +243,11 @@ ${dgText}`;
 Write a CONCISE reply body in ENGLISH (the inquiry is written in English).
 
 Decision rules (important):
-- Use the [Segregation table verdict] above AS the conclusion for stowage/segregation. Do not override it to "not allowed" based on physical properties (toxicity/corrosivity) alone.
-- If the internal DB states a COMPANY prohibition / special segregation rule for the item, reflect that too (company rules can be stricter).
+- Judge and state COMPATIBILITY (segregation) and SHIPPABILITY (acceptance) SEPARATELY.
+  - Compatibility = decided ONLY by the [Segregation table verdict] above (the table is the sole basis). Do not override it to "cannot mix" based on physical properties (toxicity/corrosivity) alone.
+  - Shippability = judged separately against the COMPANY prohibited-cargo list in the internal DB.
+- Example: if the table allows mixing but the item is on the company prohibited list -> "Stowage/segregation itself is acceptable, but the cargo cannot be shipped as it is on our prohibited list."
+- When no segregation is required, express it as IMDG-standard "X (may be stowed in the same container)" or "No segregation required" — never "code 0".
 - If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values.
 - If the verdict is "needs check", do not assert — explain why.
 - One clear conclusion. No speculation.
@@ -260,8 +263,11 @@ Last line: "* This is an AI-generated draft. Final acceptance is subject to the 
 받은 문의에 대해 한국어 회신 본문을 **간결하게** 작성하세요.
 
 판정 규칙(중요):
-- 혼적/격리 가능여부는 위 [격리표 판정 결과]를 **그대로 결론**으로 사용하세요. 물성(독성·부식성 등)만 보고 임의로 "불가"로 뒤집지 마세요.
-- 단, 사내 DB에 해당 품목의 **회사 선적금지/특별 격리 규정**이 명시돼 있으면 그 제한을 함께 반영하세요(회사 규정이 더 엄격할 수 있음).
+- **혼적(격리) 가부**와 **선적 가부**는 반드시 **분리해서** 판단·안내하세요.
+  · 혼적 가부 = 위 [격리표 판정 결과]만으로 결정(격리표가 유일 기준). 물성(독성·부식성 등)만 보고 임의로 "혼적 불가"로 뒤집지 마세요.
+  · 선적 가부 = 사내 DB의 **회사 선적금지 리스트** 기준으로 별도 판단.
+- 예시: 격리표상 혼적은 가능하나 해당 품목이 사내 금지품목이면 → "혼적 자체는 가능하나, 당사 금지 위험물이므로 선적은 불가합니다"로 안내.
+- 격리 요건이 없을 때는 "코드 0"이 아니라 IMDG 표준 표기대로 **"X(같은 컨테이너 적재 가능)"** 또는 **"격리 요건 없음"**으로 표현하세요.
 - 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요).
 - 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요.
 - 결론은 하나로 명확히. 추측 금지.
