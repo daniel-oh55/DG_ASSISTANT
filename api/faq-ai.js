@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
           if (!rr.ok) return [];
           const xml = await rr.text();
           const out = []; const re = /<item>([\s\S]*?)<\/item>/g; let m;
-          while ((m = re.exec(xml)) && out.length < 15) {
+          while ((m = re.exec(xml)) && out.length < 8) {   // 쿼리당 수집량 축소(무료 쿼터·노이즈 절감)
             const b = m[1];
             const title = decode((b.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
             const link = decode((b.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '');
@@ -112,7 +112,12 @@ module.exports = async function handler(req, res) {
         merged.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0 });
       }
       merged.sort((a, b) => b.ts - a.ts);
-      const news = merged.slice(0, 10);
+      // 무료 쿼터 절약 + 정예화: 실제 사고(화재·폭발·유출·전복 등) 뉴스를 우선 선별하고 최대 6건만 사용.
+      // (Gemini에 보내는 헤드라인 수↓ → 토큰·쿼터 절감, 화면도 꼭 필요한 사고 위주)
+      const INCIDENT = /화재|불이|폭발|폭음|폭발물|유출|누출|새어|샜|전복|충돌|추돌|침몰|좌초|중독|질식|화상|사고|사상|사망|부상|대피|재난|연소|방사능|피폭|독성|기름\s*유출|가스\s*누출/;
+      const incidents = merged.filter(n => INCIDENT.test(n.title));
+      let news = incidents.slice(0, 6);
+      if (news.length < 4) news = incidents.concat(merged.filter(n => !INCIDENT.test(n.title))).slice(0, 6);   // 사고 뉴스가 적으면 나머지로 보충(최대 6)
 
       const fetchWithTimeout = async (url, ms, opts) => {
         const ctrl = new AbortController();
