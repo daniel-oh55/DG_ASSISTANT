@@ -17,6 +17,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
+    // 뉴스 전용 키(있으면) — 다른 메뉴(FAQ답변·회신초안·SDS)와 Gemini 쿼터를 분리. 없으면 공용 키로 폴백.
+    const newsApiKey = process.env.GEMINI_NEWS_API_KEY || apiKey;
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     if (!apiKey) {
       return res.status(500).json({ ok: false, message: 'GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.' });
@@ -26,10 +28,11 @@ module.exports = async function handler(req, res) {
     // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로)
     const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
     // Gemini 호출 헬퍼 — temperature 지정 + 503/429/404 시 다음 모델로 폴백
-    async function gen(promptText, temperature) {
+    async function gen(promptText, temperature, keyOverride) {
+      const useKey = keyOverride || apiKey;
       let lastStatus = 0;
       for (const mdl of MODELS) {
-        const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(useKey)}`;
         for (let attempt = 0; attempt < 2; attempt++) {
           if (attempt) await sleep(800);
           const r = await fetch(ep, {
@@ -126,7 +129,7 @@ module.exports = async function handler(req, res) {
 형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"이 사건과 관련된 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
 - substance는 제목과 당신이 아는 사건 정보로 판단하세요. 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 확실하지 않으면 빈 문자열로 두고 절대 지어내지 마세요.
 
-${list}`, 0.2);
+${list}`, 0.2, newsApiKey);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
           const arr = JSON.parse(jsonText);
           arr.forEach(o => {
