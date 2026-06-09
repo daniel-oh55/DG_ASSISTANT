@@ -1863,7 +1863,7 @@ async function fqOpenSkrHistory() {
     if (!modal) return;
     modal.hidden = false;
     detail.innerHTML = '';
-    list.innerHTML = '<div class="fq-ai-loading">이력을 불러오는 중…</div>';
+    list.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>이력을 불러오는 중…</div>';
     try {
         const data = await fqLoadSkrVersions();
         const vs = (data.versions || []).slice().reverse();   // 최신 먼저
@@ -3162,7 +3162,7 @@ async function fqRunAudit() {
   const items = (FQ_FAQ_DATA.items || []).filter(i => (i.q && i.a));
   if (items.length < 2) { out.innerHTML = '<div class="fq-empty">검토할 답변 데이터가 충분하지 않습니다.</div>'; return; }
   const ctx = items.slice(0, 60).map(i => ({ q: i.q, a: (i.a || '').slice(0, 1200), cat: i.cat }));
-  out.innerHTML = '<div class="fq-ai-loading">🔎 쌓인 답변들을 점검해 오류·모순을 찾고 있습니다…</div>';
+  out.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🔎 쌓인 답변들을 점검해 오류·모순을 찾고 있습니다…</div>';
   if (btn) btn.disabled = true;
   try {
     const res = await fetch('/api/faq-ai', {
@@ -3213,7 +3213,7 @@ async function fqLoadNews(force) {
   if (!force) {
     try { const c = JSON.parse(localStorage.getItem(FQ_NEWS_CACHE_KEY) || '{}'); if (c.date === fqTodayStr() && c.news) { fqRenderNewsList(c.news, c.date); return; } } catch (e) {}
   }
-  if (box) box.innerHTML = '<div class="fq-ai-loading">📰 위험물 사고 뉴스를 수집·분석 중입니다…</div>';
+  if (box) box.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>📰 위험물 사고 뉴스를 수집·분석 중입니다…</div>';
   try {
     const res = await fetch('/api/faq-ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'news' }) });
     let j = {}; try { j = await res.json(); } catch (e) {}
@@ -3344,7 +3344,7 @@ async function fqAskAi() {
   const ansEl = document.getElementById('fqAiAnswer');
   const q = (inputEl.value || '').trim();
   if (!q) { fqToast('질문을 입력하세요', 'warn'); return; }
-  ansEl.innerHTML = '<div class="fq-ai-loading">🤖 사내 FAQ·문의답변을 정리해 답변을 만들고 있습니다…</div>';
+  ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 사내 FAQ·문의답변을 정리해 답변을 만들고 있습니다…</div>';
   // 질문과 관련도 높은 자료 우선 선별 (키워드 겹침)
   const items = FQ_FAQ_DATA.items || [];
   const qWords = q.toLowerCase().split(/[\s,./]+/).filter(w => w.length > 1);

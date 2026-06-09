@@ -4328,7 +4328,9 @@ header span {
 .fq-ai-input-row .fq-btn { white-space: nowrap; }
 .fq-ai-answer:empty { display: none; }
 .fq-ai-answer { margin-top: 14px; }
-.fq-ai-loading { padding: 14px; color: var(--fq-muted); font-size: 13px; background: white; border: 1px dashed var(--fq-border); border-radius: var(--fq-radius-sm); }
+.fq-ai-loading { display: flex; align-items: center; gap: 9px; padding: 14px; color: var(--fq-muted); font-size: 13px; background: white; border: 1px dashed var(--fq-border); border-radius: var(--fq-radius-sm); }
+/* 작은 청록 링 스피너 — AI 분석/수집 중 표시 (loadingSpin 키프레임 재사용) */
+.fq-spin { flex: 0 0 auto; display: inline-block; width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(0,191,165,0.22); border-top-color: var(--accent); animation: loadingSpin 0.7s linear infinite; }
 .fq-ai-error { padding: 14px; color: #b42318; font-size: 13px; background: #fff4f3; border: 1px solid #f3c0bb; border-radius: var(--fq-radius-sm); line-height: 1.6; }
 .fq-ai-result { padding: 16px; background: white; border: 1px solid var(--fq-border); border-radius: var(--fq-radius-sm); font-size: 13.5px; line-height: 1.7; color: var(--fq-text); }
 .fq-ai-result p { margin: 0 0 9px; }

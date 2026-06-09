@@ -75,7 +75,8 @@ module.exports = async function handler(req, res) {
         .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d)).trim();
       const queries = [
         '컨테이너 화재 위험물', '위험물 폭발 사고', '물류창고 화재 위험물',
-        '위험물 운송 사고', 'dangerous goods container fire'
+        '화학물질 누출 사고', '유독가스 누출', '암모니아 황산 염소 누출',
+        'dangerous goods container fire'
       ];
       const results = await Promise.all(queries.map(async q => {
         try {
