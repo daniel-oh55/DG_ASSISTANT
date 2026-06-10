@@ -2471,7 +2471,6 @@ let FQ_FAQ_DATA = {
     "💨 에어로졸 / 가스",
     "🧴 Flexitank / IBC",
     "❄️ RFDG (Reefer DG)",
-    "📐 OOG / Heavy / Coil",
     "📋 절차 / PRE-CHECK",
     "📄 서류 (MSDS/DGD)",
     "📦 적재 / 격리",
