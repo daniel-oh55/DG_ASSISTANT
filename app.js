@@ -3443,21 +3443,35 @@ function fqParseSegCargos(text) {
   const t = String(text || '');
   const VALID = new Set(['1', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2', '2.1', '2.2', '2.3', '3', '4.1', '4.2', '4.3', '5.1', '5.2', '6.1', '6.2', '7', '8', '9']);
   const uns = []; const numSeen = new Set(); let m;
+  const consumed = []; const slashRows = [];
+  const inSpan = idx => consumed.some(s => idx >= s.start && idx < s.end);
+  // 0) CLASS/UNNO 슬래시 쌍 우선 (예: 2.1/1950, 8/1760, 1950/2.1) — 가장 명확한 표기
+  const isCls = x => /^[1-9](?:\.[1-6])?$/.test(x) && VALID.has(x);
+  const isUn = x => /^\d{4}$/.test(x);
+  const pairRe = /(\d{1,4}(?:\.\d)?)\s*\/\s*(\d{1,4}(?:\.\d)?)/g;
+  while ((m = pairRe.exec(t)) !== null) {
+    const a = m[1], b = m[2]; let cls = null, un = null;
+    if (isCls(a) && isUn(b)) { cls = a; un = b; }
+    else if (isUn(a) && isCls(b)) { un = a; cls = b; }
+    else continue;
+    slashRows.push({ unno: un, class: cls }); numSeen.add(un);
+    consumed.push({ start: m.index, end: pairRe.lastIndex });
+  }
   // UN/UNNO 접두 (항상)
   const unRe = /U\s*\.?\s*N\s*\.?\s*(?:N\s*\.?\s*O|NO|No)?\s*\.?\s*[-#:]?\s*(\d{4})/gi;
-  while ((m = unRe.exec(t)) !== null) { uns.push({ unno: m[1], idx: m.index, end: unRe.lastIndex }); numSeen.add(m[1]); }
+  while ((m = unRe.exec(t)) !== null) { if (inSpan(m.index)) continue; uns.push({ unno: m[1], idx: m.index, end: unRe.lastIndex }); numSeen.add(m[1]); }
   // 맨 4자리 숫자 (연도·단위 뒤따르면 제외, UN 범위 0001~3600)
   const bareRe = /(\d{4})(?!\s*(?:년|월|일|원|개|대|톤|박스|호|%|kg|t\b))/gi;
   while ((m = bareRe.exec(t)) !== null) {
     const n = m[1];
-    if (numSeen.has(n)) continue;
+    if (numSeen.has(n) || inSpan(m.index)) continue;
     if (uns.some(u => m.index >= u.idx && m.index < u.end)) continue;
     if (+n >= 1 && +n <= 3600) { uns.push({ unno: n, idx: m.index, end: bareRe.lastIndex }); numSeen.add(n); }
   }
   // 클래스 토큰: "class/클래스 N", "N류/급", 또는 소수형 클래스(2.1 등)
   const cls = [];
   const cRe = /(?:class|클래스|클라스|등급)\s*[:#-]?\s*([1-9](?:\.[1-6])?)|([1-9](?:\.[1-6])?)\s*(?:류|급)|(1\.[1-6]|2\.[1-3]|4\.[1-3]|5\.[1-2]|6\.[1-2])/gi;
-  while ((m = cRe.exec(t)) !== null) cls.push({ cls: (m[1] || m[2] || m[3]), idx: m.index });
+  while ((m = cRe.exec(t)) !== null) { if (inSpan(m.index)) continue; cls.push({ cls: (m[1] || m[2] || m[3]), idx: m.index }); }
   // UN 바로 뒤(≤10자, 접속사 없음)에 붙은 클래스는 그 UN의 분류로 보정
   const usedC = new Set();
   for (const u of uns) {
@@ -3472,6 +3486,7 @@ function fqParseSegCargos(text) {
     }
   }
   const rows = []; const seen = new Set();
+  slashRows.forEach(r => { if (seen.has('U' + r.unno)) return; seen.add('U' + r.unno); rows.push({ unno: r.unno, class: (r.class && VALID.has(r.class)) ? r.class : null }); });
   uns.sort((a, b) => a.idx - b.idx).forEach(u => { if (seen.has('U' + u.unno)) return; seen.add('U' + u.unno); rows.push({ unno: u.unno, class: (u.cls && VALID.has(u.cls)) ? u.cls : null }); });
   cls.forEach((c, i) => { if (usedC.has(i) || !VALID.has(c.cls) || seen.has('C' + c.cls)) return; seen.add('C' + c.cls); rows.push({ unno: null, class: c.cls }); });
   const lookup = [...new Set(rows.filter(r => r.unno).map(r => r.unno))];
@@ -3528,6 +3543,9 @@ async function fqAskAi() {
       if (finalRows.length >= 2) {
         segChk = fqSegregationCheck(finalRows);
         segInfo = { verdict: segChk.verdict, allow: segChk.allow, worst: segChk.worst, detail: segChk.detail, anyAmbiguous: segChk.anyAmbiguous, cargos: segChk.cargos };
+      } else if (isSegQ) {
+        // 혼적 질문인데 화물 2개를 인식하지 못함 → 결정론적 입력 안내(AI 추정 대신)
+        segInfo = { guide: true };
       }
     }
     const res = await fetch('/api/faq-ai', {
@@ -3537,7 +3555,7 @@ async function fqAskAi() {
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
     ansEl.innerHTML =
-      (segChk ? fqSegPanelHtml(segChk) : '') +
+      (segChk ? fqSegPanelHtml(segChk) : (segInfo && segInfo.guide ? fqSegGuideHtml() : '')) +
       '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
       '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 혼적·격리 코드는 위 [IMDG 격리표 판정]이 기준이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
   } catch (e) {
@@ -3563,6 +3581,21 @@ function fqSegPanelHtml(seg) {
     + '<div style="font-weight:700;color:' + color + ';font-size:14px">' + fqEsc(seg.verdict) + '</div>'
     + cargoLine
     + (rows ? '<ul style="font-size:12.5px;color:#444;margin:8px 0 0 16px;padding:0;line-height:1.6">' + rows + '</ul>' : '')
+    + '</div>';
+}
+
+// 혼적 화물 2개를 인식하지 못했을 때의 결정론적 입력 안내 (AI 추정 대신)
+function fqSegGuideHtml() {
+  return '<div class="fq-seg-panel" style="border:1px solid var(--border,#ddd);border-left:4px solid #b8860b;border-radius:8px;padding:12px 14px;margin-bottom:12px;background:rgba(0,0,0,0.02)">'
+    + '<div style="font-size:12px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:6px">혼적 격리 — 입력 안내</div>'
+    + '<div style="font-weight:700;color:#b8860b;font-size:14px">화물 2개 이상을 인식하지 못해 자동 격리판정을 하지 못했습니다.</div>'
+    + '<div style="font-size:12.5px;color:#444;margin-top:8px;line-height:1.7">아래 중 한 방법으로 <b>다시 입력</b>해 주세요:'
+    + '<ul style="margin:6px 0 0 16px;padding:0">'
+    + '<li>UN번호: <b>UN1950, UN1993</b> (또는 1950 1993)</li>'
+    + '<li>클래스: <b>Class 2.1, Class 3</b></li>'
+    + '<li>표기가 헷갈리면 <b>CLASS/UNNO</b> 형식으로: <b>2.1/1950, 8/1760, 3/1993</b></li>'
+    + '</ul></div>'
+    + '<div style="font-size:12.5px;color:#444;margin-top:8px">또는 좌측 사이드바의 <b>[격리규정 확인]</b> 메뉴에서 UN번호를 입력하면 표 기준으로 정확히 조회됩니다.</div>'
     + '</div>';
 }
 
