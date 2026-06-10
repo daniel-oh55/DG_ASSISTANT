@@ -83,7 +83,7 @@
 
 <li class="menu-item" data-target="tab-support" data-fq-init-tab="board">
     <span class="menu-icon">✉</span>
-    <span class="menu-text">문의 게시판</span>
+    <span class="menu-text">담당자 직접문의 게시판</span>
 </li>
 
 <li class="menu-item" data-target="tab-report">
@@ -234,7 +234,7 @@
                             <div class="home-card-icon">💬</div>
                         </div>
 
-                        <div class="home-card-title">문의 게시판</div>
+                        <div class="home-card-title">담당자에게 직접문의하기</div>
                         <div class="home-card-desc">
                             DG 문의 등록 · 담당자 답변 · 자동 FAQ 축적
                         </div>
@@ -478,7 +478,7 @@
     <!-- 탭 -->
     <div class="fq-tabs">
       <button class="fq-tab active" data-fq-tab="faq">📚 FAQ</button>
-      <button class="fq-tab" data-fq-tab="board">💬 상세문의 게시판</button>
+      <button class="fq-tab" data-fq-tab="board">💬 담당자에게 직접문의하기 게시판</button>
     </div>
 
     <!-- FAQ 패널 -->
@@ -572,37 +572,31 @@
       <div class="fq-new-form" id="fqNewPostForm" hidden>
         <div class="fq-new-row two">
           <div>
-            <label class="fq-field-label" for="fqNpAuthor">이름 <span class="fq-req">*</span></label>
-            <input type="text" id="fqNpAuthor" maxlength="60" required>
+            <label class="fq-field-label" for="fqNpCompany">회사/부서 <span class="fq-req">*</span></label>
+            <input type="text" id="fqNpCompany" maxlength="100" required placeholder="예: 장금상선 운항팀">
           </div>
           <div>
-            <label class="fq-field-label" for="fqNpCompany">회사/부서</label>
-            <input type="text" id="fqNpCompany" maxlength="100">
+            <label class="fq-field-label" for="fqNpAuthor">이름 (선택)</label>
+            <input type="text" id="fqNpAuthor" maxlength="60">
           </div>
         </div>
         <div class="fq-new-row two">
           <div>
-            <label class="fq-field-label" for="fqNpRef">참조 번호 (선택)</label>
-            <input type="text" id="fqNpRef" maxlength="60" placeholder="예: 항차/문서 번호">
-          </div>
-          <div>
             <label class="fq-field-label" for="fqNpCategory">카테고리</label>
             <select id="fqNpCategory">
-              <option value="일반">일반</option>
-              <option value="긴급">긴급</option>
-              <option value="요청">요청</option>
-              <option value="기타">기타</option>
+              <option value="">선택</option>
             </select>
           </div>
-        </div>
-        <div class="fq-new-row">
           <div>
             <label class="fq-field-label" for="fqNpSubject">제목 <span class="fq-req">*</span></label>
             <input type="text" id="fqNpSubject" maxlength="200" required>
           </div>
+        </div>
+        <div class="fq-new-row">
           <div>
             <label class="fq-field-label" for="fqNpBody">문의 내용 <span class="fq-req">*</span></label>
-            <textarea id="fqNpBody" maxlength="3000" required placeholder="가능한 자세히 작성해주세요"></textarea>
+            <p class="fq-hint" style="margin:2px 0 6px;">가능한 자세히 작성해주세요. <b>명확한 담당자 답변이 필요한 문의</b>를 적어주세요.</p>
+            <textarea id="fqNpBody" maxlength="3000" required placeholder="가능한 자세히 작성해주세요 — 명확한 담당자 답변이 필요한 문의를 적어주세요"></textarea>
           </div>
         </div>
         <div class="fq-private-wrap">

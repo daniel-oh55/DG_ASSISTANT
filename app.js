@@ -4461,6 +4461,7 @@ function fqBindBoard(scope) {
   scope.querySelector('#fqNewPostBtn').addEventListener('click', () => {
     const form = scope.querySelector('#fqNewPostForm');
     form.hidden = !form.hidden;
+    if (!form.hidden) fqPopulateBoardCats();   // FAQ 카테고리로 채우기
   });
   scope.querySelector('#fqCancelPostBtn').addEventListener('click', () => {
     scope.querySelector('#fqNewPostForm').hidden = true;
@@ -4472,22 +4473,32 @@ function fqBindBoard(scope) {
   scope.querySelector('#fqSubmitPostBtn').addEventListener('click', fqSubmitPost);
 }
 
+// 게시판 카테고리 = FAQ 카테고리 사용 (전체 제외)
+function fqPopulateBoardCats() {
+  const sel = document.getElementById('fqNpCategory');
+  if (!sel) return;
+  const cats = (FQ_FAQ_DATA.categories || []).filter(c => c && c !== '전체');
+  const cur = sel.value;
+  sel.innerHTML = (cats.length ? cats : ['일반']).map(c => `<option value="${fqEsc(c)}">${fqEsc(c)}</option>`).join('');
+  if (cur && cats.includes(cur)) sel.value = cur;
+}
 function fqResetNewForm() {
-  ['fqNpAuthor','fqNpCompany','fqNpRef','fqNpSubject','fqNpBody','fqNpPwd'].forEach(id => {
+  ['fqNpAuthor','fqNpCompany','fqNpSubject','fqNpBody','fqNpPwd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
   document.getElementById('fqNpPrivate').checked = false;
   document.getElementById('fqNpPwdWrap').style.display = 'none';
-  document.getElementById('fqNpCategory').value = '일반';
+  fqPopulateBoardCats();
 }
 
 async function fqSubmitPost() {
   const author = document.getElementById('fqNpAuthor').value.trim();
+  const company = document.getElementById('fqNpCompany').value.trim();
   const subject = document.getElementById('fqNpSubject').value.trim();
   const body = document.getElementById('fqNpBody').value.trim();
-  if (!author || !subject || !body) {
-    fqToast('이름·제목·내용 필수', 'warn'); return;
+  if (!company || !subject || !body) {
+    fqToast('회사/부서·제목·내용은 필수입니다', 'warn'); return;
   }
   const isPrivate = document.getElementById('fqNpPrivate').checked;
   const pwd = document.getElementById('fqNpPwd').value;
@@ -4497,8 +4508,7 @@ async function fqSubmitPost() {
   const post = {
     id: 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
     author,
-    company: document.getElementById('fqNpCompany').value.trim(),
-    ref: document.getElementById('fqNpRef').value.trim(),
+    company,
     category: document.getElementById('fqNpCategory').value,
     subject, body,
     isPrivate,
@@ -4533,8 +4543,8 @@ function fqRenderPosts() {
           <div class="fq-post-head" onclick="fqTogglePost('${p.id}')">
             <div class="fq-post-info">
               <div class="fq-post-meta">
-                <span class="fq-post-author">${fqEsc(p.author)}</span>
-                ${p.company ? `<span>· ${fqEsc(p.company)}</span>` : ''}
+                <span class="fq-post-author">${fqEsc(p.company || p.author || '익명')}</span>
+                ${(p.author && p.company) ? `<span>· ${fqEsc(p.author)}</span>` : ''}
                 <span>·</span>
                 <span class="fq-post-date">${new Date(p.createdAt).toLocaleString('ko')}</span>
                 ${p.category ? `<span>· ${fqEsc(p.category)}</span>` : ''}
