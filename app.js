@@ -3427,6 +3427,15 @@ function fqBindFaq(scope) {
 }
 
 // ── AI에게 문의 (FAQ·문의답변 DB 기반 LLM 답변) ──
+// UN번호 추출 — UN / UNNO / UN NO / U.N. 등 다양한 표기 + 구분자(공백·-·.·#·:) 허용.
+// 격리·DG조회의 결정론적 판정이 표기 형식 때문에 누락되지 않도록 공통 사용.
+function fqExtractUnnos(text) {
+  const re = /U\s*\.?\s*N\s*\.?\s*(?:N\s*\.?\s*O|NO|No)?\s*\.?\s*[-#:]?\s*(\d{4})/gi;
+  const out = []; let m;
+  while ((m = re.exec(String(text || ''))) !== null) out.push(m[1]);
+  return [...new Set(out)];
+}
+
 async function fqAskAi() {
   const inputEl = document.getElementById('fqAiInput');
   const ansEl = document.getElementById('fqAiAnswer');
@@ -3446,7 +3455,7 @@ async function fqAskAi() {
   try {
     // 질문에 UN번호가 2개 이상이면 IMDG 7.2.4 격리표로 결정론적 판정 → 화면에 권위 결과로 직접 표시 + AI에 근거로 전달
     let segInfo = null, segChk = null, dgData = [];
-    let unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    let unnos = fqExtractUnnos(q);
     if (unnos.length >= 2) {
       try {
         const dr = await fetch('/api/dg-search', {
@@ -3618,7 +3627,7 @@ async function fqDraftReply() {
   if (btn) btn.disabled = true;
   try {
     // 문의에 언급된 UN번호 추출 → DG_TABLE에서 class·격리 등 상세 조회(혼적/금지 판단 근거)
-    let unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    let unnos = fqExtractUnnos(q);
     // 첨부 MSDS(PDF) 분석 → 회신 근거로 활용 + 발견한 UN번호를 격리 판정에 합류
     let attachAnalyses = [];
     if (fqEmailAttachments.length) {
