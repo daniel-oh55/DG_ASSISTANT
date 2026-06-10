@@ -262,6 +262,44 @@ function resolveAsForClass(sgTarget, clsA, clsB) {
 
 // ── 6. 격리 엔진 ───────────────────────────────────────────────
 // 인자: a, b = Supabase 레코드 + 파생된 { sgg, sgCodes } 필드 포함 객체
+// 세부분류 없는 메인 클래스 → 격리표 하위 키 (예: "2" → 2.1/2.2/2.3)
+const MAIN_SUBDIVISIONS = {
+  '1': ['1.1 1.2 1.5', '1.3 1.6', '1.4'],
+  '2': ['2.1', '2.2', '2.3'],
+  '4': ['4.1', '4.2', '4.3'],
+  '5': ['5.1', '5.2'],
+  '6': ['6.1', '6.2']
+};
+// 클래스를 격리표 키 배열로 확장 (이미 세부분류/복합키면 그대로, 메인클래스면 하위로 확장)
+function expandSegKeys(cls) {
+  const n = normalizeClass(cls);
+  if (n && REF.segTable[n]) return [n];
+  if (MAIN_SUBDIVISIONS[n]) return MAIN_SUBDIVISIONS[n];
+  return [];
+}
+// 두 클래스 간 기본 격리코드 — 세부분류 미상이면 보수적(가장 엄격한 값) 적용.
+// 반환: {val:number|'X'|'*', conservative:bool} 또는 {unresolved:true}
+function segBaseLookup(rawA, rawB) {
+  const A = expandSegKeys(rawA), B = expandSegKeys(rawB);
+  if (!A.length || !B.length) return { unresolved: true };
+  const conservative = (A.length > 1 || B.length > 1);
+  let best = null, star = false, sawX = false;
+  for (const a of A) {
+    const row = REF.segTable[a]; if (!row) continue;
+    for (const b of B) {
+      const v = row[b];
+      if (v === undefined) continue;
+      if (v === '*') star = true;
+      else if (v === 'X') sawX = true;
+      else if (typeof v === 'number') { if (best === null || v > best) best = v; }
+    }
+  }
+  if (best !== null) return { val: best, conservative };   // 숫자(격리요건) 우선 = 보수적
+  if (star) return { val: '*', conservative };
+  if (sawX) return { val: 'X', conservative };
+  return { unresolved: true };
+}
+
 function calcPairSeg(a, b) {
   let maxLevel = 0;
   let hasStar = false;
@@ -296,12 +334,15 @@ function calcPairSeg(a, b) {
   const clsB = normalizeClass(b.Class);
 
   if (clsA && clsB) {
-    const rowA = REF.segTable[clsA];
-    if (rowA && rowA[clsB] !== undefined) {
-      const val = rowA[clsB];
-      if (val === 'X') addReason(0, `Class ${a.Class} ↔ Class ${b.Class}: 격리적용없음 (DG 리스트 참조)`);
-      else if (val === '*') addReason('*', `Class ${a.Class} ↔ Class ${b.Class}: Class 1 특수규정 (*)`);
-      else if (typeof val === 'number') addReason(val, `Class ${a.Class} ↔ Class ${b.Class}: Seg ${val}`);
+    const look = segBaseLookup(a.Class, b.Class);
+    if (look.unresolved) {
+      addReason(2, `⚠️ Class ${a.Class || '?'} ↔ Class ${b.Class || '?'}: 클래스를 격리표에서 확인 불가 — 수동 확인 필요`);
+    } else if (look.val === 'X') {
+      addReason(0, `Class ${a.Class} ↔ Class ${b.Class}: 격리적용없음 (DG 리스트 참조)`);
+    } else if (look.val === '*') {
+      addReason('*', `Class ${a.Class} ↔ Class ${b.Class}: Class 1 특수규정 (*)`);
+    } else if (typeof look.val === 'number') {
+      addReason(look.val, `Class ${a.Class} ↔ Class ${b.Class}: Seg ${look.val}` + (look.conservative ? ' (⚠️ 세부분류 미상 → 보수적 최댓값 적용 · 2.1/2.2/2.3 등 확인 권장)' : ''));
     }
   }
 
@@ -3369,18 +3410,53 @@ async function fqAskAi() {
   // 관련 자료 우선 + 최소 분량 보장
   const top = scored.slice(0, 24).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
   try {
+    // 질문에 UN번호가 2개 이상이면 IMDG 7.2.4 격리표로 결정론적 판정 → 화면에 권위 결과로 직접 표시 + AI에 근거로 전달
+    let segInfo = null, dgData = [];
+    let unnos = [...new Set((q.match(/\bU\.?N\.?\s?(\d{4})\b/gi) || []).map(s => s.replace(/\D/g, '')))];
+    if (unnos.length >= 2) {
+      try {
+        const dr = await fetch('/api/dg-search', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unnos })
+        });
+        const dj = await dr.json().catch(() => ({}));
+        if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
+      } catch (_) { /* 조회 실패 시 일반 답변으로 진행 */ }
+      if (dgData.length >= 2) {
+        const rows = dgData.map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: r.UNNO || r.unno, name: r.Name || r.name }));
+        const chk = fqSegregationCheck(rows);
+        segInfo = {
+          verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail, conservative: chk.conservative,
+          cargos: rows.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.class}${r.sub && !/^[-–?\s]*$/.test(String(r.sub)) ? ', 부위험성 ' + r.sub : ''})`)
+        };
+      }
+    }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q, context: top })
+      body: JSON.stringify({ question: q, context: top, dgData, unnos, segInfo })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
     ansEl.innerHTML =
+      (segInfo ? fqSegPanelHtml(segInfo) : '') +
       '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
-      '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 사내 FAQ·문의답변 DB를 근거로 생성되며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
+      '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 혼적·격리 코드는 위 [IMDG 격리표 판정]이 기준이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
   } catch (e) {
     ansEl.innerHTML = '<div class="fq-ai-error">답변 생성 실패: ' + fqEsc(e.message) + '<br>잠시 후 다시 시도해 주세요.</div>';
   }
+}
+// IMDG 격리표 결정론적 판정 결과를 화면에 권위 패널로 렌더 (AI 답변과 독립)
+function fqSegPanelHtml(seg) {
+  const codeMap = { 0: 'X / 격리요건 없음', 1: '1 — Away from(이격)', 2: '2 — Separated from(격리)', 3: '3 — 완전구획 격리', 4: '4 — 종방향 구획 격리' };
+  const worstLabel = (seg.allow === 'check') ? '확인 필요' : (codeMap[seg.worst] || '확인 필요');
+  const color = seg.worst >= 3 ? '#b02020' : (seg.worst >= 1 ? '#b8860b' : (seg.allow === 'check' ? '#b8860b' : '#1a7f37'));
+  const pairs = (seg.detail || []).map(d => '<li>' + fqEsc(d) + '</li>').join('');
+  return '<div class="fq-seg-panel" style="border:1px solid var(--border,#ddd);border-left:4px solid ' + color + ';border-radius:8px;padding:12px 14px;margin-bottom:12px;background:rgba(0,0,0,0.02)">'
+    + '<div style="font-size:12px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:6px">IMDG 7.2.4 격리표 판정 · 시스템 결정론적 계산(권위 기준)</div>'
+    + '<div style="font-weight:700;color:' + color + ';font-size:14px">' + fqEsc(seg.verdict) + '  ·  최대 격리코드: ' + fqEsc(worstLabel) + '</div>'
+    + (seg.cargos && seg.cargos.length ? '<div style="font-size:12px;color:#666;margin-top:4px">대상: ' + seg.cargos.map(fqEsc).join(' / ') + '</div>' : '')
+    + (pairs ? '<ul style="font-size:12px;color:#666;margin:6px 0 0 16px;padding:0">' + pairs + '</ul>' : '')
+    + '</div>';
 }
 
 // ── IMDG 일반 격리표 (7.2.4) — 클래스×클래스 격리코드 결정론적 조회 ──
@@ -3417,10 +3493,27 @@ function fqSegCode(a, b) {
   if (ai < 0 || bi < 0) return null;
   return IMDG_SEG_TABLE[a][bi];
 }
-// 두 화물(각각 class+sub) 간 가장 엄격한 격리코드와 혼적 판정
+// 세부분류 없는 메인 클래스 → 격리표 하위 키 (AI 회신/문의 경로용)
+const FQ_MAIN_SUB = { '2': ['2.1', '2.2', '2.3'], '4': ['4.1', '4.2', '4.3'], '5': ['5.1', '5.2'], '6': ['6.1', '6.2'] };
+function fqExpandClass(raw) {
+  const n = fqNormClass(raw);
+  if (n) return [n];
+  const s = String(raw || '').trim();
+  if (FQ_MAIN_SUB[s]) return FQ_MAIN_SUB[s];
+  if (/^1(\.|$)/.test(s)) return ['1'];
+  return [];
+}
+// 두 화물(각각 class+sub) 간 가장 엄격한 격리코드와 혼적 판정 (세부분류 미상이면 보수적 확장)
 function fqSegregationCheck(rows) {
   // rows: [{class, sub}], 보통 2개
-  const tokenLists = rows.map(r => [fqNormClass(r.class), fqNormClass(r.sub)].filter(Boolean));
+  const tokenLists = rows.map(r => {
+    const set = new Set();
+    fqExpandClass(r.class).forEach(c => set.add(c));
+    fqExpandClass(r.sub).forEach(c => set.add(c));
+    return [...set];
+  });
+  const conservative = rows.some(r => !fqNormClass(r.class) && fqExpandClass(r.class).length > 1);
+  const hasUnknown = tokenLists.some(t => t.length === 0);
   let worst = 0, hasX = false, hasStar = false, detail = [];
   for (let i = 0; i < tokenLists.length; i++) for (let j = i + 1; j < tokenLists.length; j++) {
     for (const ca of tokenLists[i]) for (const cb of tokenLists[j]) {
@@ -3433,11 +3526,13 @@ function fqSegregationCheck(rows) {
   const codeNames = { 0: '격리요건 없음', 1: 'Away from(이격)', 2: 'Separated from(격리)', 3: '완전구획 격리', 4: '종방향 구획 격리' };
   let verdict, allow;
   if (hasStar) { verdict = 'Class 1(화약류) 포함 — 개별 규정 확인 필요'; allow = 'check'; }
-  else if (hasX) { verdict = '개별 품목 규정(DG List) 확인 필요'; allow = 'check'; }
+  else if (worst === 0 && hasUnknown) { verdict = '클래스 분류 미상 — 격리표 확인 불가, 수동 확인 필요'; allow = 'check'; }
+  else if (worst === 0 && hasX) { verdict = '개별 품목 규정(DG List) 확인 필요'; allow = 'check'; }
   else if (worst === 0) { verdict = '혼적 가능 (일반 격리표상 격리요건 없음)'; allow = 'yes'; }
   else if (worst === 1) { verdict = '조건부 — 같은 컨테이너 적재 시 이격(Away from) 필요'; allow = 'cond'; }
   else { verdict = `혼적 불가 — 격리 필요(${codeNames[worst]})`; allow = 'no'; }
-  return { worst, hasX, hasStar, verdict, allow, detail, codeName: codeNames[worst] };
+  if (conservative) detail.push('⚠️ 일부 화물 세부분류(2.1/2.2/2.3 등) 미상 → 보수적(최댓값) 적용, 확인 권장');
+  return { worst, hasX, hasStar, conservative, hasUnknown, verdict, allow, detail, codeName: codeNames[worst] };
 }
 
 // ── AI 회신 초안 작성 (기존 FAQ·문의답변 DB 분석 → 이메일 회신 초안) ──

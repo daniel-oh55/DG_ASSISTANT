@@ -309,15 +309,28 @@ ${ctxText || '(제공된 자료 없음)'}`;
     if (!question || !String(question).trim()) {
       return res.status(400).json({ ok: false, message: '질문 내용이 필요합니다.' });
     }
+    // 혼적/격리 질문이면 클라이언트가 IMDG 7.2.4 격리표로 계산한 결정론적 판정을 권위 근거로 사용
+    let ansSegText = '(혼적/격리 판정 해당 없음 — UN번호 2개 미만이거나 클래스 미확인)';
+    if (segInfo && segInfo.verdict) {
+      ansSegText = `판정: ${segInfo.verdict}\n대상: ${(segInfo.cargos || []).join(' / ')}`
+        + (segInfo.detail && segInfo.detail.length ? `\n클래스 간 격리코드: ${segInfo.detail.join(', ')}` : '');
+    }
+    const ansDgRows = Array.isArray(dgData) ? dgData : [];
+    const ansDgText = ansDgRows.length ? ansDgRows.map((r, i) => `[DG ${i + 1}] ` + JSON.stringify(r)).join('\n').slice(0, 8000) : '';
     const answerPrompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 상담 보조 AI입니다.
 아래 [사내 DG FAQ·문의답변 데이터베이스]를 최우선 근거로 사용자 질문에 한국어로 답하세요.
 
 규칙:
 - DB에 근거가 있으면 종합·요약해 구체적으로 답하고, 참고한 자료 제목을 언급하세요.
 - DB에 직접 근거가 없으면 먼저 "사내 DB에는 직접 자료가 없어 일반 규정 기준으로 안내드립니다"라고 밝히고 일반 IMDG Code 지식으로 신중히 답하세요.
+- **혼적·격리 코드 질문은 아래 [IMDG 격리표 판정 결과]만을 유일한 근거로 사용하세요. 임의로 다른 코드로 바꾸지 마세요(예: 표가 'Separated from(2)'이면 'Away from(1)'으로 답하지 말 것).**
+- **격리 요건이 없을 때는 "코드 0"이 아니라 IMDG 표준 표기 "X(같은 컨테이너 적재 가능)" 또는 "격리 요건 없음"으로 표현하세요. 격리표 판정이 '확인 필요/미상'이면 단정하지 말고 그 사유를 안내하세요.**
 - 회사 정책과 IMDG 일반 규정을 구분하세요. 불확실하면 담당자 확인 권고. 사실을 지어내지 마세요.
 - 마크다운으로 읽기 쉽게. 끝에 "※ 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."
 
+[IMDG 격리표 판정 결과 — 시스템이 7.2.4 격리표로 계산함(권위 결론, 임의로 뒤집지 말 것)]
+${ansSegText}
+${ansDgText ? '\n[조회된 위험물 상세 — DG_TABLE]\n' + ansDgText + '\n' : ''}
 [사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
 
