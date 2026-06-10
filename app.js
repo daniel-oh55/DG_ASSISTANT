@@ -3221,7 +3221,9 @@ function fqReportRender() {
   const fy = yearSel.value;
   const fq = (document.getElementById('rptQuarter') || {}).value || '';
   const fm = (document.getElementById('rptMonth') || {}).value || '';
+  const fsrc = (document.getElementById('rptSource') || {}).value || '';
   const filtered = inq.filter(x => {
+    if (fsrc && x.src !== fsrc) return false;
     if (fy || fq || fm) { if (!x.date) return false; }
     if (fy && x.date.getFullYear() !== +fy) return false;
     if (fq && (Math.floor(x.date.getMonth() / 3) + 1) !== +fq) return false;
@@ -3353,13 +3355,13 @@ function fqBindReport(scope) {
   });
   const newsRefresh = scope.querySelector('#rptNewsRefresh');
   if (newsRefresh) newsRefresh.addEventListener('click', () => fqLoadNews(true));
-  ['rptYear', 'rptQuarter', 'rptMonth'].forEach(id => {
+  ['rptYear', 'rptQuarter', 'rptMonth', 'rptSource'].forEach(id => {
     const el = scope.querySelector('#' + id);
     if (el) el.addEventListener('change', fqReportRender);
   });
   const reset = scope.querySelector('#rptResetBtn');
   if (reset) reset.addEventListener('click', () => {
-    ['rptYear', 'rptQuarter', 'rptMonth'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['rptYear', 'rptQuarter', 'rptMonth', 'rptSource'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     fqReportRender();
   });
   const audit = scope.querySelector('#rptAuditBtn');

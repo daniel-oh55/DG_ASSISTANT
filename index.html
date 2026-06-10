@@ -508,7 +508,7 @@
       <!-- 이메일 문의·회신 → FAQ 등록 (담당자 전용) -->
       <div class="fq-email-form" id="fqEmailForm" hidden>
         <div class="fq-email-head">📧 이메일 문의·회신 등록 <span>담당자 전용 · 비밀번호 1234</span></div>
-        <p class="fq-email-guide">이메일로 받은 문의와 회신을 등록하면 아래 <b>이메일 문의 목록</b>에 쌓이고, 전체 공유 + AI 문의에 활용됩니다. (FAQ 메인 목록과는 분리되어 이 영역에서만 조회됩니다.) 이메일 파일(.eml/.txt/.msg)을 첨부하면 제목·내용을 자동으로 불러옵니다.</p>
+        <p class="fq-email-guide">이메일로 받은 문의와 회신을 등록하면 전체 공유 + AI 문의에 활용되며, 등록 내역은 <b>관리자 리포트 → 문의 통계</b>의 문의 내역에서 확인합니다. (FAQ 메인 목록과는 분리됩니다.) 이메일 파일(.eml/.txt/.msg)을 첨부하면 제목·내용을 자동으로 불러옵니다.</p>
 
         <div class="fq-em-form-toggle" id="fqEmFormToggle">➕ 새 이메일 문의 등록 <span class="fq-em-arrow">▲ 접기</span></div>
         <div id="fqEmFormFields">
@@ -543,8 +543,7 @@
         </div>
         </div><!-- /#fqEmFormFields -->
 
-        <div class="fq-email-list-head">📋 등록된 이메일 문의</div>
-        <div class="fq-list" id="fqEmailList"></div>
+        <p class="fq-hint" style="margin-top:14px;">📋 등록된 이메일 문의 내역은 <b>관리자 리포트 → 문의 통계</b>의 <b>문의 내역</b>에서 AI 문의·게시판 문의와 함께 한눈에 확인할 수 있습니다.</p>
       </div>
 
       <div class="fq-cats" id="fqCats"></div>
@@ -645,6 +644,9 @@
         </select></label>
         <label>월 <select id="rptMonth">
           <option value="">전체</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        </select></label>
+        <label>출처 <select id="rptSource">
+          <option value="">전체</option><option value="AI문의">AI문의</option><option value="이메일">이메일</option><option value="게시판">게시판</option>
         </select></label>
         <button class="fq-btn ghost" id="rptResetBtn">필터 초기화</button>
       </div>
