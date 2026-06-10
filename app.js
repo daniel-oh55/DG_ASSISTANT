@@ -3436,6 +3436,48 @@ function fqExtractUnnos(text) {
   return [...new Set(out)];
 }
 
+// 혼적 질문에서 화물 엔티티 추출 — UN/UNNO/맨 4자리(연도·단위 제외) → UN번호,
+// "2.1"·"Class 3"·"3류" 등 → CLASS. UN 바로 뒤(접속사 없이)에 붙은 클래스는 그 UN의 분류로 보정.
+// 반환: { rows:[{unno|null, class|null}], lookup:[UN번호…(조회 대상)] }
+function fqParseSegCargos(text) {
+  const t = String(text || '');
+  const VALID = new Set(['1', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2', '2.1', '2.2', '2.3', '3', '4.1', '4.2', '4.3', '5.1', '5.2', '6.1', '6.2', '7', '8', '9']);
+  const uns = []; const numSeen = new Set(); let m;
+  // UN/UNNO 접두 (항상)
+  const unRe = /U\s*\.?\s*N\s*\.?\s*(?:N\s*\.?\s*O|NO|No)?\s*\.?\s*[-#:]?\s*(\d{4})/gi;
+  while ((m = unRe.exec(t)) !== null) { uns.push({ unno: m[1], idx: m.index, end: unRe.lastIndex }); numSeen.add(m[1]); }
+  // 맨 4자리 숫자 (연도·단위 뒤따르면 제외, UN 범위 0001~3600)
+  const bareRe = /(\d{4})(?!\s*(?:년|월|일|원|개|대|톤|박스|호|%|kg|t\b))/gi;
+  while ((m = bareRe.exec(t)) !== null) {
+    const n = m[1];
+    if (numSeen.has(n)) continue;
+    if (uns.some(u => m.index >= u.idx && m.index < u.end)) continue;
+    if (+n >= 1 && +n <= 3600) { uns.push({ unno: n, idx: m.index, end: bareRe.lastIndex }); numSeen.add(n); }
+  }
+  // 클래스 토큰: "class/클래스 N", "N류/급", 또는 소수형 클래스(2.1 등)
+  const cls = [];
+  const cRe = /(?:class|클래스|클라스|등급)\s*[:#-]?\s*([1-9](?:\.[1-6])?)|([1-9](?:\.[1-6])?)\s*(?:류|급)|(1\.[1-6]|2\.[1-3]|4\.[1-3]|5\.[1-2]|6\.[1-2])/gi;
+  while ((m = cRe.exec(t)) !== null) cls.push({ cls: (m[1] || m[2] || m[3]), idx: m.index });
+  // UN 바로 뒤(≤10자, 접속사 없음)에 붙은 클래스는 그 UN의 분류로 보정
+  const usedC = new Set();
+  for (const u of uns) {
+    for (let i = 0; i < cls.length; i++) {
+      if (usedC.has(i)) continue;
+      const c = cls[i];
+      if (c.idx < u.end) continue;
+      const gap = t.substring(u.end, c.idx);
+      if (gap.length > 10) continue;
+      if (/[과와및\+\/,&·]|그리고|and/i.test(gap)) continue;   // 분리 접속 → 별개 화물
+      u.cls = c.cls; usedC.add(i); break;
+    }
+  }
+  const rows = []; const seen = new Set();
+  uns.sort((a, b) => a.idx - b.idx).forEach(u => { if (seen.has('U' + u.unno)) return; seen.add('U' + u.unno); rows.push({ unno: u.unno, class: (u.cls && VALID.has(u.cls)) ? u.cls : null }); });
+  cls.forEach((c, i) => { if (usedC.has(i) || !VALID.has(c.cls) || seen.has('C' + c.cls)) return; seen.add('C' + c.cls); rows.push({ unno: null, class: c.cls }); });
+  const lookup = [...new Set(rows.filter(r => r.unno).map(r => r.unno))];
+  return { rows, lookup };
+}
+
 async function fqAskAi() {
   const inputEl = document.getElementById('fqAiInput');
   const ansEl = document.getElementById('fqAiAnswer');
@@ -3455,8 +3497,11 @@ async function fqAskAi() {
   try {
     // 질문에 UN번호가 2개 이상이면 IMDG 7.2.4 격리표로 결정론적 판정 → 화면에 권위 결과로 직접 표시 + AI에 근거로 전달
     let segInfo = null, segChk = null, dgData = [];
-    let unnos = fqExtractUnnos(q);
-    if (unnos.length >= 2) {
+    const isSegQ = /혼적|격리|segregat|함께[^\n]{0,8}(적재|컨테이너|선적)|같은[^\n]{0,4}컨테이너/i.test(q);
+    const baseUn = fqExtractUnnos(q);
+    const parsed = isSegQ ? fqParseSegCargos(q) : { rows: baseUn.map(u => ({ unno: u, class: null })), lookup: baseUn };
+    let unnos = parsed.lookup;
+    if (unnos.length) {
       try {
         const dr = await fetch('/api/dg-search', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -3465,12 +3510,23 @@ async function fqAskAi() {
         const dj = await dr.json().catch(() => ({}));
         if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
       } catch (_) { /* 조회 실패 시 일반 답변으로 진행 */ }
-      if (dgData.length >= 2) {
-        const seenUn = new Set();
-        const rows = dgData
-          .map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: String(r.UNNO || r.unno || ''), name: r.Name || r.name }))
-          .filter(r => { if (seenUn.has(r.unno)) return false; seenUn.add(r.unno); return true; });   // UNNO 중복 제거(동일 UN 복수 DGL 행 방지)
-        segChk = fqSegregationCheck(rows);
+    }
+    {
+      const dgMap = {};
+      dgData.forEach(r => { const u = String(r.UNNO || r.unno || ''); if (u && !dgMap[u]) dgMap[u] = r; });   // UN 중복행 1건만
+      const finalRows = []; const seenKey = new Set();
+      for (const row of parsed.rows) {
+        if (row.unno) {
+          if (seenKey.has('U' + row.unno)) continue; seenKey.add('U' + row.unno);
+          const d = dgMap[row.unno] || {};
+          finalRows.push({ unno: row.unno, class: row.class || d.Class || d.class || null, sub: d.SUB || d.sub, name: d.Name || d.name || ('UN' + row.unno) });
+        } else if (row.class) {
+          if (seenKey.has('C' + row.class)) continue; seenKey.add('C' + row.class);
+          finalRows.push({ unno: null, class: row.class, sub: null, name: 'Class ' + row.class });   // 클래스 직접 입력 화물
+        }
+      }
+      if (finalRows.length >= 2) {
+        segChk = fqSegregationCheck(finalRows);
         segInfo = { verdict: segChk.verdict, allow: segChk.allow, worst: segChk.worst, detail: segChk.detail, anyAmbiguous: segChk.anyAmbiguous, cargos: segChk.cargos };
       }
     }
@@ -3492,8 +3548,9 @@ async function fqAskAi() {
 function fqSegPanelHtml(seg) {
   const color = seg.worst >= 3 ? '#b02020' : ((seg.anyAmbiguous || seg.allow === 'check') ? '#b8860b' : (seg.worst >= 1 ? '#b8860b' : '#1a7f37'));
   const cargoLine = (seg.cargos && seg.cargos.length) ? '<div style="font-size:12px;color:#666;margin-top:4px">대상: ' + seg.cargos.map(fqEsc).join(' / ') + '</div>' : '';
+  const lab = x => x.unno ? ('UN' + x.unno) : ('Class ' + (x.cls || '?'));
   const rows = (seg.pairs || []).map(p => {
-    const head = 'UN' + fqEsc(String(p.A.unno || '?')) + ' ↔ UN' + fqEsc(String(p.B.unno || '?'));
+    const head = fqEsc(lab(p.A)) + ' ↔ ' + fqEsc(lab(p.B));
     if (p.unknown) return '<li><b>' + head + '</b> : 클래스 미상 — 수동 확인 필요</li>';
     if (p.ambiguous) {
       const gl = p.groups.map(g => fqEsc(g.keys.join('·')) + '이면 <b>' + fqEsc(g.label) + '</b>').join(' · ');
@@ -3560,7 +3617,7 @@ function fqSegregationCheck(rows) {
     const set = new Set();
     fqExpandClass(r.class).forEach(c => set.add(c));
     fqExpandClass(r.sub).forEach(c => set.add(c));
-    return { unno: r.unno, name: r.name, cls: r.class, sub: r.sub, tokens: [...set] };
+    return { unno: r.unno, name: r.name, cls: r.class, sub: r.sub, tokens: [...set], label: r.unno ? ('UN' + r.unno) : ('Class ' + (r.class || '?')) };
   });
   const codeNames = { 0: 'X(격리 없음)', 1: '1 Away from(이격)', 2: '2 Separated from(격리)', 3: '3 완전구획 격리', 4: '4 종방향 구획 격리' };
   const pairs = [];
@@ -3595,13 +3652,15 @@ function fqSegregationCheck(rows) {
   else if (worst === 1) { verdict = '조건부 — 같은 컨테이너 적재 시 이격(Away from) 필요'; allow = 'cond'; }
   else { verdict = `격리 필요(${codeNames[worst]})`; allow = 'no'; }
   const detail = pairs.map(p => {
-    if (p.unknown) return `UN${p.A.unno || '?'} ↔ UN${p.B.unno || '?'}: 클래스 미상 — 확인 필요`;
-    if (p.ambiguous) return `UN${p.A.unno} ↔ UN${p.B.unno}: 세부분류별 — ` + p.groups.map(g => `${g.keys.join('·')}이면 ${g.label}`).join(' / ');
-    return `UN${p.A.unno} ↔ UN${p.B.unno}: ${p.groups.map(g => g.label).join(', ')}`;
+    if (p.unknown) return `${p.A.label} ↔ ${p.B.label}: 클래스 미상 — 확인 필요`;
+    if (p.ambiguous) return `${p.A.label} ↔ ${p.B.label}: 세부분류별 — ` + p.groups.map(g => `${g.keys.join('·')}이면 ${g.label}`).join(' / ');
+    return `${p.A.label} ↔ ${p.B.label}: ${p.groups.map(g => g.label).join(', ')}`;
   });
   return {
     worst, hasStar, anyAmbiguous, anyUnknown, verdict, allow, pairs, detail,
-    cargos: norm.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.cls}${r.sub && !/^[-–?\s]*$/.test(String(r.sub)) ? ', 부위험성 ' + r.sub : ''})`)
+    cargos: norm.map(r => r.unno
+      ? `UN${r.unno} ${r.name || ''} (Class ${r.cls}${r.sub && !/^[-–?\s]*$/.test(String(r.sub)) ? ', 부위험성 ' + r.sub : ''})`
+      : `Class ${r.cls} (직접 입력)`)
   };
 }
 
