@@ -4734,7 +4734,7 @@ function fqRenderPosts() {
     ? '<div class="fq-empty">등록된 문의가 없습니다. 새 문의를 작성해보세요.</div>'
     : fqPosts.map(p => {
       const isOpen = fqOpenPostId === p.id;
-      const canSeeBody = !p.isPrivate || fqAdminMode || (sessionStorage.getItem('fq_unlocked_' + p.id) === '1');
+      const canSeeBody = !p.isPrivate || fqAdminMode || sessionStorage.getItem('fq_reply_ok') === '1' || (sessionStorage.getItem('fq_unlocked_' + p.id) === '1');
       // 담당자용 카테고리 변경 옵션 (FAQ 카테고리). 기존 값이 목록에 없으면 상단에 추가.
       const pcats = (FQ_FAQ_DATA.categories || []).filter(c => c && c !== '전체');
       let catOpts = pcats.map(c => `<option value="${fqEsc(c)}"${c === p.category ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
@@ -4755,7 +4755,7 @@ function fqRenderPosts() {
             </div>
             <span class="fq-post-status ${p.status}">${p.status === 'answered' ? '✓ 답변완료' : '대기'}</span>
           </div>
-          <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <button class="fq-btn" onclick="fqUnlockPost(event,\'' + p.id + '\')">비밀번호 입력</button>'}</div>
+          <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <span style="color:var(--fq-muted);font-size:12px;">담당자는 비밀번호 1234로 열람·답글 가능</span> <button class="fq-btn" onclick="fqUnlockPost(event,\'' + p.id + '\')">비밀번호 입력</button>'}</div>
           ${p.answer ? `
             <div class="fq-post-answer">
               <div class="fq-post-answer-head">✓ 답변 — ${p.answerBy || '관리자'} · ${new Date(p.answeredAt).toLocaleString('ko')}</div>
@@ -4803,8 +4803,15 @@ async function fqUnlockPost(evt, id) {
   evt.stopPropagation();
   const post = fqPosts.find(p => p.id === id);
   if (!post) return;
-  const pwd = prompt('이 글의 비밀번호:');
+  const pwd = prompt('이 글의 비밀번호 (담당자는 1234 입력 시 모든 비밀글 열람):');
   if (!pwd) return;
+  // 담당자 마스터 비밀번호(1234) → 모든 비밀글 열람·답글 허용
+  if (pwd === FQ_CONFIG.REPLY_PWD) {
+    sessionStorage.setItem('fq_reply_ok', '1');
+    fqRenderPosts();
+    fqToast('✓ 담당자 인증 — 비밀글 열람/답글 가능', 'success');
+    return;
+  }
   const hash = await fqHash(pwd);
   if (hash === post.pwdHash) {
     sessionStorage.setItem('fq_unlocked_' + id, '1');
@@ -4818,10 +4825,12 @@ async function fqUnlockPost(evt, id) {
 // 답글 작성 요청 — 관리자는 바로, 그 외는 담당자 비밀번호(1234) 확인 후 작성 폼 오픈
 function fqRequestReply(id) {
   if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요:');
+    const pwd = prompt('담당자 비밀번호를 입력하세요 (1234):');
     if (pwd === null) return;
     if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
     sessionStorage.setItem('fq_reply_ok', '1');   // 세션 동안 재입력 생략
+    fqOpenPostId = id;                             // 해당 글 펼친 상태 유지
+    fqRenderPosts();                               // 비밀글 본문도 즉시 열람되도록 재렌더
   }
   fqOpenAnswerForm(id);
 }
