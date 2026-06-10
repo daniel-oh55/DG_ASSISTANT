@@ -3423,7 +3423,10 @@ async function fqAskAi() {
         if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
       } catch (_) { /* 조회 실패 시 일반 답변으로 진행 */ }
       if (dgData.length >= 2) {
-        const rows = dgData.map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: r.UNNO || r.unno, name: r.Name || r.name }));
+        const seenUn = new Set();
+        const rows = dgData
+          .map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: String(r.UNNO || r.unno || ''), name: r.Name || r.name }))
+          .filter(r => { if (seenUn.has(r.unno)) return false; seenUn.add(r.unno); return true; });   // UNNO 중복 제거(동일 UN 복수 DGL 행 방지)
         const chk = fqSegregationCheck(rows);
         segInfo = {
           verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail, conservative: chk.conservative,
