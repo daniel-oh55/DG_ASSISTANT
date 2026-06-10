@@ -4477,6 +4477,10 @@ header span {
 .fq-post.open .fq-post-actions { display: flex; }
 .fq-post-catedit { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--fq-muted); }
 .fq-post-catedit select { padding: 5px 8px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 12px; font-family: inherit; background: white; max-width: 220px; }
+/* 글머리(목록)에서 바로 카테고리 변경 — 인라인 드롭다운 */
+.fq-post-catsel-wrap { display: inline-flex; align-items: center; gap: 3px; }
+.fq-post-catsel { padding: 2px 6px; border: 1px solid var(--fq-border-s); border-radius: 10px; font-size: 11px; font-family: inherit; font-weight: 600; color: var(--fq-primary); background: #fff; cursor: pointer; max-width: 170px; }
+.fq-post-catsel:hover { border-color: var(--fq-accent); }
 .fq-answer-form { padding: 14px 16px; background: var(--fq-bg); border-top: 1px solid var(--fq-border); display: none; }
 .fq-answer-form.open { display: block; }
 .fq-answer-form textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; min-height: 80px; margin-bottom: 8px; }

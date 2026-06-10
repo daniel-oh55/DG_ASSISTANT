@@ -3312,6 +3312,7 @@ const FQ_AUDIT_CACHE_KEY = 'fq_audit_daily_v1';
 let fqAuditResults = {};   // { id: issueText } — 오류·모순이 발견된 항목
 let fqAuditMeta = { date: '', checked: 0 };
 let fqAuditRunning = false;
+let fqAuditedSigs = {};   // { id: 답변 시그니처 } — 이미 검토한 항목(증분 검토용)
 // 검토 대상: 답변이 있는 문의 (이메일/AI 항목 + 답변 달린 게시판 글)
 function fqAuditableRows() {
   const out = [];
@@ -3329,33 +3330,84 @@ function fqLoadAuditCache() {
   try {
     const c = JSON.parse(localStorage.getItem(FQ_AUDIT_CACHE_KEY) || '{}');
     if (c && c.results) { fqAuditResults = c.results; fqAuditMeta = { date: c.date || '', checked: c.checked || 0 }; }
+    if (c && c.audited) fqAuditedSigs = c.audited;
   } catch (e) {}
 }
-async function fqRunDailyAudit() {
+function fqAnsSig(a) { a = String(a || ''); return a.length + '|' + a.slice(0, 30) + '|' + a.slice(-30); }
+function fqSaveAuditCache() {
+  try { localStorage.setItem(FQ_AUDIT_CACHE_KEY, JSON.stringify({ date: fqAuditMeta.date, checked: fqAuditMeta.checked, results: fqAuditResults, audited: fqAuditedSigs })); } catch (e) {}
+}
+// 혼적/격리 항목의 IMDG 격리표 결정론적 판정 문자열 (감사 근거 주입용)
+function fqRowSeg(text, unMap) {
+  if (typeof fqParseSegCargos !== 'function' || typeof fqSegregationCheck !== 'function') return null;
+  const parsed = fqParseSegCargos(text);
+  if (!parsed.rows || parsed.rows.length < 2) return null;
+  const cargos = parsed.rows
+    .map(r => ({ class: r.class || (r.unno && unMap ? unMap[r.unno] : null), unno: r.unno, name: r.unno ? ('UN' + r.unno) : ('Class ' + (r.class || '?')) }))
+    .filter(c => c.class);
+  if (cargos.length < 2) return null;
+  const chk = fqSegregationCheck(cargos);
+  return chk.verdict + (chk.detail && chk.detail.length ? ' [' + chk.detail.join(' / ') + ']' : '');
+}
+// 증분 검토: 이미 검토한(시그니처 동일) 답변은 건너뛰고 새/변경된 답변만 검토
+async function fqRunDailyAudit(fullRecheck) {
   if (fqAuditRunning) return;
-  const rows = fqAuditableRows();
+  const all = fqAuditableRows();
   const statusEl = document.getElementById('rptAuditStatus');
-  if (!rows.length) {
-    fqAuditResults = {}; fqAuditMeta = { date: fqTodayStr(), checked: 0 };
+  // 사라진 항목은 결과·시그니처에서 정리
+  const liveIds = new Set(all.map(r => r.id));
+  Object.keys(fqAuditResults).forEach(id => { if (!liveIds.has(id)) delete fqAuditResults[id]; });
+  Object.keys(fqAuditedSigs).forEach(id => { if (!liveIds.has(id)) delete fqAuditedSigs[id]; });
+  if (!all.length) {
+    fqAuditResults = {}; fqAuditedSigs = {}; fqAuditMeta = { date: fqTodayStr(), checked: 0 };
+    fqSaveAuditCache();
     if (statusEl) statusEl.textContent = '검토할 답변(문의)이 아직 없습니다.';
     fqReportRender(); return;
   }
+  const targets = (fullRecheck === true) ? all : all.filter(r => fqAuditedSigs[r.id] !== fqAnsSig(r.a));
+  if (!targets.length) {
+    fqAuditMeta = { date: fqTodayStr(), checked: all.length };
+    fqSaveAuditCache();
+    if (statusEl) statusEl.textContent = '새로 검토할 답변이 없습니다 (모두 검토 완료).';
+    fqReportRender();
+    fqToast('새로 추가·변경된 답변이 없어 검토를 건너뛰었습니다', 'success');
+    return;
+  }
   fqAuditRunning = true;
-  if (statusEl) statusEl.innerHTML = '<span class="fq-spin" aria-hidden="true"></span> 답변 오류·모순 자동 검토 중…';
+  if (statusEl) statusEl.innerHTML = `<span class="fq-spin" aria-hidden="true"></span> 새 답변 ${targets.length}건 오류·모순 검토 중…`;
   try {
+    // 혼적/격리 항목에 IMDG 격리표 결정론적 판정을 근거로 주입(AI가 임의로 뒤집지 못하게)
+    const segTargets = targets.filter(r => /혼적|격리|segregat/i.test((r.q || '') + (r.a || '')));
+    if (segTargets.length) {
+      const allUn = [...new Set(targets.flatMap(r => (typeof fqExtractUnnos === 'function' ? fqExtractUnnos((r.q || '') + ' ' + (r.a || '')) : [])))];
+      let unMap = {};
+      if (allUn.length) {
+        try {
+          const dr = await fetch('/api/dg-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ unnos: allUn }) });
+          const dj = await dr.json().catch(() => ({}));
+          if (dr.ok && dj.ok && Array.isArray(dj.data)) dj.data.forEach(d => { const u = String(d.UNNO || d.unno || ''); if (u && !unMap[u]) unMap[u] = d.Class || d.class; });
+        } catch (_) {}
+      }
+      segTargets.forEach(r => { const sg = fqRowSeg((r.q || '') + ' ' + (r.a || ''), unMap); if (sg) r.seg = sg; });
+    }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'auditrows', rows: rows.map(r => ({ q: r.q, a: r.a, cat: r.cat })) })
+      body: JSON.stringify({ mode: 'auditrows', rows: targets.map(r => ({ q: r.q, a: r.a, cat: r.cat, seg: r.seg })) })
     });
     const j = await res.json().catch(() => ({}));
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
-    const map = {};
-    (j.issues || []).forEach(it => { const r = rows[it.i]; if (r) map[r.id] = it.issue; });
-    fqAuditResults = map;
-    fqAuditMeta = { date: fqTodayStr(), checked: rows.length };
-    try { localStorage.setItem(FQ_AUDIT_CACHE_KEY, JSON.stringify({ date: fqAuditMeta.date, checked: rows.length, results: map })); } catch (e) {}
+    const issueByIdx = {};
+    (j.issues || []).forEach(it => { issueByIdx[it.i] = it.issue; });
+    targets.forEach((r, i) => {
+      if (issueByIdx[i]) fqAuditResults[r.id] = issueByIdx[i];   // 문제 발견 → 등록
+      else delete fqAuditResults[r.id];                          // 재검토 후 깨끗 → 기존 표시 제거
+      fqAuditedSigs[r.id] = fqAnsSig(r.a);                       // 검토 완료 기록
+    });
+    fqAuditMeta = { date: fqTodayStr(), checked: all.length };
+    fqSaveAuditCache();
     fqReportRender();
-    fqToast('✓ 답변 검토 완료 — 오류·모순 ' + Object.keys(map).length + '건 발견', Object.keys(map).length ? 'warn' : 'success');
+    const newIssues = Object.keys(issueByIdx).length;
+    fqToast(`✓ 새 답변 ${targets.length}건 검토 — 오류·모순 ${newIssues}건`, newIssues ? 'warn' : 'success');
   } catch (e) {
     if (statusEl) statusEl.textContent = '검토 실패: ' + e.message;
   } finally { fqAuditRunning = false; }
@@ -4678,7 +4730,7 @@ function fqRenderPosts() {
                 ${(p.author && p.company) ? `<span>· ${fqEsc(p.author)}</span>` : ''}
                 <span>·</span>
                 <span class="fq-post-date">${new Date(p.createdAt).toLocaleString('ko')}</span>
-                ${p.category ? `<span>· ${fqEsc(p.category)}</span>` : ''}
+                <span class="fq-post-catsel-wrap" onclick="event.stopPropagation()" title="카테고리 — 담당자가 바로 변경 가능">🏷<select class="fq-post-catsel" onchange="fqChangePostCat('${p.id}', this.value)">${catOpts}</select></span>
                 ${p.isPrivate ? '<span class="fq-post-private-icon">🔒</span>' : ''}
               </div>
               <div class="fq-post-subject">${fqEsc(p.subject)}</div>
@@ -4693,7 +4745,6 @@ function fqRenderPosts() {
             </div>` : ''}
           <div class="fq-post-actions">
             <button class="fq-btn accent" onclick="fqRequestReply('${p.id}')">${p.answer ? '✏️ 답변 수정' : '✏️ 답글 작성 (담당자)'}</button>
-            ${fqAdminMode ? `<label class="fq-post-catedit" title="카테고리 변경 (담당자)">🏷 카테고리 <select onclick="event.stopPropagation()" onchange="fqChangePostCat('${p.id}', this.value)">${catOpts}</select></label>` : ''}
             ${fqAdminMode ? `<button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>` : ''}
           </div>
           <div class="fq-answer-form" id="fqAnsForm-${p.id}">
@@ -4715,7 +4766,13 @@ function fqTogglePost(id) {
 // 담당자: 게시판 문의의 카테고리 변경 (저장 + 공용 동기화 + 리포트 통계 반영)
 async function fqChangePostCat(id, cat) {
   const p = fqPosts.find(x => x.id === id);
-  if (!p) return;
+  if (!p || p.category === cat) return;
+  // 담당자 인증 (관리자 모드거나 이번 세션에 담당자 인증 완료면 통과)
+  if (!fqAdminMode && sessionStorage.getItem('fq_reply_ok') !== '1') {
+    const pwd = prompt('담당자 비밀번호를 입력하세요 (카테고리 변경):');
+    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); fqRenderPosts(); return; }
+    sessionStorage.setItem('fq_reply_ok', '1');
+  }
   p.category = cat;
   fqSavePosts();
   fqRenderPosts();
