@@ -484,10 +484,13 @@
     <!-- FAQ 패널 -->
     <div class="fq-panel active" data-fq-panel="faq">
       <div class="fq-controls">
-        <input type="search" class="fq-search" id="fqSearch" placeholder="🔍 FAQ 검색 (질문·답변·태그)">
+        <input type="search" class="fq-search" id="fqSearch" placeholder="🔍 키워드를 입력하면 관련 FAQ가 아래에 표시됩니다 (예: 리튬배터리 100Wh)">
         <button class="fq-btn ghost" id="fqExpandAll">모두 펴기</button>
         <button class="fq-btn ghost" id="fqCollapseAll">모두 접기</button>
-        <button class="fq-btn accent" id="fqAiBtn">🤖 AI에게 문의</button>
+        <span class="fq-ai-cta-wrap">
+          <span class="fq-ai-tip">💬 AI 문의로도 질문해보세요!</span>
+          <button class="fq-btn fq-ai-cta" id="fqAiBtn"><span class="fq-ai-spark">🤖</span> AI에게 문의</button>
+        </span>
         <button class="fq-btn accent" id="fqEmailUploadBtn">📧 이메일 문의 등록</button>
         <button class="fq-btn ghost" id="fqAdminBtn">🔐 관리자</button>
       </div>

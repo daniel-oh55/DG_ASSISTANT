@@ -3359,7 +3359,28 @@ function fqSaveFaq() {
 }
 
 function fqBindFaq(scope) {
-  scope.querySelector('#fqSearch').addEventListener('input', fqRenderFaq);
+  const fqSearchEl = scope.querySelector('#fqSearch');
+  fqSearchEl.addEventListener('input', fqRenderFaq);
+  // 검색창 예시 placeholder 회전 (입력/포커스 중이 아닐 때만) — 무엇을 검색할지 안내
+  if (fqSearchEl && !fqSearchEl._phRotating) {
+    fqSearchEl._phRotating = true;
+    const fqPhExamples = [
+      '🔍 키워드를 입력하면 관련 FAQ가 아래에 표시됩니다',
+      '🔍 예: 리튬배터리 100Wh 초과',
+      '🔍 예: 숯 UN1361 선적 가능?',
+      '🔍 예: 과탄산나트륨 금지',
+      '🔍 예: UN1950 에어로졸 격리',
+      '🔍 예: MSDS 14번 운송정보',
+      '🔍 예: 플렉시탱크 / 부식성 / 해양오염'
+    ];
+    let fqPhIdx = 0;
+    fqSearchEl.placeholder = fqPhExamples[0];
+    setInterval(() => {
+      if (document.activeElement === fqSearchEl || fqSearchEl.value) return;
+      fqPhIdx = (fqPhIdx + 1) % fqPhExamples.length;
+      fqSearchEl.placeholder = fqPhExamples[fqPhIdx];
+    }, 2800);
+  }
   scope.querySelector('#fqExpandAll').addEventListener('click', () => {
     scope.querySelectorAll('.fq-item').forEach(i => i.classList.add('open'));
   });
@@ -4282,16 +4303,36 @@ function fqRenderFaq() {
 
   // 목록 — 메인 FAQ는 정리된 시드 지식만 노출 (이메일/게시판 동적 항목은 제외, 각자 별도 영역에서 조회)
   let items = (FQ_FAQ_DATA.items || []).filter(i => !i.source);
-  if (fqCurrentCat !== '전체') items = items.filter(i => i.cat === fqCurrentCat);
+  // 검색어가 있으면 전(全) 카테고리 대상으로 검색(카테고리 제한 무시), 없으면 선택 카테고리만
+  if (!search && fqCurrentCat !== '전체') items = items.filter(i => i.cat === fqCurrentCat);
   if (search) {
-    items = items.filter(i => {
-      const hay = (i.q + ' ' + (i.a || '') + ' ' + ((i.tags || []).join(' '))).toLowerCase();
-      return hay.includes(search);
-    });
+    const tokens = search.split(/\s+/).filter(Boolean);   // 여러 단어 → 모두 포함(AND)
+    const scored = [];
+    for (const i of items) {
+      const q = (i.q || '').toLowerCase();
+      const tags = (i.tags || []).join(' ').toLowerCase();
+      const cat = (i.cat || '').toLowerCase();
+      const ans = (i.a || '').toLowerCase();
+      const hay = q + ' ' + tags + ' ' + cat + ' ' + ans;
+      if (!tokens.every(t => hay.includes(t))) continue;   // 모든 토큰이 어딘가 포함돼야 매칭
+      let score = 0;                                        // 관련도: 질문>태그>카테고리>답변
+      for (const t of tokens) {
+        if (q.includes(t)) score += 5;
+        if (tags.includes(t)) score += 3;
+        if (cat.includes(t)) score += 2;
+        if (ans.includes(t)) score += 1;
+      }
+      scored.push({ i, score });
+    }
+    items = scored.sort((a, b) => b.score - a.score).map(s => s.i);
   }
-  document.getElementById('fqList').innerHTML = items.length === 0
-    ? '<div class="fq-empty">해당 조건의 FAQ가 없습니다.</div>'
-    : items.map(i => `
+  const fqListEl = document.getElementById('fqList');
+  if (items.length === 0) {
+    fqListEl.innerHTML = '<div class="fq-empty">"' + fqEsc(search) + '" 에 대한 FAQ를 찾지 못했습니다.<br>다른 키워드로 검색하거나, 오른쪽 <b>🤖 AI에게 문의</b> 로 질문해 보세요.</div>';
+  } else {
+    fqListEl.innerHTML =
+      (search ? '<div class="fq-search-count">🔎 「' + fqEsc(search) + '」 검색 결과 ' + items.length + '건 (관련도순)</div>' : '') +
+      items.map(i => `
       <div class="fq-item" data-id="${i.id}">
         <div class="fq-q" onclick="fqToggleFaqItem('${i.id}')">
           <div style="flex:1;">
@@ -4302,6 +4343,7 @@ function fqRenderFaq() {
         </div>
         <div class="fq-a">${fqRenderText(i.a || '')}</div>
       </div>`).join('');
+  }
 
   // 관리자 도구 JSON 동기화
   const editor = document.getElementById('fqAdminEditor');
