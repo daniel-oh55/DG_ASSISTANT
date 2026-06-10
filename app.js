@@ -4539,6 +4539,10 @@ function fqRenderPosts() {
     : fqPosts.map(p => {
       const isOpen = fqOpenPostId === p.id;
       const canSeeBody = !p.isPrivate || fqAdminMode || (sessionStorage.getItem('fq_unlocked_' + p.id) === '1');
+      // 담당자용 카테고리 변경 옵션 (FAQ 카테고리). 기존 값이 목록에 없으면 상단에 추가.
+      const pcats = (FQ_FAQ_DATA.categories || []).filter(c => c && c !== '전체');
+      let catOpts = pcats.map(c => `<option value="${fqEsc(c)}"${c === p.category ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
+      if (p.category && !pcats.includes(p.category)) catOpts = `<option value="${fqEsc(p.category)}" selected>${fqEsc(p.category)}</option>` + catOpts;
       return `
         <div class="fq-post ${isOpen ? 'open' : ''}" data-id="${p.id}">
           <div class="fq-post-head" onclick="fqTogglePost('${p.id}')">
@@ -4563,6 +4567,7 @@ function fqRenderPosts() {
             </div>` : ''}
           <div class="fq-post-actions">
             <button class="fq-btn accent" onclick="fqRequestReply('${p.id}')">${p.answer ? '✏️ 답변 수정' : '✏️ 답글 작성 (담당자)'}</button>
+            ${fqAdminMode ? `<label class="fq-post-catedit" title="카테고리 변경 (담당자)">🏷 카테고리 <select onclick="event.stopPropagation()" onchange="fqChangePostCat('${p.id}', this.value)">${catOpts}</select></label>` : ''}
             ${fqAdminMode ? `<button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>` : ''}
           </div>
           <div class="fq-answer-form" id="fqAnsForm-${p.id}">
@@ -4579,6 +4584,18 @@ function fqRenderPosts() {
 function fqTogglePost(id) {
   fqOpenPostId = (fqOpenPostId === id) ? null : id;
   fqRenderPosts();
+}
+
+// 담당자: 게시판 문의의 카테고리 변경 (저장 + 공용 동기화 + 리포트 통계 반영)
+async function fqChangePostCat(id, cat) {
+  const p = fqPosts.find(x => x.id === id);
+  if (!p) return;
+  p.category = cat;
+  fqSavePosts();
+  fqRenderPosts();
+  if (typeof fqReportRender === 'function') fqReportRender();
+  try { await fqPushPostsRemote(); fqToast('✓ 카테고리 변경 저장됨', 'success'); }
+  catch (e) { fqToast('카테고리 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
 }
 
 async function fqUnlockPost(evt, id) {

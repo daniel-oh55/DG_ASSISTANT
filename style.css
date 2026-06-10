@@ -4451,8 +4451,10 @@ header span {
 .fq-post-answer { padding: 14px 16px; background: var(--fq-ok-bg); border-top: 1px solid var(--fq-border); font-size: 13px; line-height: 1.65; white-space: pre-wrap; display: none; }
 .fq-post-answer-head { font-size: 11px; font-weight: 700; color: var(--fq-ok); margin-bottom: 6px; letter-spacing: 0.04em; }
 .fq-post.open .fq-post-answer { display: block; }
-.fq-post-actions { padding: 12px 16px; display: flex; gap: 6px; border-top: 1px solid var(--fq-border); display: none; flex-wrap: wrap; }
+.fq-post-actions { padding: 12px 16px; display: flex; gap: 6px; border-top: 1px solid var(--fq-border); display: none; flex-wrap: wrap; align-items: center; }
 .fq-post.open .fq-post-actions { display: flex; }
+.fq-post-catedit { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--fq-muted); }
+.fq-post-catedit select { padding: 5px 8px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 12px; font-family: inherit; background: white; max-width: 220px; }
 .fq-answer-form { padding: 14px 16px; background: var(--fq-bg); border-top: 1px solid var(--fq-border); display: none; }
 .fq-answer-form.open { display: block; }
 .fq-answer-form textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-size: 13px; font-family: inherit; min-height: 80px; margin-bottom: 8px; }
