@@ -703,7 +703,8 @@ function activateTab(targetId) {
     if (targetId === 'tab-report' && typeof fqReportRender === 'function') {
         if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote();
         if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote();
-        fqReportRender();
+        if (typeof fqAuditAutoCheck === 'function') fqAuditAutoCheck();   // 정오 기준 하루 1회 답변 자동 검토
+        else fqReportRender();
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3158,6 +3159,7 @@ function fqInit(scope) {
   scope = scope || document;
   fqLoadFaq();
   fqLoadPosts();
+  fqLoadAuditCache();   // 오류·모순 검토 결과 캐시(플래그 표시용) 로드
   fqBindTabs(scope);
   fqBindFaq(scope);
   fqBindBoard(scope);
@@ -3253,17 +3255,31 @@ function fqReportRender() {
     const undated = filtered.filter(x => !x.date).length;
     const badgeCls = { 'AI문의': 'ai', '이메일': 'eml', '게시판': 'brd' };
     const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const body = withDate.map(x =>
-      '<div class="rpt-li">' +
-      '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
-      '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
-      '<span class="rpt-li-cat">' + fqEsc(x.cat) + '</span>' +
-      '<span class="rpt-li-q" title="' + fqEsc(x.q || '') + '">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
-      '</div>').join('');
+    const body = withDate.map(x => {
+      const issue = fqAuditResults[x.id];   // 답변 오류·모순 발견 시 표시
+      const flag = issue ? '<button class="rpt-flag" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="답변 오류·모순 발견 — 클릭해 확인/수정">❗ 오류체크</button>' : '';
+      const detail = issue ? '<div class="rpt-audit-detail" id="fqAuditDetail-' + x.id + '" hidden></div>' : '';
+      return '<div class="rpt-li' + (issue ? ' rpt-li-flagged' : '') + '">' +
+        '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
+        '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
+        '<span class="rpt-li-cat">' + fqEsc(x.cat) + '</span>' +
+        '<span class="rpt-li-q" title="' + fqEsc(x.q || '') + '">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
+        flag +
+        '</div>' + detail;
+    }).join('');
     listEl.innerHTML = (withDate.length || undated)
       ? '<div class="rpt-li rpt-li-head"><span class="rpt-li-date">날짜</span><span class="rpt-li-src">출처</span><span class="rpt-li-cat">카테고리</span><span class="rpt-li-q">문의 내용</span></div>' +
         body + (undated ? '<div class="rpt-li rpt-li-undated">· 날짜 미상 ' + undated + '건</div>' : '')
       : '<div class="fq-empty">해당 기간에 등록된 문의가 없습니다.</div>';
+  }
+
+  // 답변 검토 상태 표시
+  const auditStatusEl = document.getElementById('rptAuditStatus');
+  if (auditStatusEl && !fqAuditRunning) {
+    const n = Object.keys(fqAuditResults || {}).length;
+    auditStatusEl.textContent = fqAuditMeta.date
+      ? `최근 답변 검토: ${fqAuditMeta.date} · 점검 ${fqAuditMeta.checked}건 · 오류·모순 ${n}건` + (n ? ' → 목록의 ❗ 오류체크 클릭' : '')
+      : '아직 자동 검토 전입니다. [지금 답변 검토]를 눌러 실행하세요. (매일 12시 이후 첫 열람 시 자동 검토)';
   }
 }
 // AI 답변 검토 (오류·모순 탐지) — faq-ai mode='audit'
@@ -3291,6 +3307,114 @@ async function fqRunAudit() {
     out.innerHTML = '<div class="fq-ai-error">검토 실패: ' + fqEsc(e.message) + '</div>';
   } finally { if (btn) btn.disabled = false; }
 }
+// ═══ 항목별 답변 오류·모순 자동 검토 (하루 1회 정오 기준) ═══
+const FQ_AUDIT_CACHE_KEY = 'fq_audit_daily_v1';
+let fqAuditResults = {};   // { id: issueText } — 오류·모순이 발견된 항목
+let fqAuditMeta = { date: '', checked: 0 };
+let fqAuditRunning = false;
+// 검토 대상: 답변이 있는 문의 (이메일/AI 항목 + 답변 달린 게시판 글)
+function fqAuditableRows() {
+  const out = [];
+  (FQ_FAQ_DATA.items || []).forEach(i => {
+    if ((i.source === 'email' || i.source === 'ai') && i.q && i.a)
+      out.push({ id: i.id, q: i.q, a: i.a, cat: i.cat || '', src: i.source === 'ai' ? 'AI문의' : '이메일' });
+  });
+  (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).forEach(p => {
+    if (p.answer && p.subject)
+      out.push({ id: p.id, q: p.subject + (p.body ? ' / ' + p.body : ''), a: p.answer, cat: p.category || '', src: '게시판' });
+  });
+  return out;
+}
+function fqLoadAuditCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(FQ_AUDIT_CACHE_KEY) || '{}');
+    if (c && c.results) { fqAuditResults = c.results; fqAuditMeta = { date: c.date || '', checked: c.checked || 0 }; }
+  } catch (e) {}
+}
+async function fqRunDailyAudit() {
+  if (fqAuditRunning) return;
+  const rows = fqAuditableRows();
+  const statusEl = document.getElementById('rptAuditStatus');
+  if (!rows.length) {
+    fqAuditResults = {}; fqAuditMeta = { date: fqTodayStr(), checked: 0 };
+    if (statusEl) statusEl.textContent = '검토할 답변(문의)이 아직 없습니다.';
+    fqReportRender(); return;
+  }
+  fqAuditRunning = true;
+  if (statusEl) statusEl.innerHTML = '<span class="fq-spin" aria-hidden="true"></span> 답변 오류·모순 자동 검토 중…';
+  try {
+    const res = await fetch('/api/faq-ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'auditrows', rows: rows.map(r => ({ q: r.q, a: r.a, cat: r.cat })) })
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    const map = {};
+    (j.issues || []).forEach(it => { const r = rows[it.i]; if (r) map[r.id] = it.issue; });
+    fqAuditResults = map;
+    fqAuditMeta = { date: fqTodayStr(), checked: rows.length };
+    try { localStorage.setItem(FQ_AUDIT_CACHE_KEY, JSON.stringify({ date: fqAuditMeta.date, checked: rows.length, results: map })); } catch (e) {}
+    fqReportRender();
+    fqToast('✓ 답변 검토 완료 — 오류·모순 ' + Object.keys(map).length + '건 발견', Object.keys(map).length ? 'warn' : 'success');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '검토 실패: ' + e.message;
+  } finally { fqAuditRunning = false; }
+}
+// 정오(12시) 기준 하루 1회 자동 검토 — 정적 사이트라 정오 이후 첫 접속(리포트 열람) 시 실행
+function fqAuditAutoCheck() {
+  fqLoadAuditCache();
+  if (fqAuditMeta.date !== fqTodayStr() && new Date().getHours() >= 12) fqRunDailyAudit();
+  else fqReportRender();
+}
+// 원본 문의/답변 + 지적된 오류 + 담당자 결정 → AI 수정요청 텍스트 구성
+function fqComposeFix(id) {
+  const row = fqAuditableRows().find(r => r.id === id) || {};
+  const dec = (document.getElementById('fqAdDec-' + id) || {}).value || '';
+  const issue = fqAuditResults[id] || '';
+  return '[문의]\n' + (row.q || '') + '\n\n[현재 답변]\n' + (row.a || '') + '\n\n[지적된 오류·모순]\n' + issue +
+    '\n\n[담당자 결정/수정 방향]\n' + (dec || '(미입력)') +
+    '\n\n위 [지적된 오류]와 [담당자 결정]을 반영해 IMDG Code 기준으로 정정된 최종 답변을 작성해줘.';
+}
+function fqToggleAuditDetail(id) {
+  const box = document.getElementById('fqAuditDetail-' + id);
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; box.innerHTML = ''; return; }
+  const issue = fqAuditResults[id] || '(내용 없음)';
+  box.innerHTML =
+    '<div class="rpt-ad-issue"><b>⚠️ 지적된 오류·모순</b><div>' + fqEsc(issue) + '</div></div>' +
+    '<label class="rpt-ad-label">담당자 결정 / 수정 방향 (직접 입력)</label>' +
+    '<textarea class="rpt-ad-decision" id="fqAdDec-' + id + '" placeholder="예: 산+염기 격리는 Away from(1)로 정정. 근거: IMDG 7.2.4 …"></textarea>' +
+    '<div class="rpt-ad-actions">' +
+      '<button class="fq-btn ghost" onclick="fqCopyAuditFix(\'' + id + '\')">📋 수정요청 복사</button>' +
+      '<button class="fq-btn primary" onclick="fqAiFixAnswer(\'' + id + '\')">🤖 AI 수정안 작성</button>' +
+    '</div>' +
+    '<div class="rpt-ad-result" id="fqAdRes-' + id + '"></div>';
+  box.hidden = false;
+}
+function fqCopyAuditFix(id) {
+  const txt = fqComposeFix(id);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(
+      () => fqToast('✓ 수정요청 내용 복사됨 — AI 문의 등에 붙여넣어 사용하세요', 'success'),
+      () => fqToast('복사 실패 — 직접 선택해 복사하세요', 'warn'));
+  } else { fqToast('이 브라우저는 자동 복사를 지원하지 않습니다', 'warn'); }
+}
+async function fqAiFixAnswer(id) {
+  const resEl = document.getElementById('fqAdRes-' + id);
+  if (resEl) resEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span> AI가 수정안을 작성 중…</div>';
+  try {
+    const res = await fetch('/api/faq-ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: fqComposeFix(id), context: [] })
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    if (resEl) resEl.innerHTML = '<div class="fq-ai-result"><b>🤖 AI 수정안 (담당자 검토 후 반영)</b><br>' + fqRenderText(j.answer || '(빈 응답)') + '</div>';
+  } catch (e) {
+    if (resEl) resEl.innerHTML = '<div class="fq-ai-error">수정안 작성 실패: ' + fqEsc(e.message) + '</div>';
+  }
+}
+
 // ── 위험물 사고 뉴스 (하루 1회 조회, 헤드라인+위험물/선적금지 의견) ──
 const FQ_NEWS_CACHE_KEY = 'fq_dg_news_v1';
 function fqTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -3366,6 +3490,8 @@ function fqBindReport(scope) {
   });
   const audit = scope.querySelector('#rptAuditBtn');
   if (audit) audit.addEventListener('click', fqRunAudit);
+  const auditNow = scope.querySelector('#rptAuditNowBtn');
+  if (auditNow) auditNow.addEventListener('click', fqRunDailyAudit);
 }
 
 // ═══════════════════════════════════════════════════════════════

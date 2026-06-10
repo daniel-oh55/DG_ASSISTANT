@@ -63,8 +63,8 @@ module.exports = async function handler(req, res) {
     }
 
     const body = req.body || {};
-    const mode = ['reply', 'audit', 'news'].includes(body.mode) ? body.mode : 'answer';
-    const { question, context, subject, inquiry, dgData, unnos, segInfo } = body;
+    const mode = ['reply', 'audit', 'auditrows', 'news'].includes(body.mode) ? body.mode : 'answer';
+    const { question, context, subject, inquiry, dgData, unnos, segInfo, rows } = body;
 
     // ───────────────────────── 위험물 사고 뉴스 (news) ─────────────────────────
     if (mode === 'news') {
@@ -303,6 +303,37 @@ ${ctxText || '(제공된 자료 없음)'}`;
       const audit = await gen(auditPrompt, 0.2);
       if (!audit) return res.status(500).json({ ok: false, message: 'AI가 응답을 반환하지 않았습니다.' });
       return res.status(200).json({ ok: true, model, audit, used: ctx.length });
+    }
+
+    // ─── 항목별 답변 오류·모순 검출 (auditrows) — JSON 배열 반환 ───
+    if (mode === 'auditrows') {
+      const list = Array.isArray(rows) ? rows.slice(0, 80) : [];
+      if (list.length < 1) return res.status(200).json({ ok: true, issues: [] });
+      const listText = list.map((r, i) =>
+        `${i}. (분류: ${r.cat || '-'})\nQ: ${String(r.q || '').slice(0, 500)}\nA: ${String(r.a || '').slice(0, 1500)}`
+      ).join('\n---\n');
+      const prompt = `당신은 장금상선/흥아라인 운항팀 위험물(DG) 품질 검토 AI입니다.
+아래 번호가 매겨진 [문의·답변] 목록에서, 답변에 **IMDG Code 기준 명백한 오류**가 있거나 다른 항목과 **서로 모순**되는 항목만 골라내세요.
+규칙:
+- 확실한 것만 보고하세요(애매하거나 단지 더 자세히 쓸 수 있는 정도는 제외).
+- 출력은 **JSON 배열만** 출력하세요(설명·마크다운·코드펜스 금지).
+- 형식: [{"i": <번호>, "issue": "<무엇이 왜 오류인지, 또는 몇 번 항목과 어떻게 모순인지 1~2문장 한국어>"}]
+- 오류·모순이 없으면 [] 만 출력하세요.
+
+[문의·답변 목록]
+${listText}`;
+      const raw = await gen(prompt, 0);
+      let issues = [];
+      try {
+        let s = String(raw || '').replace(/```json|```/gi, '').trim();
+        const a = s.indexOf('['), b = s.lastIndexOf(']');
+        if (a >= 0 && b > a) s = s.slice(a, b + 1);
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) issues = parsed
+          .filter(x => x && typeof x.i === 'number' && x.issue)
+          .map(x => ({ i: x.i, issue: String(x.issue).slice(0, 600) }));
+      } catch (e) { /* 파싱 실패 → 빈 결과 */ }
+      return res.status(200).json({ ok: true, model, issues, checked: list.length });
     }
 
     // ───────────────────────── FAQ 답변(answer, 기본) ─────────────────────────
