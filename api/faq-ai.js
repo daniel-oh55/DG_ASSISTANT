@@ -249,7 +249,7 @@ Decision rules (important):
 - Example: if the table allows mixing but the item is on the company prohibited list -> "Stowage/segregation itself is acceptable, but the cargo cannot be shipped as it is on our prohibited list."
 - When no segregation is required, express it as IMDG-standard "X (may be stowed in the same container)" or "No segregation required" — never "code 0".
 - If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values.
-- If the verdict is "needs check", do not assert — explain why.
+- If the verdict is "needs check", do not assert — explain why. If a segregation code is given as "varies by sub-division", present it per division (e.g., if 2.1 then …, if 2.2 then …) and advise confirming the actual classification.
 - One clear conclusion. No speculation.
 
 ${sources}
@@ -269,7 +269,7 @@ Last line: "* This is an AI-generated draft. Final acceptance is subject to the 
 - 예시: 격리표상 혼적은 가능하나 해당 품목이 사내 금지품목이면 → "혼적 자체는 가능하나, 당사 금지 위험물이므로 선적은 불가합니다"로 안내.
 - 격리 요건이 없을 때는 "코드 0"이 아니라 IMDG 표준 표기대로 **"X(같은 컨테이너 적재 가능)"** 또는 **"격리 요건 없음"**으로 표현하세요.
 - 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요).
-- 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요.
+- 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요. 격리코드가 '세부분류에 따라 상이'로 제공되면 분류별로(예: 2.1이면 …, 2.2면 …) 나눠 안내하고 실제 분류 확인을 권고하세요.
 - 결론은 하나로 명확히. 추측 금지.
 
 ${sources}
@@ -325,6 +325,7 @@ ${ctxText || '(제공된 자료 없음)'}`;
 - DB에 직접 근거가 없으면 먼저 "사내 DB에는 직접 자료가 없어 일반 규정 기준으로 안내드립니다"라고 밝히고 일반 IMDG Code 지식으로 신중히 답하세요.
 - **혼적·격리 코드 질문은 아래 [IMDG 격리표 판정 결과]만을 유일한 근거로 사용하세요. 임의로 다른 코드로 바꾸지 마세요(예: 표가 'Separated from(2)'이면 'Away from(1)'으로 답하지 말 것).**
 - **격리 요건이 없을 때는 "코드 0"이 아니라 IMDG 표준 표기 "X(같은 컨테이너 적재 가능)" 또는 "격리 요건 없음"으로 표현하세요. 격리표 판정이 '확인 필요/미상'이면 단정하지 말고 그 사유를 안내하세요.**
+- **격리코드가 '세부분류에 따라 상이'로 제공되면 하나로 단정하지 말고, 제공된 그대로 분류별로(예: 2.1(인화성)이면 …, 2.2(비인화성)면 …) 나눠 안내하고 실제 제품 분류 확인을 권고하세요.**
 - 회사 정책과 IMDG 일반 규정을 구분하세요. 불확실하면 담당자 확인 권고. 사실을 지어내지 마세요.
 - 마크다운으로 읽기 쉽게. 끝에 "※ 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."
 
