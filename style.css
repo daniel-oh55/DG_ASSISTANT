@@ -4340,6 +4340,14 @@ header span {
 .rpt-ad-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .rpt-ad-result { margin-top: 10px; }
 @media (prefers-reduced-motion: reduce) { .rpt-flag { animation: none; } }
+/* 문의 내역 — 문의내용 클릭 시 답변 펼침 */
+.rpt-li-q-click { cursor: pointer; }
+.rpt-li-q-click:hover { text-decoration: underline; color: var(--fq-primary); }
+.rpt-ans { padding: 10px 14px 12px; background: var(--fq-bg); border-bottom: 1px solid var(--fq-border); font-size: 12.5px; line-height: 1.65; }
+.rpt-ans-q { color: var(--fq-muted); margin-bottom: 6px; }
+.rpt-ans-a { color: var(--fq-text); }
+.rpt-ans-a b, .rpt-ans-q b { color: var(--fq-primary); }
+.rpt-ans-empty { color: var(--fq-muted); font-style: italic; }
 @media (prefers-reduced-motion: reduce) {
   .fq-ai-cta, .fq-ai-spark, .fq-ai-tip { animation: none; }
 }

@@ -3263,9 +3263,10 @@ function fqReportRender() {
         '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
         '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
         '<span class="rpt-li-cat">' + fqEsc(x.cat) + '</span>' +
-        '<span class="rpt-li-q" title="' + fqEsc(x.q || '') + '">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
+        '<span class="rpt-li-q rpt-li-q-click" title="클릭 시 답변 펼치기" onclick="fqToggleRptAnswer(\'' + x.id + '\')">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
         flag +
-        '</div>' + detail;
+        '</div>' + detail +
+        '<div class="rpt-ans" id="fqRptAns-' + x.id + '" hidden></div>';
     }).join('');
     listEl.innerHTML = (withDate.length || undated)
       ? '<div class="rpt-li rpt-li-head"><span class="rpt-li-date">날짜</span><span class="rpt-li-src">출처</span><span class="rpt-li-cat">카테고리</span><span class="rpt-li-q">문의 내용</span></div>' +
@@ -3279,7 +3280,7 @@ function fqReportRender() {
     const n = Object.keys(fqAuditResults || {}).length;
     auditStatusEl.textContent = fqAuditMeta.date
       ? `최근 답변 검토: ${fqAuditMeta.date} · 점검 ${fqAuditMeta.checked}건 · 오류·모순 ${n}건` + (n ? ' → 목록의 ❗ 오류체크 클릭' : '')
-      : '아직 자동 검토 전입니다. [지금 답변 검토]를 눌러 실행하세요. (매일 12시 이후 첫 열람 시 자동 검토)';
+      : '[새 답변 검토] 버튼을 눌러 답변 오류·모순을 검토하세요. (새/변경된 답변만 검토)';
   }
 }
 // AI 답변 검토 (오류·모순 탐지) — faq-ai mode='audit'
@@ -3412,11 +3413,10 @@ async function fqRunDailyAudit(fullRecheck) {
     if (statusEl) statusEl.textContent = '검토 실패: ' + e.message;
   } finally { fqAuditRunning = false; }
 }
-// 정오(12시) 기준 하루 1회 자동 검토 — 정적 사이트라 정오 이후 첫 접속(리포트 열람) 시 실행
+// 리포트 열람 시: 캐시된 검토결과(플래그)만 표시 — 검토는 [새 답변 검토] 버튼으로만 수동 실행
 function fqAuditAutoCheck() {
   fqLoadAuditCache();
-  if (fqAuditMeta.date !== fqTodayStr() && new Date().getHours() >= 12) fqRunDailyAudit();
-  else fqReportRender();
+  fqReportRender();
 }
 // 원본 문의/답변 + 지적된 오류 + 담당자 결정 → AI 수정요청 텍스트 구성
 function fqComposeFix(id) {
@@ -3426,6 +3426,24 @@ function fqComposeFix(id) {
   return '[문의]\n' + (row.q || '') + '\n\n[현재 답변]\n' + (row.a || '') + '\n\n[지적된 오류·모순]\n' + issue +
     '\n\n[담당자 결정/수정 방향]\n' + (dec || '(미입력)') +
     '\n\n위 [지적된 오류]와 [담당자 결정]을 반영해 IMDG Code 기준으로 정정된 최종 답변을 작성해줘.';
+}
+// 문의 내역 행의 문의내용 클릭 → 해당 문의의 답변을 아래에 펼침/접기
+function fqToggleRptAnswer(id) {
+  const box = document.getElementById('fqRptAns-' + id);
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; box.innerHTML = ''; return; }
+  let q = '', a = '';
+  const it = (FQ_FAQ_DATA.items || []).find(x => x.id === id);
+  if (it) { q = it.q || ''; a = it.a || ''; }
+  else {
+    const p = (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).find(x => x.id === id);
+    if (p) { q = p.subject || ''; a = p.answer || ''; }
+  }
+  box.innerHTML =
+    (q ? '<div class="rpt-ans-q"><b>문의</b> ' + fqEsc(q) + '</div>' : '') +
+    (a ? '<div class="rpt-ans-a"><b>답변</b><br>' + fqRenderText(a) + '</div>'
+       : '<div class="rpt-ans-empty">아직 등록된 답변이 없습니다.</div>');
+  box.hidden = false;
 }
 function fqToggleAuditDetail(id) {
   const box = document.getElementById('fqAuditDetail-' + id);
