@@ -1,6 +1,11 @@
 {
   "name": "dg-assistant",
   "version": "1.0.0",
+  "scripts": {
+    "fix-class:check": "node scripts/fix-dg-class.js",
+    "fix-class:csv":   "node scripts/fix-dg-class.js --csv",
+    "fix-class:apply": "node scripts/fix-dg-class.js --apply"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
   }
