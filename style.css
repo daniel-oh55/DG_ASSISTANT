@@ -4295,6 +4295,29 @@ header span {
   50%     { transform: translateX(-50%) translateY(-3px); }
 }
 .fq-search-count { font-size: 12px; color: var(--fq-muted); margin: 2px 0 10px; font-weight: 600; }
+
+/* AI 문의 — 답변확인/새문의 버튼 영역 */
+.fq-ai-actions { margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fq-ai-actions .fq-btn { white-space: nowrap; }
+.fq-ai-save-hint { font-size: 11.5px; color: var(--fq-muted); }
+
+/* 관리자 리포트 — 문의 내역 리스트 */
+.rpt-list-head { margin: 18px 0 8px; font-size: 13px; font-weight: 700; color: var(--fq-primary); }
+.rpt-list { display: flex; flex-direction: column; border: 1px solid var(--fq-border); border-radius: var(--fq-radius-sm); overflow: hidden; max-height: 460px; overflow-y: auto; background: white; }
+.rpt-li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--fq-border); font-size: 12.5px; }
+.rpt-li:last-child { border-bottom: none; }
+.rpt-li-head { background: var(--fq-bg); font-weight: 700; color: var(--fq-muted); position: sticky; top: 0; z-index: 1; }
+.rpt-li-date { flex: 0 0 92px; font-family: 'Space Mono', monospace; color: var(--fq-text); }
+.rpt-li-src { flex: 0 0 64px; }
+.rpt-li-cat { flex: 0 0 150px; color: var(--fq-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rpt-li-q { flex: 1; min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fq-text); }
+.rpt-li-undated { color: var(--fq-muted); font-style: italic; }
+.rpt-src { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10.5px; font-weight: 700; color: #fff; }
+.rpt-src-ai  { background: #6D5EF8; }
+.rpt-src-eml { background: #2EC4B6; }
+.rpt-src-brd { background: #F59E0B; }
+.rpt-src-etc { background: #94A3B8; }
+@media (max-width: 640px) { .rpt-li-cat { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .fq-ai-cta, .fq-ai-spark, .fq-ai-tip { animation: none; }
 }

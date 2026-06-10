@@ -3197,14 +3197,17 @@ function fqItemDate(i) {
   if (m) { const ms = parseInt(m[1], 36); if (ms > 1577836800000 && ms < 4102444800000) return new Date(ms); }
   return null;
 }
-// 통계 대상: 등록된 이메일 문의(FAQ items source==='email') + 게시판 글
+// 통계 대상: 등록된 이메일 문의(source==='email') + AI 문의(source==='ai') + 게시판 글
 function fqReportInquiries() {
   const out = [];
   (FQ_FAQ_DATA.items || []).filter(i => i.source === 'email').forEach(i => {
-    out.push({ date: fqItemDate(i), cat: i.cat || '기타', src: '이메일' });
+    out.push({ date: fqItemDate(i), cat: i.cat || '기타', src: '이메일', q: i.q || '', id: i.id });
+  });
+  (FQ_FAQ_DATA.items || []).filter(i => i.source === 'ai').forEach(i => {
+    out.push({ date: fqItemDate(i), cat: i.cat || '기타', src: 'AI문의', q: i.q || '', id: i.id });
   });
   (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).forEach(p => {
-    out.push({ date: p.createdAt ? new Date(p.createdAt) : null, cat: p.category || '기타', src: '게시판' });
+    out.push({ date: p.createdAt ? new Date(p.createdAt) : null, cat: p.category || '기타', src: '게시판', q: p.title || p.subject || p.q || '', id: p.id });
   });
   return out;
 }
@@ -3241,14 +3244,36 @@ function fqReportRender() {
   if (barsEl) barsEl.innerHTML = rows.length
     ? rows.map(([c, n]) => `<div class="rpt-bar-row"><span class="rpt-bar-label">${fqEsc(c)}</span><span class="rpt-bar"><span class="rpt-bar-fill" style="width:${Math.round(n / max * 100)}%"></span></span><span class="rpt-bar-val">${n}건 · ${total ? Math.round(n / total * 100) : 0}%</span></div>`).join('')
     : '<div class="fq-empty">해당 기간에 등록된 문의가 없습니다.</div>';
+
+  // 문의 리스트 (연/월/일별 — 날짜 내림차순). AI문의·이메일·게시판을 한 곳에서 확인
+  const listEl = document.getElementById('rptList');
+  if (listEl) {
+    const withDate = filtered.filter(x => x.date).sort((a, b) => b.date - a.date);
+    const undated = filtered.filter(x => !x.date).length;
+    const badgeCls = { 'AI문의': 'ai', '이메일': 'eml', '게시판': 'brd' };
+    const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const body = withDate.map(x =>
+      '<div class="rpt-li">' +
+      '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
+      '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
+      '<span class="rpt-li-cat">' + fqEsc(x.cat) + '</span>' +
+      '<span class="rpt-li-q" title="' + fqEsc(x.q || '') + '">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
+      '</div>').join('');
+    listEl.innerHTML = (withDate.length || undated)
+      ? '<div class="rpt-li rpt-li-head"><span class="rpt-li-date">날짜</span><span class="rpt-li-src">출처</span><span class="rpt-li-cat">카테고리</span><span class="rpt-li-q">문의 내용</span></div>' +
+        body + (undated ? '<div class="rpt-li rpt-li-undated">· 날짜 미상 ' + undated + '건</div>' : '')
+      : '<div class="fq-empty">해당 기간에 등록된 문의가 없습니다.</div>';
+  }
 }
 // AI 답변 검토 (오류·모순 탐지) — faq-ai mode='audit'
 async function fqRunAudit() {
   const out = document.getElementById('rptAuditResult');
   const btn = document.getElementById('rptAuditBtn');
   if (!out) return;
-  const items = (FQ_FAQ_DATA.items || []).filter(i => (i.q && i.a));
-  if (items.length < 2) { out.innerHTML = '<div class="fq-empty">검토할 답변 데이터가 충분하지 않습니다.</div>'; return; }
+  const all = (FQ_FAQ_DATA.items || []).filter(i => (i.q && i.a));
+  if (all.length < 2) { out.innerHTML = '<div class="fq-empty">검토할 답변 데이터가 충분하지 않습니다.</div>'; return; }
+  // AI·이메일·게시판 등 등록 문의를 먼저 검토(최신 사용자 답변 우선), 그다음 시드 지식
+  const items = all.filter(i => i.source).concat(all.filter(i => !i.source));
   const ctx = items.slice(0, 60).map(i => ({ q: i.q, a: (i.a || '').slice(0, 1200), cat: i.cat }));
   out.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🔎 쌓인 답변들을 점검해 오류·모순을 찾고 있습니다…</div>';
   if (btn) btn.disabled = true;
@@ -3514,6 +3539,7 @@ function fqParseSegCargos(text) {
   return { rows, lookup };
 }
 
+let fqLastAiInquiry = null;   // 직전 AI 문의/답변 (저장 버튼에서 사용)
 async function fqAskAi() {
   const inputEl = document.getElementById('fqAiInput');
   const ansEl = document.getElementById('fqAiAnswer');
@@ -3575,14 +3601,39 @@ async function fqAskAi() {
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+    fqLastAiInquiry = { q: q, a: (j.answer || '').trim() };   // 저장 버튼용 캡처
     ansEl.innerHTML =
       (segChk ? fqSegPanelHtml(segChk) : (segInfo && segInfo.guide ? fqSegGuideHtml() : '')) +
       '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
-      '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 혼적·격리 코드는 위 [IMDG 격리표 판정]이 기준이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
+      '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 혼적·격리 코드는 위 [IMDG 격리표 판정]이 기준이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>' +
+      '<div class="fq-ai-actions"><button class="fq-btn primary" id="fqAiSaveBtn" onclick="fqSaveAiInquiry()">✅ 답변확인! 새로운 문의하기</button>' +
+      '<span class="fq-ai-save-hint">클릭하면 이 문의·답변이 DB에 저장되어 ① 다음 문의 답변에 활용 ② 관리자 리포트 통계·답변검토에 반영됩니다.</span></div>';
   } catch (e) {
     ansEl.innerHTML = '<div class="fq-ai-error">답변 생성 실패: ' + fqEsc(e.message) + '<br>잠시 후 다시 시도해 주세요.</div>';
   }
 }
+// '답변확인! 새로운 문의하기' → AI 문의/답변을 DB에 저장(다음 문의 활용 + 리포트 통계·검토 반영) 후 입력창 초기화
+async function fqSaveAiInquiry() {
+  if (!fqLastAiInquiry || !fqLastAiInquiry.q) { fqToast('저장할 문의가 없습니다', 'warn'); return; }
+  const { q, a } = fqLastAiInquiry;
+  const btn = document.getElementById('fqAiSaveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '저장 중…'; }
+  const cat = (typeof fqClassifyKeyword === 'function') ? fqClassifyKeyword(q + '\n' + a) : '🔎 자동 분류 (내용 기반 추천)';
+  const item = {
+    id: 'faq_ai_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+    cat: cat, q: q, a: a, tags: ['AI문의'], source: 'ai',
+    inquiry: q, ts: Date.now()
+  };
+  let saved = false;
+  try { saved = await fqUpsertFaqItem(item); }   // 로컬 반영 + 공용 DB 저장 (유사문의면 false)
+  catch (e) { fqToast('저장 실패: ' + e.message, 'warn'); if (btn) { btn.disabled = false; btn.textContent = '✅ 답변확인! 새로운 문의하기'; } return; }
+  fqToast(saved ? '✓ 문의·답변이 저장되었습니다. 새 문의를 입력하세요.' : '유사 문의가 이미 있어 저장은 생략했습니다. 새 문의를 입력하세요.', saved ? 'success' : 'warn');
+  fqLastAiInquiry = null;
+  const inp = document.getElementById('fqAiInput'); if (inp) { inp.value = ''; inp.focus(); }
+  const ans = document.getElementById('fqAiAnswer'); if (ans) ans.innerHTML = '';
+  if (typeof fqReportRender === 'function') fqReportRender();   // 통계 즉시 반영
+}
+
 // IMDG 격리표 결정론적 판정 결과를 화면에 권위 패널로 렌더 (AI 답변과 독립). 세부분류 미상이면 분류별 안내.
 function fqSegPanelHtml(seg) {
   const color = seg.worst >= 3 ? '#b02020' : ((seg.anyAmbiguous || seg.allow === 'check') ? '#b8860b' : (seg.worst >= 1 ? '#b8860b' : '#1a7f37'));
