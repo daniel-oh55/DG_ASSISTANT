@@ -1746,6 +1746,19 @@ function renderCarrierResultFromApi(dgItem, results) {
     const classNo = escapeHtml(dgItem.Class || '-');
     const sub = escapeHtml(normalizeSubRisk(dgItem.SUB));
 
+    // 포트별 선적가부 — 입력한 선적지/양하지/경유지 기준 (포트별 제한 데이터 연동 후 자동 판정)
+    const pol = (document.getElementById('carrierPol')?.value || '').trim().toUpperCase();
+    const pod = (document.getElementById('carrierPod')?.value || '').trim().toUpperCase();
+    const via = (document.getElementById('carrierVia')?.value || '').trim().toUpperCase();
+    const routeParts = [];
+    if (pol) routeParts.push('선적지 <b>' + escapeHtml(pol) + '</b>');
+    if (pod) routeParts.push('양하지 <b>' + escapeHtml(pod) + '</b>');
+    if (via) routeParts.push('경유지 <b>' + escapeHtml(via) + '</b>');
+    const portHtml = routeParts.length
+        ? `<div class="carrier-port-route">${routeParts.join(' &nbsp;→&nbsp; ')}</div>
+           <div class="carrier-port-pending">⏳ 입력한 항구의 포트별 선적제한 판정은 <b>장금상선 포트별 선적제한 데이터 연동 후</b> 자동 표시됩니다.</div>`
+        : `<div class="carrier-port-pending">선적지(POL)·양하지(POD)를 입력하면 <b>포트별 선적제한</b>도 함께 확인됩니다. (포트별 데이터 연동 예정)</div>`;
+
     resultBox.innerHTML = `
         <div class="carrier-summary-card">
             <div>
@@ -1758,6 +1771,7 @@ function renderCarrierResultFromApi(dgItem, results) {
             </div>
         </div>
 
+        <div class="carrier-section-title">🚢 선사별 선적가부</div>
         <div class="carrier-result-grid">
             ${filteredResults.map(result => {
                 const ruleHtml = result.matched_rules && result.matched_rules.length
@@ -1812,8 +1826,11 @@ const commonButtonHtml = commonRules.length
             }).join('')}
         </div>
 
+        <div class="carrier-section-title">📍 포트별 선적가부</div>
+        <div class="carrier-port-result">${portHtml}</div>
+
         <div style="margin-top:18px; color:var(--text-muted); font-size:12px; line-height:1.6;">
-            ※ 본 결과는 선사별 DG 금지/제한 리스트 기준입니다. 실제 선적 전에는 IMDG Code, 터미널 규정, POL/POD 국가 규정, 선박 운항 조건을 함께 확인해야 합니다.
+            ※ 선사별 결과는 선사 DG 금지/제한 리스트 기준이며, 포트별 결과는 선적지/양하지/경유지 항구 제한 기준으로 <b>별도 제공</b>됩니다. 실제 선적 전에는 IMDG Code, 터미널 규정, POL/POD 국가 규정, 선박 운항 조건을 함께 확인해야 합니다.
         </div>
     `;
 }
