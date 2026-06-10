@@ -58,7 +58,7 @@
 
     <li class="menu-item" data-target="tab-carrier-check">
         <span class="menu-icon">▦</span>
-        <span class="menu-text">선사별 선적가부 조회</span>
+        <span class="menu-text">선사별/포트별 선적가부 조회</span>
     </li>
 
     <li class="menu-item" data-target="tab-segregation">
@@ -153,9 +153,9 @@
                             <div class="home-card-icon">🚢</div>
                         </div>
 
-                        <div class="home-card-title">선사별 선적가부</div>
+                        <div class="home-card-title">선사별/포트별 선적가부</div>
                         <div class="home-card-desc">
-                            선사별 DG 금지 / 제한 조건 및 선적 가능 여부 확인
+                            선사별 DG 금지/제한 + 포트별(선적지·양하지) 선적 가능 여부 확인
                         </div>
                     </div>
 
@@ -288,8 +288,8 @@
 <section id="tab-carrier-check" class="tab-content">
     <div class="container">
         <header class="carrier-header">
-            <h1>선사별 선적가부 조회 <span>Carrier DG Restriction</span></h1>
-            <p class="subtitle">UNNO 기준 SKR/HAL, NSS/DYS 선적 가능 여부 조회</p>
+            <h1>선사별/포트별 선적가부 조회 <span>Carrier &amp; Port DG Restriction</span></h1>
+            <p class="subtitle">UNNO 기준 선사별 선적 가능 여부 + 선적지/양하지/경유지 포트별 제한 확인</p>
             <button class="btn skr-hist-btn" id="skrHistBtn" type="button">📜 SKR/HAS 규정 변경 이력</button>
         </header>
 
@@ -298,6 +298,21 @@
                 <input type="text" id="carrierCheckInput" placeholder="UNNO 4자리를 입력하세요 (예: 3480)">
                 <button class="btn accent2" id="carrierCheckBtn">선적가부 조회</button>
             </div>
+            <div class="carrier-route-row">
+                <div class="carrier-route-field">
+                    <label for="carrierPol">선적지 (POL)</label>
+                    <input type="text" id="carrierPol" class="carrier-port-input" maxlength="10" placeholder="예: KRPUS (부산)">
+                </div>
+                <div class="carrier-route-field">
+                    <label for="carrierPod">양하지 (POD)</label>
+                    <input type="text" id="carrierPod" class="carrier-port-input" maxlength="10" placeholder="예: CNSHA (상해)">
+                </div>
+                <div class="carrier-route-field">
+                    <label for="carrierVia">경유지 (Via · 선택)</label>
+                    <input type="text" id="carrierVia" class="carrier-port-input" maxlength="60" placeholder="예: SGSIN, HKHKG (쉼표 구분)">
+                </div>
+            </div>
+            <p class="carrier-route-hint">※ 항구는 <b>장금상선 포털 코드(UN/LOCODE 5자리)</b>로 입력하세요. 예: 부산 <b>KRPUS</b> · 상해 <b>CNSHA</b>. 장금상선 시스템의 포트별 선적제한 데이터 연동 후 자동으로 가부가 반영됩니다.</p>
             <div id="carrierCheckErrorMsg"></div>
         </div>
 

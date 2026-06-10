@@ -427,6 +427,22 @@ header span {
     letter-spacing: 0;
 }
 
+/* 선적지/양하지/경유지 입력 행 */
+.carrier-route-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.carrier-route-field { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px; }
+.carrier-route-field label { font-size: 12px; font-weight: 700; color: rgba(180, 197, 214, 0.9); letter-spacing: 0.3px; }
+.carrier-port-input {
+    min-height: 42px; padding: 0 14px; outline: none; border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)), rgba(9,14,22,0.85);
+    color: #eaf2f8; font-family: var(--font-mono); font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
+    transition: border-color 0.2s ease;
+}
+.carrier-port-input::placeholder { color: rgba(148,163,184,0.6); font-family: var(--font-main); letter-spacing: 0; text-transform: none; }
+.carrier-port-input:focus { border-color: var(--accent, #00f2ff); }
+.carrier-route-hint { margin-top: 10px; font-size: 12px; color: rgba(148, 163, 184, 0.82); line-height: 1.6; }
+.carrier-route-hint b { color: #cfe6ef; }
+
 .search-wrap input:hover {
     border-color: rgba(0, 191, 165, 0.18);
 }
