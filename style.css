@@ -22,7 +22,7 @@
     --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
     --glass-blur: blur(12px);
 
-    --font-main: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+    --font-main: 'Pretendard', 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
     --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
     /* 큰 제목 전용 — 세련된 프리미엄 글꼴 (UN번호·코드 등은 mono 유지) */
     --font-display: 'Pretendard', 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
@@ -3664,6 +3664,17 @@ header span {
 [data-theme="bright"] .card-rose {
     --home-glow-strong: rgba(129, 108, 244, 0.12);
     --home-glow-soft: rgba(129, 108, 244, 0.06);
+}
+
+/* 고급스러움: 홈 카드 액센트를 브랜드 틸로 통일 (무지개색 7종 → 절제된 단일 톤). 베이스 클래스에 적용. */
+[data-theme="bright"] .home-bento-card {
+    --home-glow-strong: rgba(0, 166, 184, 0.12) !important;
+    --home-glow-soft: rgba(0, 166, 184, 0.06) !important;
+}
+[data-theme="bright"] .home-bento-card .home-card-btn {
+    color: var(--bright-teal-strong) !important;
+    background: rgba(230, 248, 250, 0.78) !important;
+    border-color: rgba(0, 166, 184, 0.35) !important;
 }
 
 /* Bright Segregation */
