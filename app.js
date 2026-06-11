@@ -3510,7 +3510,7 @@ function fqRenderNewsList(news, updated) {
   const up = document.getElementById('rptNewsUpdated');
   if (up) up.textContent = updated ? `최근 업데이트: ${updated}` : '';
   if (!box) return;
-  if (!news || !news.length) { box.innerHTML = '<div class="fq-empty">표시할 사고 뉴스가 없습니다. 🔄 새로고침을 눌러보세요.</div>'; return; }
+  if (!news || !news.length) { box.innerHTML = '<div class="fq-empty">표시할 사고 뉴스가 없습니다. ‘🔍 뉴스검색하기’ 버튼을 눌러보세요.</div>'; return; }
   box.innerHTML = news.map(n => {
     const chemLink = n.chemLink || ('https://pubchem.ncbi.nlm.nih.gov/#query=' + encodeURIComponent(n.substance || ''));
     const chem = n.substance ? `<span class="news-chem" title="클릭 시 PubChem(미국 국립보건원) 물질정보로 이동">🧪
@@ -3551,8 +3551,12 @@ async function fqLoadNews(force) {
   }
 }
 function fqRenderNews() {
+  // 탭 진입 시 자동 검색하지 않는다 — 오늘 검색해 둔 캐시가 있으면 보여주고, 없으면 버튼 안내만 표시.
   try { const c = JSON.parse(localStorage.getItem(FQ_NEWS_CACHE_KEY) || '{}'); if (c.date === fqTodayStr() && c.news) { fqRenderNewsList(c.news, c.date); return; } } catch (e) {}
-  fqLoadNews(false);
+  const box = document.getElementById('rptNewsList');
+  const up = document.getElementById('rptNewsUpdated');
+  if (up) up.textContent = '';
+  if (box) box.innerHTML = '<div class="fq-empty">‘🔍 뉴스검색하기’ 버튼을 누르면 최신 위험물 사고 뉴스를 검색합니다.</div>';
 }
 function fqBindReport(scope) {
   // 서브탭 전환

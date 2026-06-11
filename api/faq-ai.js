@@ -119,18 +119,34 @@ module.exports = async function handler(req, res) {
       // 행정성·비사건성 뉴스(운송차량 점검·단속·캠페인·교육·협약 등)는 특정 위험물질/사고 내용이 아니어서
       // 선적 판단에 도움이 안 되므로 제외한다. (실제 사고: 화재·폭발·유출·누출·전복 등은 통과)
       const IRRELEVANT = /가두\s*검사|차량.{0,10}(점검|검사|단속)|(점검|검사|단속).{0,10}차량|(일제|합동|특별|불시|정기|민관|안전|가두)\s*(점검|검사|단속)|점검\s*(실시|추진|강화|예정|나서|벌|당부|계획)|검사\s*(실시|추진|강화|예정|계획)|단속\s*(실시|강화|벌|나서)|계도|캠페인|홍보|교육|훈련|간담회|협약|업무협약|워크[숍샵]|세미나|설명회|공모|발대식|예방\s*활동|안전\s*문화|소방\s*안전\s*관리|안전\s*관리\s*강화|법안|발의|입법|조례|개정안/;
-      const seen = new Set(); const merged = [];
+      // 글자 2-gram(bigram) 집합의 포함률로 비슷한 제목을 걸러낸다(앞 글자만 비교하던 방식보다 강함).
+      // 같은 사건의 표현만 다른 헤드라인(예: "OO공장서 화학물질 누출" vs "OO공장 유해물질 유출 2명 이송")을 묶어 1건만 남긴다.
+      const bigrams = s => {
+        const t = String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
+        const g = new Set();
+        for (let i = 0; i < t.length - 1; i++) g.add(t.slice(i, i + 2));
+        return g;
+      };
+      const containment = (a, b) => {
+        const small = Math.min(a.size, b.size);
+        if (small < 4) return 0;                               // 너무 짧은 제목은 비교 신뢰도 낮음 → 중복 처리 안 함
+        let inter = 0; for (const x of a) if (b.has(x)) inter++;
+        return inter / small;                                  // 작은 쪽 기준 포함률
+      };
+      const cand = [];
       for (const it of results.flat()) {
         const base = it.title.replace(/\s*-\s*[^-]+$/, '');   // " - 출처" 제거
         if (IRRELEVANT.test(base)) continue;                   // 점검·단속·캠페인 등 비사건성 뉴스 제외
-        const norm = base.toLowerCase().replace(/[^0-9a-z가-힣]/g, '').slice(0, 30);
-        if (!norm || seen.has(norm)) continue;
-        // 앞 12자 겹치면 유사 중복으로 간주
-        const pre = norm.slice(0, 12);
-        if ([...seen].some(s => s.slice(0, 12) === pre)) continue;
-        seen.add(norm);
-        merged.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0 });
+        if (!base.replace(/[^0-9a-z가-힣]/gi, '')) continue;
+        cand.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0, _g: bigrams(base) });
       }
+      cand.sort((a, b) => b.ts - a.ts);                        // 최신 우선 — 유사군에서 가장 최근 기사를 남긴다
+      const merged = [];
+      for (const c of cand) {
+        if (merged.some(k => containment(k._g, c._g) >= 0.6)) continue;   // 60% 이상 겹치면 유사 중복으로 제외
+        merged.push(c);
+      }
+      merged.forEach(n => { delete n._g; });                   // 내부 비교용 필드 제거
       merged.sort((a, b) => b.ts - a.ts);
       // 무료 쿼터 절약 + 정예화: 실제 사고(화재·폭발·유출·전복 등) 뉴스를 우선 선별하고 최대 6건만 사용.
       // (Gemini에 보내는 헤드라인 수↓ → 토큰·쿼터 절감, 화면도 꼭 필요한 사고 위주)
@@ -152,7 +168,7 @@ module.exports = async function handler(req, res) {
           const list = news.map((n, i) => `${i + 1}. ${n.title}`).join('\n');
           const op = await genWithKeys(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
 형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"이 사건과 관련된 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
-- substance는 제목과 당신이 아는 사건 정보로 판단하세요. 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 확실하지 않으면 빈 문자열로 두고 절대 지어내지 마세요.
+- substance는 제목과 당신이 아는 실제 사건 정보로 판단하세요. 제목에 화합물명이 직접 없더라도, 특정 사업장·지역의 잘 알려진 사고여서 어떤 화학물질이 관련됐는지 **확신**할 수 있으면 그 정식명칭을 채우세요(예: "SK하이닉스 청주공장 화학물질 누출" → 수산화테트라메틸암모늄(TMAH), substance_en="Tetramethylammonium hydroxide"). 다만 일반어(가스·세척제·화학물질 등)만 있고 어떤 물질인지 확신이 없으면 빈 문자열로 두고 절대 지어내지 마세요.
 
 ${list}`, 0.2, NEWS_KEYS);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
