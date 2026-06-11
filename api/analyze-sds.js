@@ -105,6 +105,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
+    const newsKeyRaw = process.env.GEMINI_NEWS_API_KEY;   // 뉴스 전용 키(있으면) — SDS의 예비 키로 빌려 씀
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
     if (!apiKey) {
@@ -113,6 +114,13 @@ module.exports = async function handler(req, res) {
         message: 'GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.'
       });
     }
+
+    // SDS/MSDS 판독은 메인 기능 — 메인 키 우선, 토큰 소진(429)·과부하(503)로 막히면
+    // 뉴스 키를 예비 연료로 자동 전환해 끝까지 시도한다. (뉴스는 비필수이므로 메인 기능을 우선 보호)
+    const KEYS = (newsKeyRaw && newsKeyRaw !== apiKey) ? [apiKey, newsKeyRaw] : [apiKey];
+    // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로) — 모두 PDF inlineData + JSON 출력 지원
+    const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     const { file_name, file_type, file_base64 } = req.body || {};
 
@@ -185,52 +193,76 @@ Return this exact JSON structure:
 }
 `;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-    const geminiResponse = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: file_type,
-                  data: file_base64
-                }
+    const reqBody = JSON.stringify({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: file_type,
+                data: file_base64
               }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: 'application/json'
+            }
+          ]
         }
-      })
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: 'application/json'
+      }
     });
 
-    const geminiText = await geminiResponse.text();
+    // 키 우선순위(메인→예비 뉴스 키) × 모델 폴백으로 호출. 한 키가 쿼터소진(429)·과부하(503)·키오류(401/403)면 다음 키로.
+    async function callGemini() {
+      let lastStatus = 0, lastDetail = '';
+      for (let k = 0; k < KEYS.length; k++) {
+        const useKey = KEYS[k];
+        let keyErr = false;
+        for (const mdl of MODELS) {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(useKey)}`;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            if (attempt) await sleep(800);
+            const r = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: reqBody
+            });
+            const t = await r.text();
+            if (r.ok) {
+              const j = JSON.parse(t);
+              const text = (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+              return { outputText: text, usedModel: mdl };
+            }
+            lastStatus = r.status; lastDetail = t.slice(0, 300);
+            console.error('[api/analyze-sds] Gemini error', `key#${k + 1}/${KEYS.length}`, mdl, r.status, t.slice(0, 150));
+            if (r.status === 503) continue;                          // 과부하 → 같은 모델 1회 재시도
+            if (r.status === 429) break;                             // 쿼터 소진 → 같은 키의 다음 모델로
+            if (r.status === 404 || r.status === 400) break;         // 모델 미지원 → 다음 모델
+            if (r.status === 401 || r.status === 403) { keyErr = true; break; } // 키 무효 → 다음 키
+            break;                                                   // 그 외 → 다음 모델 시도
+          }
+          if (keyErr) break;   // 키 자체가 무효 → 남은 모델 건너뛰고 다음 키로 폴백
+        }
+        if (k < KEYS.length - 1) {
+          console.error('[api/analyze-sds] 키 폴백:', `key#${k + 1} 소진(status ${lastStatus}) → 예비 key#${k + 2} 시도`);
+        }
+      }
+      const e = new Error('Gemini API 호출 실패'); e.detail = lastDetail; throw e;
+    }
 
-    if (!geminiResponse.ok) {
-      console.error('[api/analyze-sds] Gemini error:', geminiText);
+    let outputText = '', usedModel = model;
+    try {
+      const g = await callGemini();
+      outputText = g.outputText; usedModel = g.usedModel;
+    } catch (e) {
       return res.status(500).json({
         ok: false,
         message: 'Gemini API 호출 실패',
-        detail: geminiText.slice(0, 500)
+        detail: e.detail || ''
       });
     }
-
-    const geminiJson = JSON.parse(geminiText);
-    const outputText =
-      geminiJson?.candidates?.[0]?.content?.parts
-        ?.map(part => part.text || '')
-        .join('\n')
-        .trim() || '';
 
     if (!outputText) {
       return res.status(500).json({
@@ -249,7 +281,7 @@ Return this exact JSON structure:
     return res.status(200).json({
       ok: true,
       provider: 'gemini',
-      model,
+      model: usedModel,
       file_name,
       result,
       dg_table_match: dgTableMatch,

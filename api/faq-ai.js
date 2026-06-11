@@ -17,50 +17,69 @@ module.exports = async function handler(req, res) {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    // 뉴스 전용 키(있으면) — 다른 메뉴(FAQ답변·회신초안·SDS)와 Gemini 쿼터를 분리. 없으면 공용 키로 폴백.
-    const newsApiKey = process.env.GEMINI_NEWS_API_KEY || apiKey;
+    const newsKeyRaw = process.env.GEMINI_NEWS_API_KEY;   // 뉴스 전용 키(있으면)
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     if (!apiKey) {
       return res.status(500).json({ ok: false, message: 'GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.' });
     }
 
+    // ── 키 우선순위 정책 ──
+    //  메인 기능(FAQ답변·회신초안·검토·SDS): 메인 키 먼저 쓰고, 토큰 소진(429)·과부하(503)로 막히면
+    //    뉴스 키를 '예비 연료'로 자동 전환해 끝까지 시도한다. → 메인 기능은 두 키를 모두 동원.
+    //  뉴스(비필수): 뉴스 키만 사용해 메인 키의 쿼터를 보호한다(= 메인이 우선, 남는 토큰으로 뉴스).
+    //    단, 뉴스 키가 설정돼 있지 않으면 어쩔 수 없이 메인 키로 폴백.
+    const MAIN_KEYS = (newsKeyRaw && newsKeyRaw !== apiKey) ? [apiKey, newsKeyRaw] : [apiKey];
+    const NEWS_KEYS = newsKeyRaw ? [newsKeyRaw] : [apiKey];
+
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로)
     const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
-    // Gemini 호출 헬퍼 — temperature 지정 + 503/429/404 시 다음 모델로 폴백
-    async function gen(promptText, temperature, keyOverride) {
-      const useKey = keyOverride || apiKey;
+    // Gemini 호출 헬퍼 — 키 우선순위 목록(keys)을 받아: 각 키마다 모델 폴백을 시도하고,
+    //   한 키가 쿼터소진(429)·과부하(503)·키오류(401/403)로 막히면 다음 키(예비 키)로 자동 전환.
+    async function genWithKeys(promptText, temperature, keys) {
+      const keyList = (Array.isArray(keys) ? keys : [keys]).filter(Boolean);
       let lastStatus = 0;
-      for (const mdl of MODELS) {
-        const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(useKey)}`;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          if (attempt) await sleep(800);
-          const r = await fetch(ep, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: promptText }] }],
-              generationConfig: { temperature: temperature }
-            })
-          });
-          const t = await r.text();
-          if (r.ok) {
-            const j = JSON.parse(t);
-            return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+      for (let k = 0; k < keyList.length; k++) {
+        const useKey = keyList[k];
+        let keyErr = false;   // 이 키 자체가 무효(401/403)면 모델 더 볼 필요 없이 다음 키로
+        for (const mdl of MODELS) {
+          const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(useKey)}`;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            if (attempt) await sleep(800);
+            const r = await fetch(ep, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: promptText }] }],
+                generationConfig: { temperature: temperature }
+              })
+            });
+            const t = await r.text();
+            if (r.ok) {
+              const j = JSON.parse(t);
+              return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
+            }
+            lastStatus = r.status;
+            console.error('[api/faq-ai] Gemini error', `key#${k + 1}/${keyList.length}`, mdl, r.status, t.slice(0, 150));
+            if (r.status === 503) continue;                          // 과부하 → 같은 모델 1회 재시도
+            if (r.status === 429) break;                             // 쿼터 소진 → 같은 키의 다음 모델로(재시도 무의미)
+            if (r.status === 404 || r.status === 400) break;         // 모델 미지원 → 다음 모델
+            if (r.status === 401 || r.status === 403) { keyErr = true; break; } // 키 무효 → 다음 키
+            throw new Error('Gemini API 호출 실패');                  // 그 외 → 중단
           }
-          lastStatus = r.status;
-          console.error('[api/faq-ai] Gemini error', mdl, r.status, t.slice(0, 150));
-          if (r.status === 503 || r.status === 429) continue;        // 같은 모델 1회 재시도
-          if (r.status === 404 || r.status === 400) break;            // 모델 문제 → 다음 모델
-          throw new Error('Gemini API 호출 실패');                     // 그 외(키 등) → 중단
+          if (keyErr) break;   // 키 자체가 무효 → 남은 모델 건너뛰고 다음 키로 폴백
         }
-        // 이 모델 소진 → 다음 모델로 폴백
+        if (k < keyList.length - 1) {
+          console.error('[api/faq-ai] 키 폴백:', `key#${k + 1} 소진(status ${lastStatus}) → 예비 key#${k + 2} 시도`);
+        }
       }
       if (lastStatus === 503 || lastStatus === 429) {
-        const e = new Error('AI 서버가 일시적으로 혼잡합니다(잠시 후 다시 시도해 주세요).'); e.code = 503; throw e;
+        const e = new Error('AI 사용량 한도에 도달했거나 서버가 혼잡합니다(잠시 후 다시 시도해 주세요).'); e.code = 503; throw e;
       }
       throw new Error('Gemini API 호출 실패');
     }
+    // 메인 기능 기본 호출 — 메인 키 우선, 막히면 뉴스 키로 보조
+    const gen = (promptText, temperature) => genWithKeys(promptText, temperature, MAIN_KEYS);
 
     const body = req.body || {};
     const mode = ['reply', 'audit', 'auditrows', 'news'].includes(body.mode) ? body.mode : 'answer';
@@ -131,11 +150,11 @@ module.exports = async function handler(req, res) {
       if (news.length) {
         try {
           const list = news.map((n, i) => `${i + 1}. ${n.title}`).join('\n');
-          const op = await gen(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
+          const op = await genWithKeys(`다음은 컨테이너물류/위험물 관련 사고 뉴스 헤드라인입니다. 각 항목을 한국어로 분석해 **JSON 배열로만** 답하세요(JSON 외 텍스트·코드펜스 금지).
 형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"이 사건과 관련된 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
 - substance는 제목과 당신이 아는 사건 정보로 판단하세요. 일반어(가스·세척제·화학물질 등)가 아니라 식별 가능한 단일 화합물명일 때만 채우세요(예: 다이클로로에틸렌, 질산암모늄). 확실하지 않으면 빈 문자열로 두고 절대 지어내지 마세요.
 
-${list}`, 0.2, newsApiKey);
+${list}`, 0.2, NEWS_KEYS);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
           const arr = JSON.parse(jsonText);
           arr.forEach(o => {
