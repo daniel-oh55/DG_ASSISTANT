@@ -4081,10 +4081,17 @@ async function fqDraftReply() {
         if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
       } catch (_) { /* DG 상세 조회 실패 시 FAQ·IMDG 일반지식만으로 진행 */ }
     }
-    // 혼적/격리 문의 → IMDG 일반 격리표로 결정론적 판정 (LLM이 뒤집지 못하도록 권위 결과로 전달)
+    // 혼적/격리 판정은 (1) 문의가 실제로 혼적/격리를 물을 때 + (2) 서로 다른 UN번호가 2개 이상일 때만 수행.
+    //   같은 UN의 PG 변형(예: UN1866 PG I/II/III)이 여러 행으로 와도 단일 품목이므로 혼적 판정하지 않는다.
+    //   (이전엔 dgData 행 수만 봤다가, 단일 품목을 자기 자신과 혼적 판정해 묻지 않은 혼적 답변이 나왔음)
     let segInfo = null;
-    if (dgData.length >= 2) {
-      const rows = dgData.map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: r.UNNO || r.unno, name: r.Name || r.name }));
+    const isSegQ = /혼적|격리|segregat|함께[^\n]{0,8}(적재|컨테이너|선적)|같은[^\n]{0,4}컨테이너|같이[^\n]{0,6}(싣|선적|적재)|co-?load|stow(ed)?\s+together/i.test(q);
+    const distinctUn = new Set(dgData.map(r => String(r.UNNO || r.unno || '').replace(/^0+/, ''))).size;
+    if (isSegQ && distinctUn >= 2) {
+      // 서로 다른 UN 1건씩만 골라 격리 판정 (PG 변형 중복 제거)
+      const seenUn = new Set();
+      const rows = dgData.filter(r => { const u = String(r.UNNO || r.unno || '').replace(/^0+/, ''); if (seenUn.has(u)) return false; seenUn.add(u); return true; })
+        .map(r => ({ class: r.Class || r.class, sub: r.SUB || r.sub, unno: r.UNNO || r.unno, name: r.Name || r.name }));
       const chk = fqSegregationCheck(rows);
       segInfo = { verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail,
         cargos: rows.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.class}${r.sub ? ', 부위험성 ' + r.sub : ''})`) };

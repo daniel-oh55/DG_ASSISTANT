@@ -283,10 +283,16 @@ ${list}`, 0.2, NEWS_KEYS);
       // 문의가 전부 영문이면 영문으로 회신 (lang='en')
       const lang = body.lang === 'en' ? 'en' : 'ko';
 
-      const sources = `[격리표 판정 결과 — 시스템이 IMDG 일반 격리표로 계산함(권위 있는 결론, 임의로 뒤집지 말 것)]
+      // 격리표 판정 블록은 '혼적 판정이 실제로 있을 때만' 프롬프트에 포함한다.
+      //   (혼적을 묻지 않은 문의에 격리 결과를 넣어두면 AI가 묻지도 않은 혼적 답변을 하게 됨)
+      const hasSeg = !!(segInfo && segInfo.verdict);
+      const segBlock = hasSeg
+        ? `[격리표 판정 결과 — 시스템이 IMDG 일반 격리표로 계산함(권위 있는 결론, 임의로 뒤집지 말 것)]
 ${segText}
 
-[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
+`
+        : '';
+      const sources = `${segBlock}[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
 ${attText}
 
 [사내 DG FAQ·문의답변 데이터베이스]
@@ -300,41 +306,35 @@ ${dgText}`;
 Write a CONCISE reply body in ENGLISH (the inquiry is written in English).
 
 Decision rules (important):
-- Judge and state COMPATIBILITY (segregation) and SHIPPABILITY (acceptance) SEPARATELY.
-  - Compatibility = decided ONLY by the [Segregation table verdict] above (the table is the sole basis). Do not override it to "cannot mix" based on physical properties (toxicity/corrosivity) alone.
-  - Shippability = judged separately against the COMPANY prohibited-cargo list in the internal DB.
-- Example: if the table allows mixing but the item is on the company prohibited list -> "Stowage/segregation itself is acceptable, but the cargo cannot be shipped as it is on our prohibited list."
-- When no segregation is required, express it as IMDG-standard "X (may be stowed in the same container)" or "No segregation required" — never "code 0".
-- If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values.
-- If the verdict is "needs check", do not assert — explain why. If a segregation code is given as "varies by sub-division", present it per division (e.g., if 2.1 then …, if 2.2 then …) and advise confirming the actual classification.
-- One clear conclusion. No speculation.
+- FIRST, identify exactly what the inquiry actually asks, and answer ONLY that. Do NOT add topics the inquiry did not ask about (especially segregation / co-loading).
+- If it asks whether a SINGLE item can be SHIPPED (on a given route/vessel, RF/RFDG feasibility, etc.) -> answer only its shippability (company prohibited list + route/vessel/temperature conditions). Do NOT bring up segregation.
+- Address COMPATIBILITY (segregation) ONLY when the inquiry asks whether two or more cargoes can be loaded together / in the same container. Only then use the [Segregation table verdict] as the sole basis (do not override it by physical properties alone), and express "no segregation" as IMDG-standard "X (may be stowed in the same container)", never "code 0". If no [Segregation table verdict] is provided above, do not mention segregation at all.
+- If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values. If MSDS is needed for an accurate decision, say so.
+- One clear conclusion. No speculation. Do not pad the answer with unasked content.
 
 ${sources}
 
 [Inquiry subject] ${subjText}
 [Inquiry body] ${inqText}
 
-Format: greeting -> key conclusion (+ brief basis: each UN class and the segregation result, referencing the MSDS if attached) -> closing. Concise, body text only.
+Format: greeting -> key conclusion (the answer to what was asked + brief basis, referencing the MSDS if attached) -> closing. Concise, body text only.
 Last line: "* This is an AI-generated draft. Final acceptance is subject to the IMDG Code, carrier/terminal/national regulations and confirmation by the person in charge."`
         : `당신은 장금상선/흥아라인 운항팀 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
 받은 문의에 대해 한국어 회신 본문을 **간결하게** 작성하세요.
 
 판정 규칙(중요):
-- **혼적(격리) 가부**와 **선적 가부**는 반드시 **분리해서** 판단·안내하세요.
-  · 혼적 가부 = 위 [격리표 판정 결과]만으로 결정(격리표가 유일 기준). 물성(독성·부식성 등)만 보고 임의로 "혼적 불가"로 뒤집지 마세요.
-  · 선적 가부 = 사내 DB의 **회사 선적금지 리스트** 기준으로 별도 판단.
-- 예시: 격리표상 혼적은 가능하나 해당 품목이 사내 금지품목이면 → "혼적 자체는 가능하나, 당사 금지 위험물이므로 선적은 불가합니다"로 안내.
-- 격리 요건이 없을 때는 "코드 0"이 아니라 IMDG 표준 표기대로 **"X(같은 컨테이너 적재 가능)"** 또는 **"격리 요건 없음"**으로 표현하세요.
-- 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요).
-- 격리표 판정이 '확인 필요'면 단정하지 말고 해당 사유를 안내하세요. 격리코드가 '세부분류에 따라 상이'로 제공되면 분류별로(예: 2.1이면 …, 2.2면 …) 나눠 안내하고 실제 분류 확인을 권고하세요.
-- 결론은 하나로 명확히. 추측 금지.
+- **가장 먼저 문의가 실제로 무엇을 묻는지 정확히 파악하고, 그 질문에만 답하세요.** 문의가 묻지 않은 항목(특히 혼적·격리)은 답변에 넣지 마세요.
+- 단일 품목의 **선적 가부**(특정 구간·선박에 실을 수 있는지, RF/RFDG 가능 여부 등)를 물으면 → 그 품목의 선적 가부만 답하세요(사내 선적금지 리스트 + 해당 구간·선박·온도 조건 기준). **혼적/격리 이야기는 꺼내지 마세요.**
+- **혼적(격리) 가부는 문의가 "두 가지 이상 화물을 함께/같은 컨테이너에 실을 수 있는지"를 물을 때만** 다루세요. 그때만 위 [격리표 판정 결과]를 유일 기준으로 사용하고(물성만으로 임의로 뒤집지 말 것), "코드 0"이 아니라 IMDG 표준 "X(같은 컨테이너 적재 가능)"/"격리 요건 없음"으로 표기하세요. **위 자료에 [격리표 판정 결과]가 없으면 혼적은 언급조차 하지 마세요.**
+- 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요). 정확한 판단에 MSDS가 필요하면 그 점을 안내하세요.
+- 결론은 하나로 명확히. 추측 금지. **묻지 않은 내용으로 답을 늘리지 마세요.**
 
 ${sources}
 
 [문의 제목] ${subjText}
 [문의 내용] ${inqText}
 
-형식: 인사말 → 핵심 결론(+간단 근거: 각 UN class와 격리표 결과, 첨부 MSDS가 있으면 그 내용도 참고) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
+형식: 인사말 → 핵심 결론(문의가 물은 것에 대한 답 + 간단 근거, 첨부 MSDS가 있으면 참고) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
 마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."`;
 
       const finalReply = await gen(replyPrompt, 0);
