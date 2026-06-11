@@ -2535,7 +2535,6 @@ let FQ_FAQ_DATA = {
     "📋 절차 / PRE-CHECK",
     "📄 서류 (MSDS/DGD)",
     "📦 적재 / 격리",
-    "🏗️ 항만별 제한",
     "⚠️ 특별 규정 / LQ",
     "📘 IMDG 전문지식",
     "🧪 Class별 세부 규정",
@@ -2716,7 +2715,7 @@ let FQ_FAQ_DATA = {
       "id": "oxi-3378-detail",
       "cat": "💥 산화/자연발화",
       "q": "산화성 물질(Class 5) 일반 절차는?",
-      "a": "산화성 물질은 분해온도와 격리 조건을 잘 관리해 주시면 정상 진행이 가능한 화물군입니다.\n\n**Class 분류**\n- **Class 5.1** — 산화성 물질\n- **Class 5.2** — 유기 과산화물\n\n**핵심 위험성**\n- 다른 가연물과 접촉 시 발화 / 폭발 위험이 있습니다.\n- 열·물·산류 접촉 시 분해되어 발화 가능성이 있습니다.\n\n**적재 안내**\n- Class 3 (인화성)과는 \"Separated from\" 격리가 필요합니다.\n- Class 4.1 (가연성 고체)과는 \"Away from\" (1), Class 4.2 / 4.3과는 \"Separated from\" (2) 격리가 필요합니다.\n- 5.2 (유기 과산화물)는 온도 통제가 필요합니다 (특정 SADT 기준 적용).\n\n**필요 서류**\n- MSDS (분해 온도 / SADT 명시)\n- DGD (UN No, Class, PG, 분해온도 부기)\n- 일부 항만은 사전 승인이 필요합니다.\n\n**자사 사례 안내 — UN3378 과탄산나트륨**\n- 발열분해온도 +60°C로 하절기 위험이 증가합니다.\n- 의왕 오봉역 사고(2017.08) 이후 장금/흥아는 금지로 운영하고 있습니다.\n\n**자사 사례 — UN3377 / UN1942 등**\n- 정책은 별도로 확인이 필요합니다 (대부분 PRE-CHECK 후 결정).",
+      "a": "산화성 물질은 분해온도와 격리 조건을 잘 관리해 주시면 정상 진행이 가능한 화물군입니다.\n\n**Class 분류**\n- **Class 5.1** — 산화성 물질\n- **Class 5.2** — 유기 과산화물\n\n**⛔ Class 5.2 (유기 과산화물) — 자사 선적 전면 금지**\n- 닝보(NGB)항 위험물 컨테이너 폭발사고 이후, 장금·흥아(SKR/HAS) 규정상 **Class 5.2 유기 과산화물은 선적 전면 금지**입니다.\n- IMDG상으로는 온도 통제(SADT) 후 운송이 가능한 물질이나, 자사 규정이 우선하므로 진행이 불가합니다.\n\n**핵심 위험성**\n- 다른 가연물과 접촉 시 발화 / 폭발 위험이 있습니다.\n- 열·물·산류 접촉 시 분해되어 발화 가능성이 있습니다.\n\n**적재 안내**\n- Class 3 (인화성)과는 \"Separated from\" 격리가 필요합니다.\n- Class 4.1 (가연성 고체)과는 \"Away from\" (1), Class 4.2 / 4.3과는 \"Separated from\" (2) 격리가 필요합니다.\n- 5.2 (유기 과산화물)는 IMDG상 온도 통제(SADT)가 필요한 화물이나, **자사 규정상 선적 전면 금지**입니다 (상단 참조).\n\n**필요 서류**\n- MSDS (분해 온도 / SADT 명시)\n- DGD (UN No, Class, PG, 분해온도 부기)\n- 일부 항만은 사전 승인이 필요합니다.\n\n**자사 사례 안내 — UN3378 과탄산나트륨**\n- 발열분해온도 +60°C로 하절기 위험이 증가합니다.\n- 의왕 오봉역 사고(2017.08) 이후 장금/흥아는 금지로 운영하고 있습니다.\n\n**자사 사례 — UN3377 / UN1942 등**\n- 정책은 별도로 확인이 필요합니다 (대부분 PRE-CHECK 후 결정).",
       "tags": [
         "산화성",
         "Class 5",
@@ -2881,7 +2880,7 @@ let FQ_FAQ_DATA = {
     },
     {
       "id": "port-shanghai",
-      "cat": "🏗️ 항만별 제한",
+      "cat": "📋 절차 / PRE-CHECK",
       "q": "상해(SHA) / 닝보(NGB) 항만 위험물 추가 제한은?",
       "a": "상해(SHA)와 닝보(NGB) 항만은 CAS No. 기준으로 별도 제한 리스트를 운영하고 있습니다. 사전 조회를 부탁드립니다.\n\n**확인 절차**\n1. MSDS에서 주 성분 CAS No.를 확인 부탁드립니다.\n2. 상해항·닝보항 금지·제한 리스트를 조회해 주시기 바랍니다.\n3. 매월 업데이트되어 변동이 잦으니 최신본 확인을 권장드립니다.\n\n**참조 사내 자료**\n- SHA DG prohibit Y2021 (CAS NO.) 조회\n- NGB DG prohibit Y2021 (CAS NO.) 조회\n- BANNED AND RESTRICTED UNNO, CAS NUMBER LIST (NINGBO / SHANGHAI)\n- 상해 The maximum acceptable units of DGs at shanghai terminals\n- 상해 외고교 위험물 장치가능수량\n\n**NGB 특이사항**\n- **RFDG 6시간 간격 온도 모니터링 의무** (NGB MSA 규정)\n- 통과 화물(through cargo)도 동일하게 적용됩니다.\n\n**SHA 특이사항**\n- 외고교 / 양산항별로 장치 가능 수량 제한이 있습니다.\n- Marine Pollutant 추가 신고가 필요합니다.\n\n화주께 정확한 CAS No.를 요청하신 후 조회하시면 가장 정확한 검토가 가능합니다.",
       "tags": [
@@ -3259,6 +3258,22 @@ function fqItemDate(i) {
   return null;
 }
 // 통계 대상: 등록된 이메일 문의(source==='email') + AI 문의(source==='ai') + 게시판 글
+// 관리자 리포트 문의내역에서 카테고리 직접 변경 (출처별 저장소로 라우팅)
+async function fqChangeRptCat(id, src, cat) {
+  if (src === '게시판') {
+    if (typeof fqChangePostCat === 'function') await fqChangePostCat(id, cat);   // 자체적으로 저장 + 리포트 재렌더
+    return;
+  }
+  // 이메일 / AI문의 → FQ_FAQ_DATA 항목 (둘 다 fqPushFaqRemote로 저장)
+  const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (!m || m.cat === cat) return;
+  m.cat = cat;
+  if (typeof fqRenderEmailList === 'function') fqRenderEmailList();
+  if (typeof fqRenderFaq === 'function') fqRenderFaq();
+  if (typeof fqReportRender === 'function') fqReportRender();
+  try { await fqPushFaqRemote(); fqToast('✓ 카테고리 변경 저장됨', 'success'); }
+  catch (e) { fqToast('카테고리 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
+}
 function fqReportInquiries() {
   const out = [];
   (FQ_FAQ_DATA.items || []).filter(i => i.source === 'email').forEach(i => {
@@ -3322,7 +3337,7 @@ function fqReportRender() {
       return '<div class="rpt-li' + (issue ? ' rpt-li-flagged' : '') + '">' +
         '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
         '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
-        '<span class="rpt-li-cat">' + fqEsc(x.cat) + '</span>' +
+        '<span class="rpt-li-cat"><select class="fq-cat-select rpt-cat-select" title="카테고리 변경" onclick="event.stopPropagation()" onchange="fqChangeRptCat(\'' + x.id + '\',\'' + x.src + '\',this.value)">' + fqEmailCatOptions(x.cat) + '</select></span>' +
         '<span class="rpt-li-q rpt-li-q-click" title="클릭 시 답변 펼치기" onclick="fqToggleRptAnswer(\'' + x.id + '\')">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
         flag +
         '</div>' + detail +

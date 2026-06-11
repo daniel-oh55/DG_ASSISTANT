@@ -4466,6 +4466,7 @@ header span {
 .rpt-li-date { flex: 0 0 92px; font-family: 'Space Mono', monospace; color: var(--fq-text); }
 .rpt-li-src { flex: 0 0 64px; }
 .rpt-li-cat { flex: 0 0 150px; color: var(--fq-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rpt-cat-select { width: 100%; max-width: 150px; font-size: 11.5px; padding: 2px 4px; }
 .rpt-li-q { flex: 1; min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fq-text); }
 .rpt-li-undated { color: var(--fq-muted); font-style: italic; }
 .rpt-src { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10.5px; font-weight: 700; color: #fff; }
