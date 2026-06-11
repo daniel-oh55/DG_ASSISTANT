@@ -1759,6 +1759,70 @@ function renderCarrierResultFromApi(dgItem, results) {
            <div class="carrier-port-pending">⏳ 입력한 항구의 포트별 선적제한 판정은 <b>장금상선 포트별 선적제한 데이터 연동 후</b> 자동 표시됩니다.</div>`
         : `<div class="carrier-port-pending">선적지(POL)·양하지(POD)를 입력하면 <b>포트별 선적제한</b>도 함께 확인됩니다. (포트별 데이터 연동 예정)</div>`;
 
+    // 카드 1개 HTML 생성 (공통 주의사항 store 채우기 포함). detailed=true면 자사(SKR/HAL) 상세 카드.
+    const buildCarrierCard = (result, detailed) => {
+        const ruleHtml = result.matched_rules && result.matched_rules.length
+            ? result.matched_rules.map(rule => `
+                <div class="carrier-rule-line">
+                    <div><b>Rule:</b> ${escapeHtml(rule.class_no || '-')} / ${escapeHtml(rule.unno || '-')}</div>
+                    <div><b>Status:</b> ${escapeHtml(rule.status || '-')}</div>
+                    ${renderRuleRemarkCondition(rule)}
+                    ${rule.document_required ? `<div><b>Required Docs:</b> ${escapeHtml(rule.document_required)}</div>` : ''}
+                </div>
+            `).join('')
+            : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
+
+        const commonRules = result.common_rules || [];
+        const commonKey = result.carrier_group || result.carrier_name || '';
+        carrierCommonRulesStore[commonKey] = {
+            carrierName: result.carrier_name || result.carrier_group || '-',
+            rules: commonRules
+        };
+        const commonButtonHtml = commonRules.length
+            ? `<div class="carrier-common-action">
+                   <button type="button" class="btn-sm carrier-common-btn" onclick="openCarrierCommonModal('${escapeHtml(commonKey)}')">공통 주의사항 조회</button>
+               </div>`
+            : '';
+
+        const isOwn = result.carrier_group === 'SKR_HAL';
+        const doc = CARRIER_DOCS[result.carrier_group];
+        const docHtml = doc ? `
+            <div class="carrier-doc-action">
+                <a class="carrier-doc-link" href="${doc.url}" target="_blank" rel="noopener" title="${escapeHtml(doc.label)}">📄 원본 규정 보기</a>
+            </div>` : '';
+
+        return `
+            <div class="carrier-result-card ${carrierStatusClass(result.status)}${isOwn ? ' carrier-own' : ''}${detailed ? ' carrier-own-detailed' : ''}">
+                <div class="carrier-result-header">
+                    <div class="carrier-name">${isOwn ? '⭐ ' : ''}${escapeHtml(result.carrier_name || result.carrier_group)}</div>
+                    <div class="carrier-status">${escapeHtml(result.status_label || carrierStatusLabel(result.status))}</div>
+                </div>
+                <div class="carrier-rule-box">
+                    ${ruleHtml}
+                    ${commonButtonHtml}
+                    ${docHtml}
+                </div>
+            </div>`;
+    };
+
+    // 자사(SKR/HAL)는 메인, 나머지는 접어두고 정렬: KMTC 먼저, SITC·TSL 맨 뒤
+    const ownResults = filteredResults.filter(r => r.carrier_group === 'SKR_HAL');
+    const otherResults = filteredResults.filter(r => r.carrier_group !== 'SKR_HAL');
+    const carrierRank = (r) => {
+        const g = (r.carrier_group || '').toUpperCase();
+        const n = (r.carrier_name || '').toUpperCase();
+        const has = (k) => g === k || g.indexOf(k) >= 0 || n.indexOf(k) >= 0;
+        if (has('KMTC')) return 0;     // SKR/HAL 다음에 KMTC
+        if (has('SITC')) return 98;    // SITC 맨 뒤
+        if (has('TSL')) return 99;     // TSL 맨 뒤
+        return 50;                     // 나머지는 기존 순서 유지
+    };
+    otherResults.sort((a, b) => carrierRank(a) - carrierRank(b));
+
+    const ownHtml = ownResults.map(r => buildCarrierCard(r, true)).join('')
+        || '<div class="carrier-rule-line muted">자사(SKR/HAL) 결과가 없습니다.</div>';
+    const othersHtml = otherResults.map(r => buildCarrierCard(r, false)).join('');
+
     resultBox.innerHTML = `
         <div class="carrier-summary-card">
             <div>
@@ -1771,60 +1835,23 @@ function renderCarrierResultFromApi(dgItem, results) {
             </div>
         </div>
 
-        <div class="carrier-section-title">🚢 선사별 선적가부</div>
-        <div class="carrier-result-grid">
-            ${filteredResults.map(result => {
-                const ruleHtml = result.matched_rules && result.matched_rules.length
-    ? result.matched_rules.map(rule => `
-        <div class="carrier-rule-line">
-            <div><b>Rule:</b> ${escapeHtml(rule.class_no || '-')} / ${escapeHtml(rule.unno || '-')}</div>
-            <div><b>Status:</b> ${escapeHtml(rule.status || '-')}</div>
-            ${renderRuleRemarkCondition(rule)}
-            ${rule.document_required ? `<div><b>Required Docs:</b> ${escapeHtml(rule.document_required)}</div>` : ''}
+        <div class="carrier-section-title">🚢 선사별 선적가부 <span class="carrier-section-note">(자사 SKR/HAL 기준)</span></div>
+        <div class="carrier-own-main">
+            ${ownHtml}
         </div>
-    `).join('')
-    : `<div class="carrier-rule-line muted">금지/제한 리스트에 해당 없음</div>`;
-
-const commonRules = result.common_rules || [];
-const commonKey = result.carrier_group || result.carrier_name || '';
-carrierCommonRulesStore[commonKey] = {
-    carrierName: result.carrier_name || result.carrier_group || '-',
-    rules: commonRules
-};
-
-const commonButtonHtml = commonRules.length
-    ? `
-        <div class="carrier-common-action">
-            <button type="button" class="btn-sm carrier-common-btn" onclick="openCarrierCommonModal('${escapeHtml(commonKey)}')">
-                공통 주의사항 조회
+        ${otherResults.length ? `
+        <div class="carrier-others-wrap">
+            <button type="button" class="carrier-others-toggle" id="carrierOthersToggle" aria-expanded="false" onclick="toggleCarrierOthers()">
+                <span class="cot-chevron">▸</span>
+                <span class="cot-label">다른 선사 규정도 참고로 확인하기</span>
+                <span class="cot-count">${otherResults.length}개 선사</span>
             </button>
-        </div>
-    `
-    : '';
-
-                const isOwn = result.carrier_group === 'SKR_HAL';
-                const doc = CARRIER_DOCS[result.carrier_group];
-                const docHtml = doc ? `
-                    <div class="carrier-doc-action">
-                        <a class="carrier-doc-link" href="${doc.url}" target="_blank" rel="noopener" title="${escapeHtml(doc.label)}">📄 원본 규정 보기</a>
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="carrier-result-card ${carrierStatusClass(result.status)}${isOwn ? ' carrier-own' : ''}">
-                        <div class="carrier-result-header">
-                            <div class="carrier-name">${isOwn ? '⭐ ' : ''}${escapeHtml(result.carrier_name || result.carrier_group)}</div>
-                            <div class="carrier-status">${escapeHtml(result.status_label || carrierStatusLabel(result.status))}</div>
-                        </div>
-                        <div class="carrier-rule-box">
-                          ${ruleHtml}
-                          ${commonButtonHtml}
-                          ${docHtml}
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
+            <div class="carrier-others-panel" id="carrierOthersPanel" hidden>
+                <div class="carrier-result-grid">
+                    ${othersHtml}
+                </div>
+            </div>
+        </div>` : ''}
 
         <div class="carrier-section-title">📍 포트별 선적가부</div>
         <div class="carrier-port-result">${portHtml}</div>
@@ -1833,6 +1860,22 @@ const commonButtonHtml = commonRules.length
             ※ 선사별 결과는 선사 DG 금지/제한 리스트 기준이며, 포트별 결과는 선적지/양하지/경유지 항구 제한 기준으로 <b>별도 제공</b>됩니다. 실제 선적 전에는 IMDG Code, 터미널 규정, POL/POD 국가 규정, 선박 운항 조건을 함께 확인해야 합니다.
         </div>
     `;
+}
+
+function toggleCarrierOthers() {
+    const panel = document.getElementById('carrierOthersPanel');
+    const btn = document.getElementById('carrierOthersToggle');
+    if (!panel || !btn) return;
+    const willOpen = panel.hasAttribute('hidden');
+    if (willOpen) {
+        panel.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        btn.classList.add('open');
+    } else {
+        panel.setAttribute('hidden', '');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('open');
+    }
 }
 
 function openCarrierCommonModal(carrierKey) {
