@@ -22,10 +22,10 @@
     --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
     --glass-blur: blur(12px);
 
-    --font-main: 'Pretendard', 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+    --font-main: 'IBM Plex Sans KR', 'Pretendard', 'Noto Sans KR', sans-serif;
     --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
-    /* 큰 제목 전용 — 세련된 프리미엄 글꼴 (UN번호·코드 등은 mono 유지) */
-    --font-display: 'Pretendard', 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+    /* 큰 제목 전용 — 부드럽고 세련된 휴머니스트 글꼴 (UN번호·코드 등은 mono 유지) */
+    --font-display: 'IBM Plex Sans KR', 'Pretendard', 'Noto Sans KR', sans-serif;
 }
 
 /* ─────────────────────────────────────────────────────────────
