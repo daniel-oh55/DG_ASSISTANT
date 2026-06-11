@@ -85,6 +85,16 @@ module.exports = async function handler(req, res) {
     const mode = ['reply', 'audit', 'auditrows', 'news'].includes(body.mode) ? body.mode : 'answer';
     const { question, context, subject, inquiry, dgData, unnos, segInfo, rows } = body;
 
+    // SKR/HAL(자사) 선적 금지·제한 리스트 조회 결과 — 선적 가부 판단의 근거. (HAS=HAL 동일 자사, 타 선사는 제외)
+    const skrCarrier = Array.isArray(body.skrCarrier) ? body.skrCarrier : [];
+    const skrText = skrCarrier.length
+      ? skrCarrier.map(c => {
+          const head = `UN${c.unno}${c.name ? ' ' + c.name : ''}: ${c.status_label || c.status || '-'}`;
+          const rs = (c.rules || []).map(r => `   - [${r.status || '-'}] ${[r.remark, r.document_required ? '필요서류: ' + r.document_required : ''].filter(Boolean).join(' / ') || '리스트 등재'}`).join('\n');
+          return rs ? head + '\n' + rs : head;
+        }).join('\n')
+      : '';
+
     // ───────────────────────── 위험물 사고 뉴스 (news) ─────────────────────────
     if (mode === 'news') {
       const decode = s => String(s || '')
@@ -292,7 +302,13 @@ ${segText}
 
 `
         : '';
-      const sources = `${segBlock}[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
+      const skrBlock = skrText
+        ? `[SKR/HAL(자사) 선적 금지·제한 리스트 조회 결과 — 선적 가부 판단의 권위 근거. 타 선사는 제외]
+${skrText}
+
+`
+        : '';
+      const sources = `${segBlock}${skrBlock}[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
 ${attText}
 
 [사내 DG FAQ·문의답변 데이터베이스]
@@ -325,7 +341,8 @@ Last line: "* This is an AI-generated draft. Final acceptance is subject to the 
 판정 규칙(중요):
 - **가장 먼저 문의가 실제로 무엇을 묻는지 정확히 파악하고, 그 질문에만 답하세요.** 문의가 묻지 않은 항목(특히 혼적·격리)은 답변에 넣지 마세요.
 - **등록된 자료를 최대한 근거로 삼으세요**: 일반 DG·RFDG·규정 안내 → 사내 FAQ, 선적 금지 여부 → 회사 선적금지 리스트, 혼적·격리 → 격리표 판정, UN별 분류·특별규정 → DG_TABLE. 해당 자료에 내용이 있으면 그 내용을 인용해 답하세요.
-- 단일 품목의 **선적 가부**(특정 구간·선박에 실을 수 있는지, RF/RFDG 가능 여부 등)를 물으면 → 그 품목의 선적 가부만 답하세요(사내 선적금지 리스트 + 해당 구간·선박·온도 조건 기준). **혼적/격리 이야기는 꺼내지 마세요.**
+- 단일 품목의 **선적 가부**(특정 구간·선박에 실을 수 있는지, RF/RFDG 가능 여부 등)를 물으면 → 그 품목의 선적 가부만 답하세요. **혼적/격리 이야기는 꺼내지 마세요.**
+- **선적 가부는 위 [SKR/HAL(자사) 선적 금지·제한 조회 결과]를 우선 근거로** 판단하세요(PROHIBITED=당사 선적 금지, RESTRICTED=조건부 가능, ALLOWED/미등재=자사 금지리스트상 제한 없음). **자사(SKR/HAL) 기준으로만 답하고 타 선사 규정은 언급하지 마세요.** RFDG 등 운송 요건은 [사내 FAQ]를 근거로 안내하세요.
 - **혼적(격리) 가부는 문의가 "두 가지 이상 화물을 함께/같은 컨테이너에 실을 수 있는지"를 물을 때만** 다루세요. 그때만 위 [격리표 판정 결과]를 유일 기준으로 사용하고(물성만으로 임의로 뒤집지 말 것), "코드 0"이 아니라 IMDG 표준 "X(같은 컨테이너 적재 가능)"/"격리 요건 없음"으로 표기하세요. **위 자료에 [격리표 판정 결과]가 없으면 혼적은 언급조차 하지 마세요.**
 - 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요). 정확한 판단에 MSDS가 필요하면 그 점을 안내하세요.
 - 결론은 하나로 명확히. 추측 금지. **묻지 않은 내용으로 답을 늘리지 마세요.**
@@ -414,7 +431,8 @@ ${listText}`;
 
 규칙:
 - **먼저 질문이 정확히 무엇을 묻는지 파악하고, 그 질문에만 답하세요(묻지 않은 내용은 덧붙이지 마세요).**
-- **등록된 자료를 최대한 근거로 삼으세요.** 주제별로: 일반 DG·RFDG·규정 안내 → [사내 DG FAQ], 혼적·격리 → [IMDG 격리표 판정 결과], UN별 분류·격리·특별규정 → [조회된 위험물 상세 — DG_TABLE]. 해당 자료에 내용이 있으면 그 내용을 인용해 답하세요.
+- **등록된 자료를 최대한 근거로 삼으세요.** 주제별로: 일반 DG·RFDG·규정 안내 → [사내 DG FAQ], 선적 가부(실을 수 있는지) → [SKR/HAL(자사) 선적 금지·제한 조회 결과], 혼적·격리 → [IMDG 격리표 판정 결과], UN별 분류·격리·특별규정 → [조회된 위험물 상세 — DG_TABLE]. 해당 자료에 내용이 있으면 그 내용을 인용해 답하세요.
+- **선적 가부는 [SKR/HAL(자사) 선적 금지·제한 조회 결과] 기준으로만** 판단하세요(PROHIBITED=당사 금지, RESTRICTED=조건부, ALLOWED/미등재=자사 금지리스트상 제한 없음). **타 선사 규정은 언급하지 마세요.**
 - DB에 근거가 있으면 종합·요약해 구체적으로 답하고, 참고한 자료 제목을 언급하세요.
 - DB에 직접 근거가 없으면 먼저 "사내 DB에는 직접 자료가 없어 일반 규정 기준으로 안내드립니다"라고 밝히고 일반 IMDG Code 지식으로 신중히 답하세요.
 - **혼적·격리 코드 질문은 아래 [IMDG 격리표 판정 결과]만을 유일한 근거로 사용하세요. 임의로 다른 코드로 바꾸지 마세요(예: 표가 'Separated from(2)'이면 'Away from(1)'으로 답하지 말 것).**
@@ -426,7 +444,7 @@ ${listText}`;
 
 [IMDG 격리표 판정 결과 — 시스템이 7.2.4 격리표로 계산함(권위 결론, 임의로 뒤집지 말 것)]
 ${ansSegText}
-${ansDgText ? '\n[조회된 위험물 상세 — DG_TABLE]\n' + ansDgText + '\n' : ''}
+${ansDgText ? '\n[조회된 위험물 상세 — DG_TABLE]\n' + ansDgText + '\n' : ''}${skrText ? '\n[SKR/HAL(자사) 선적 금지·제한 조회 결과 — 선적 가부 근거, 타 선사 제외]\n' + skrText + '\n' : ''}
 [사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
 

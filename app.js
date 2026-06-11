@@ -3800,6 +3800,33 @@ function fqParseSegCargos(text) {
   return { rows, lookup };
 }
 
+// SKR/HAL(자사) 선적 금지·제한 리스트만 조회 — AI 문의/회신 초안의 '선적 가부' 근거로 사용.
+//   (사용자 요청: 자사 SKR/HAS 규정만 참고, 타 선사 정보는 제공하지 않음)
+async function fqFetchSkrRules(unnos) {
+  const list = [...new Set((unnos || []).map(u => String(u)).filter(u => /^\d{3,4}$/.test(u)))].slice(0, 5);
+  const out = [];
+  for (const u of list) {
+    try {
+      const r = await fetch(`/api/carrier-check?unno=${encodeURIComponent(u)}`);
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) continue;
+      const skr = (j.results || []).find(x => x.carrier_group === 'SKR_HAL');
+      if (!skr) continue;
+      out.push({
+        unno: u,
+        name: (j.dg && (j.dg.Name || j.dg.name)) || '',
+        status: skr.status || '',
+        status_label: skr.status_label || '',
+        rules: (skr.matched_rules || []).map(rule => ({
+          class_no: rule.class_no || '', unno: rule.unno || '', status: rule.status || '',
+          remark: rule.remark || rule.condition || '', document_required: rule.document_required || ''
+        }))
+      });
+    } catch (_) { /* 조회 실패 시 무시하고 진행 */ }
+  }
+  return out;
+}
+
 let fqLastAiInquiry = null;   // 직전 AI 문의/답변 (저장 버튼에서 사용)
 async function fqAskAi() {
   const inputEl = document.getElementById('fqAiInput');
@@ -3834,6 +3861,9 @@ async function fqAskAi() {
         if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data;
       } catch (_) { /* 조회 실패 시 일반 답변으로 진행 */ }
     }
+    // SKR/HAL(자사) 선적 금지·제한 리스트 조회 — 선적 가부 근거 (타 선사 제외)
+    let skrCarrier = [];
+    if (unnos.length) { try { skrCarrier = await fqFetchSkrRules(unnos); } catch (_) {} }
     {
       const dgMap = {};
       dgData.forEach(r => { const u = String(r.UNNO || r.unno || ''); if (u && !dgMap[u]) dgMap[u] = r; });   // UN 중복행 1건만
@@ -3848,7 +3878,7 @@ async function fqAskAi() {
           finalRows.push({ unno: null, class: row.class, sub: null, name: 'Class ' + row.class });   // 클래스 직접 입력 화물
         }
       }
-      if (finalRows.length >= 2) {
+      if (isSegQ && finalRows.length >= 2) {
         segChk = fqSegregationCheck(finalRows);
         segInfo = { verdict: segChk.verdict, allow: segChk.allow, worst: segChk.worst, detail: segChk.detail, anyAmbiguous: segChk.anyAmbiguous, cargos: segChk.cargos };
       } else if (isSegQ) {
@@ -3858,7 +3888,7 @@ async function fqAskAi() {
     }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q, context: top, dgData, unnos, segInfo })
+      body: JSON.stringify({ question: q, context: top, dgData, unnos, segInfo, skrCarrier })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
@@ -4096,9 +4126,12 @@ async function fqDraftReply() {
       segInfo = { verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail,
         cargos: rows.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.class}${r.sub ? ', 부위험성 ' + r.sub : ''})`) };
     }
+    // SKR/HAL(자사) 선적 금지·제한 리스트 조회 — 선적 가부 근거 (타 선사 제외)
+    let skrCarrier = [];
+    if (unnos.length) { try { skrCarrier = await fqFetchSkrRules(unnos); } catch (_) {} }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo, attachments: attachAnalyses, lang: (!/[가-힣]/.test(q) && /[A-Za-z]/.test(q)) ? 'en' : 'ko' })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo, skrCarrier, attachments: attachAnalyses, lang: (!/[가-힣]/.test(q) && /[A-Za-z]/.test(q)) ? 'en' : 'ko' })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
