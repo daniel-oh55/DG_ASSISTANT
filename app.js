@@ -620,6 +620,11 @@ function render() {
     statusColor = 'var(--green)'; statusIcon = '✅';
   }
 
+  // 격리코드(Seg n / n Away from / Separated from / X 등)를 굵게·하이라이트로 강조
+  const emphSeg = s => String(s)
+    .replace(/(Seg\s*[1-4])/g, '<b class="seg-code-hl">$1</b>')
+    .replace(/([1-4]\s*Away from\([^)]*\)|[1-4]\s*Separated from\([^)]*\)|[1-4]\s*완전구획 격리|[1-4]\s*종방향 구획 격리|X\(격리 없음\)|격리적용없음)/g, '<b class="seg-code-hl">$1</b>');
+
   panel.innerHTML = `
     <div class="seg-panel">
       <div class="seg-panel-header">
@@ -639,9 +644,9 @@ function render() {
         <div style="font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px">PAIR DETAIL</div>
         ${pairs.map(p => `
           <div class="pair-row">
-            <span style="font-weight:700;font-family:'Space Mono';min-width:150px">UN${p.a} ↔ UN${p.b}</span>
+            <span class="pair-un">UN${p.a} ↔ UN${p.b}</span>
             <span class="seg-badge ${segBadgeClass(p.level)}">${segLabel(p.level)}</span>
-            <span style="font-size:12px;color:var(--muted);flex:1">${p.reasons.slice(0,3).join('<br>')}</span>
+            <span class="pair-reason">${emphSeg(p.reasons.slice(0,3).join('<br>'))}</span>
           </div>
         `).join('')}
       </div>
@@ -1729,14 +1734,10 @@ const CARRIER_DOCS = {
 
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
-    const showOnlyAllowed = document.getElementById('showOnlyAllowedCarrier')?.checked;
 
     carrierCommonRulesStore = {};
 
-
-    const filteredResults = (showOnlyAllowed
-        ? results.filter(r => r.status === 'ALLOWED')
-        : results.slice());
+    const filteredResults = results.slice();
     // SKR/HAS(자사)를 항상 결과 최상단에 고정 (나머지는 기존 순서 유지)
     filteredResults.sort((a, b) =>
         (a.carrier_group === 'SKR_HAL' ? 0 : 1) - (b.carrier_group === 'SKR_HAL' ? 0 : 1));
@@ -2055,16 +2056,6 @@ const carrierCheckInput = document.getElementById('carrierCheckInput');
 if (carrierCheckInput) {
     carrierCheckInput.addEventListener('keydown', e => {
         if (e.key === 'Enter') checkCarrierLoadingPossibility();
-    });
-}
-
-const showOnlyAllowedCarrier = document.getElementById('showOnlyAllowedCarrier');
-if (showOnlyAllowedCarrier) {
-    showOnlyAllowedCarrier.addEventListener('change', () => {
-        const input = document.getElementById('carrierCheckInput');
-        if (input && input.value.trim()) {
-            checkCarrierLoadingPossibility();
-        }
     });
 }
 

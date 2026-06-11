@@ -888,20 +888,47 @@ header span {
 
 .pair-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 15px;
-    padding: 12px 0;
+    padding: 14px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.pair-un {
+    font-weight: 800;
+    font-family: var(--font-mono);
+    min-width: 150px;
+    font-size: 15px;
+    padding-top: 4px;
+}
+/* 격리 판단 핵심 설명 — 크고 진하게 */
+.pair-reason {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 500;
+}
+/* 격리코드 강조 (Seg 2 / 2 Separated from 등) */
+.seg-code-hl {
+    font-weight: 800;
+    color: #ffe08a;
+    background: rgba(255, 214, 0, 0.16);
+    padding: 1px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+[data-theme="bright"] .seg-code-hl {
+    color: #8a5a00;
+    background: rgba(255, 196, 0, 0.22);
 }
 
 .seg-badge {
-    min-width: 45px;
-    padding: 4px 12px;
-    border-radius: 4px;
+    min-width: 58px;
+    padding: 7px 16px;
+    border-radius: 6px;
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .seg-badge.s0 {
