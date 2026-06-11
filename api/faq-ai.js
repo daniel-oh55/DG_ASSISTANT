@@ -119,34 +119,47 @@ module.exports = async function handler(req, res) {
       // 행정성·비사건성 뉴스(운송차량 점검·단속·캠페인·교육·협약 등)는 특정 위험물질/사고 내용이 아니어서
       // 선적 판단에 도움이 안 되므로 제외한다. (실제 사고: 화재·폭발·유출·누출·전복 등은 통과)
       const IRRELEVANT = /가두\s*검사|차량.{0,10}(점검|검사|단속)|(점검|검사|단속).{0,10}차량|(일제|합동|특별|불시|정기|민관|안전|가두)\s*(점검|검사|단속)|점검\s*(실시|추진|강화|예정|나서|벌|당부|계획)|검사\s*(실시|추진|강화|예정|계획)|단속\s*(실시|강화|벌|나서)|계도|캠페인|홍보|교육|훈련|간담회|협약|업무협약|워크[숍샵]|세미나|설명회|공모|발대식|예방\s*활동|안전\s*문화|소방\s*안전\s*관리|안전\s*관리\s*강화|법안|발의|입법|조례|개정안/;
-      // 글자 2-gram(bigram) 집합의 포함률로 비슷한 제목을 걸러낸다(앞 글자만 비교하던 방식보다 강함).
-      // 같은 사건의 표현만 다른 헤드라인(예: "OO공장서 화학물질 누출" vs "OO공장 유해물질 유출 2명 이송")을 묶어 1건만 남긴다.
-      const bigrams = s => {
-        const t = String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
-        const g = new Set();
-        for (let i = 0; i < t.length - 1; i++) g.add(t.slice(i, i + 2));
-        return g;
+      // 유사(중복) 뉴스 제거 — 같은 사건을 표현만 다르게 쓴 헤드라인을 1건으로 묶는다.
+      // 핵심 신호: 두 제목이 '식별성 있는' 공통 부분문자열(회사·지명 등)을 5자 이상 공유하면 같은 사건으로 본다.
+      //   (예: "SK하이닉스 청주공장 화학물질 누출" 4건 → 'sk하이닉스청주' 공유 → 1건)
+      //   반대로 '화학물질 누출' 같은 일반 표현만 겹치는 건 서로 다른 사건일 수 있으므로 합치지 않는다.
+      const newsNorm = s => String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
+      const GENERIC_NEWS = /화학물질|유해물질|위험물질|화학사고|가스누출|유독가스|화재|폭발|누출|유출|사고|물질/g;
+      const bigrams = s => { const g = new Set(); for (let i = 0; i < s.length - 1; i++) g.add(s.slice(i, i + 2)); return g; };
+      const bgContain = (a, b) => { const sm = Math.min(a.size, b.size); if (sm < 4) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return n / sm; };
+      // 최장 공통 부분문자열(연속 일치) 반환
+      const lcsStr = (a, b) => {
+        const m = a.length, n = b.length; if (!m || !n) return '';
+        let prev = new Array(n + 1).fill(0), best = 0, end = 0;
+        for (let i = 1; i <= m; i++) {
+          const cur = new Array(n + 1).fill(0);
+          for (let j = 1; j <= n; j++) if (a[i - 1] === b[j - 1]) { cur[j] = prev[j - 1] + 1; if (cur[j] > best) { best = cur[j]; end = i; } }
+          prev = cur;
+        }
+        return a.slice(end - best, end);
       };
-      const containment = (a, b) => {
-        const small = Math.min(a.size, b.size);
-        if (small < 4) return 0;                               // 너무 짧은 제목은 비교 신뢰도 낮음 → 중복 처리 안 함
-        let inter = 0; for (const x of a) if (b.has(x)) inter++;
-        return inter / small;                                  // 작은 쪽 기준 포함률
+      const sameEvent = (x, y) => {
+        const sub = lcsStr(x._n, y._n);
+        // 고유 부분(일반 표현 제외)을 충분히 길게 공유 → 같은 사건
+        if (sub.length >= 5 && sub.replace(GENERIC_NEWS, '').length >= 3) return true;
+        // 또는 표현이 거의 동일(글자 bigram 포함률 매우 높음)
+        return bgContain(x._g, y._g) >= 0.6;
       };
       const cand = [];
       for (const it of results.flat()) {
         const base = it.title.replace(/\s*-\s*[^-]+$/, '');   // " - 출처" 제거
         if (IRRELEVANT.test(base)) continue;                   // 점검·단속·캠페인 등 비사건성 뉴스 제외
-        if (!base.replace(/[^0-9a-z가-힣]/gi, '')) continue;
-        cand.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0, _g: bigrams(base) });
+        const nrm = newsNorm(base);
+        if (!nrm) continue;
+        cand.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0, _n: nrm, _g: bigrams(nrm) });
       }
       cand.sort((a, b) => b.ts - a.ts);                        // 최신 우선 — 유사군에서 가장 최근 기사를 남긴다
       const merged = [];
       for (const c of cand) {
-        if (merged.some(k => containment(k._g, c._g) >= 0.6)) continue;   // 60% 이상 겹치면 유사 중복으로 제외
+        if (merged.some(k => sameEvent(k, c))) continue;       // 같은 사건이면 제외
         merged.push(c);
       }
-      merged.forEach(n => { delete n._g; });                   // 내부 비교용 필드 제거
+      merged.forEach(n => { delete n._n; delete n._g; });      // 내부 비교용 필드 제거
       merged.sort((a, b) => b.ts - a.ts);
       // 무료 쿼터 절약 + 정예화: 실제 사고(화재·폭발·유출·전복 등) 뉴스를 우선 선별하고 최대 6건만 사용.
       // (Gemini에 보내는 헤드라인 수↓ → 토큰·쿼터 절감, 화면도 꼭 필요한 사고 위주)
