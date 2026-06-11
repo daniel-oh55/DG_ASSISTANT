@@ -511,6 +511,8 @@ header span {
 .carrier-route-hint b { color: #cfe6ef; }
 /* 선적가부 결과 — 선사별/포트별 구분 */
 .carrier-section-title { margin: 22px 0 10px; font-size: 15px; font-weight: 800; color: #eaf2f8; letter-spacing: 0.3px; border-left: 4px solid var(--accent, #00f2ff); padding-left: 10px; }
+/* 밝은 테마: 섹션 제목이 흰 배경에서 안 보이던 문제 — 짙은 남색으로 가시성 확보 */
+[data-theme="bright"] .carrier-section-title { color: var(--bright-navy, #0A2A4E); }
 .carrier-port-result { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; }
 .carrier-port-route { font-family: var(--font-mono); font-size: 14px; color: #eaf2f8; margin-bottom: 8px; }
 .carrier-port-route b { color: #00f2ff; }
