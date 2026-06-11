@@ -1722,7 +1722,7 @@ const CARRIER_DOCS = {
     SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.11)' },
     HMM_PARTNER: { url: '/carriers/hmm.pdf',      label: 'HMM Prohibited & Restricted List' },
     TSL:         { url: '/carriers/tsl.pdf',      label: 'TSL Restricted-Prohibited DG (Rev.29)' },
-    KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.01)' },
+    KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.06.15, Amd 42-24)' },
     NSS_DYS:     { url: '/carriers/nss_dys.xlsx',  label: 'NSS & DYS DG Prohibition List (XLSX)' },
     CKL_PARTNER: { url: '/carriers/ckl.pdf',      label: 'CKL DG Prohibited & Restricted List (2024.06.28)' }
 };
