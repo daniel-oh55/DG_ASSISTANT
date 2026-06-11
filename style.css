@@ -140,21 +140,87 @@ button {
         0 14px 32px rgba(0, 0, 0, 0.28);
 }
 
+/* 회사마크(흥아·장금) 스타일 원형 배지 — 빨강 상단 + 파랑 물결 하단 + 골드 테두리,
+   가운데 금색 SKR/HAS 가 동전처럼 휙 뒤집히며 번갈아 표시(약 15초 간격) */
 .sidebar-emblem {
-    width: 42px;
-    height: 42px;
+    position: relative;
+    width: 60px;
+    height: 60px;
     margin-bottom: 10px;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    box-shadow: none;
+    filter: drop-shadow(0 5px 12px rgba(10, 42, 78, 0.38));
+}
 
+.sidebar-emblem .emblem-badge {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar-emblem .emblem-flip {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    perspective: 320px;
+}
 
-    color: var(--accent-green);
-    font-size: 25px;
-    border-radius: 50%;
-    background: rgba(0, 191, 165, 0.10);
-    border: 1px solid rgba(0, 191, 165, 0.28);
-    box-shadow: 0 0 22px rgba(0, 191, 165, 0.18);
+.sidebar-emblem .emblem-flip-inner {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    transform-style: preserve-3d;
+    animation: dgFlip 30s cubic-bezier(.7, .02, .3, 1) infinite;
+}
+
+.sidebar-emblem .emblem-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.sidebar-emblem .emblem-back {
+    transform: rotateY(180deg);
+}
+
+.sidebar-emblem .emblem-gold {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    background: linear-gradient(100deg, #7A5C18 0%, #C9A24B 22%, #F7ECC0 42%, #FFFFFF 50%, #F7ECC0 58%, #C9A24B 78%, #7A5C18 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 0.3px rgba(90, 64, 12, 0.35);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+    animation: dgShimmer 4.5s linear infinite;
+}
+
+@keyframes dgShimmer {
+    0% { background-position: 210% 0; }
+    100% { background-position: -30% 0; }
+}
+
+@keyframes dgFlip {
+    0%, 47%  { transform: rotateY(0deg); }
+    50%, 97% { transform: rotateY(180deg); }
+    100%     { transform: rotateY(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-emblem .emblem-flip-inner,
+    .sidebar-emblem .emblem-gold { animation: none; }
 }
 
 .sidebar-title {
@@ -2170,6 +2236,17 @@ header span {
 
     .sidebar-emblem {
         margin-bottom: 0;
+        width: 48px;
+        height: 48px;
+    }
+
+    .sidebar-emblem .emblem-flip-inner {
+        width: 34px;
+        height: 20px;
+    }
+
+    .sidebar-emblem .emblem-gold {
+        font-size: 12px;
     }
 
     .sidebar-subtitle {
@@ -3180,10 +3257,11 @@ header span {
 }
 
 [data-theme="bright"] .sidebar-emblem {
-    color: var(--bright-teal);
-    background: rgba(0, 166, 184, 0.10);
-    border-color: rgba(0, 166, 184, 0.24);
-    box-shadow: 0 10px 24px rgba(0, 166, 184, 0.12);
+    /* 배지 SVG가 자체 색을 가지므로 teal 원 배경 제거, 은은한 그림자만 */
+    background: none;
+    border: none;
+    box-shadow: none;
+    filter: drop-shadow(0 5px 12px rgba(10, 42, 78, 0.20));
 }
 
 [data-theme="bright"] .sidebar-title {

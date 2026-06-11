@@ -40,7 +40,30 @@
         <!-- 2. 왼쪽 사이드바 영역 -->
         <nav class="sidebar">
     <div class="sidebar-logo-box" id="sidebarHomeLogo" role="button" tabindex="0" title="HOME으로 이동">
-    <div class="sidebar-emblem">⚓</div>
+    <div class="sidebar-emblem" aria-hidden="true">
+        <svg class="emblem-badge" viewBox="0 0 100 100" width="100%" height="100%">
+            <defs>
+                <linearGradient id="dgEmbRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E5283A"/><stop offset="1" stop-color="#A50F1E"/></linearGradient>
+                <linearGradient id="dgEmbBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C66C9"/><stop offset="1" stop-color="#0A2A4E"/></linearGradient>
+                <linearGradient id="dgEmbGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6CB7E"/><stop offset=".5" stop-color="#C9A24B"/><stop offset="1" stop-color="#9C7C2E"/></linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="49" fill="url(#dgEmbGold)"/>
+            <circle cx="50" cy="50" r="46.5" fill="#0A2A4E"/>
+            <clipPath id="dgEmbClip"><circle cx="50" cy="50" r="44"/></clipPath>
+            <g clip-path="url(#dgEmbClip)">
+                <rect x="0" y="0" width="100" height="42" fill="url(#dgEmbRed)"/>
+                <rect x="0" y="42" width="100" height="58" fill="url(#dgEmbBlue)"/>
+                <rect x="0" y="41" width="100" height="2" fill="#F4F7FB"/>
+                <path d="M0 64 Q14 58 26 64 T52 64 T78 64 T104 64" fill="none" stroke="#EAF2FF" stroke-width="2.4" opacity=".9"/>
+                <path d="M0 73 Q14 67 26 73 T52 73 T78 73 T104 73" fill="none" stroke="#EAF2FF" stroke-width="2.4" opacity=".7"/>
+                <path d="M0 82 Q14 76 26 82 T52 82 T78 82 T104 82" fill="none" stroke="#EAF2FF" stroke-width="2.4" opacity=".5"/>
+            </g>
+        </svg>
+        <div class="emblem-flip"><div class="emblem-flip-inner">
+            <span class="emblem-face emblem-front"><span class="emblem-gold">SKR</span></span>
+            <span class="emblem-face emblem-back"><span class="emblem-gold">HAS</span></span>
+        </div></div>
+    </div>
     <div class="sidebar-title">DG ASSISTANT</div>
     <div class="sidebar-subtitle">IMDG Control System</div>
 </div>
