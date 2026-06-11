@@ -125,6 +125,12 @@ module.exports = async function handler(req, res) {
       //   반대로 '화학물질 누출' 같은 일반 표현만 겹치는 건 서로 다른 사건일 수 있으므로 합치지 않는다.
       const newsNorm = s => String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
       const GENERIC_NEWS = /화학물질|유해물질|위험물질|화학사고|가스누출|유독가스|화재|폭발|누출|유출|사고|물질/g;
+      // 식별성 없는 일반 단어 — 이 단어만 겹치는 건 같은 사건 근거로 보지 않는다.
+      const GENERIC_WORDS = new Set('화학물질 유해물질 위험물질 위험물 화학 물질 가스 유독가스 독성가스 화재 불 폭발 폭음 누출 유출 전복 충돌 침몰 사고 부상 사망 중상 대피 긴급 종합 속보 신고 발생 현장 공장 창고 사업장 캠퍼스 건물 실시 적발 지적 명 건 보'.split(' '));
+      const distinctWords = s => {
+        const ws = String(s || '').toLowerCase().replace(/[^0-9a-z가-힣\s]/g, ' ').split(/\s+/);
+        return new Set(ws.filter(w => w.length >= 2 && !GENERIC_WORDS.has(w)));
+      };
       const bigrams = s => { const g = new Set(); for (let i = 0; i < s.length - 1; i++) g.add(s.slice(i, i + 2)); return g; };
       const bgContain = (a, b) => { const sm = Math.min(a.size, b.size); if (sm < 4) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return n / sm; };
       // 최장 공통 부분문자열(연속 일치) 반환
@@ -140,9 +146,12 @@ module.exports = async function handler(req, res) {
       };
       const sameEvent = (x, y) => {
         const sub = lcsStr(x._n, y._n);
-        // 고유 부분(일반 표현 제외)을 충분히 길게 공유 → 같은 사건
+        // ① 고유 부분(일반 표현 제외)을 충분히 길게 연속 공유 → 같은 사건
         if (sub.length >= 5 && sub.replace(GENERIC_NEWS, '').length >= 3) return true;
-        // 또는 표현이 거의 동일(글자 bigram 포함률 매우 높음)
+        // ② 식별성 있는(일반어 제외) 단어를 2개 이상 공유 → 같은 사건(예: '충북대'+'실험실서')
+        let shared = 0; for (const w of x._w) if (y._w.has(w)) shared++;
+        if (shared >= 2) return true;
+        // ③ 표현이 거의 동일(글자 bigram 포함률 매우 높음)
         return bgContain(x._g, y._g) >= 0.6;
       };
       const cand = [];
@@ -151,7 +160,7 @@ module.exports = async function handler(req, res) {
         if (IRRELEVANT.test(base)) continue;                   // 점검·단속·캠페인 등 비사건성 뉴스 제외
         const nrm = newsNorm(base);
         if (!nrm) continue;
-        cand.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0, _n: nrm, _g: bigrams(nrm) });
+        cand.push({ title: base, link: it.link, source: it.source, pub: it.pub, ts: Date.parse(it.pub) || 0, _n: nrm, _g: bigrams(nrm), _w: distinctWords(base) });
       }
       cand.sort((a, b) => b.ts - a.ts);                        // 최신 우선 — 유사군에서 가장 최근 기사를 남긴다
       const merged = [];
@@ -159,7 +168,7 @@ module.exports = async function handler(req, res) {
         if (merged.some(k => sameEvent(k, c))) continue;       // 같은 사건이면 제외
         merged.push(c);
       }
-      merged.forEach(n => { delete n._n; delete n._g; });      // 내부 비교용 필드 제거
+      merged.forEach(n => { delete n._n; delete n._g; delete n._w; });   // 내부 비교용 필드 제거
       merged.sort((a, b) => b.ts - a.ts);
       // 무료 쿼터 절약 + 정예화: 실제 사고(화재·폭발·유출·전복 등) 뉴스를 우선 선별하고 최대 6건만 사용.
       // (Gemini에 보내는 헤드라인 수↓ → 토큰·쿼터 절감, 화면도 꼭 필요한 사고 위주)
