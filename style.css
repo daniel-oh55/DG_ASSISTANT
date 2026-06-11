@@ -24,6 +24,8 @@
 
     --font-main: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
     --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+    /* 큰 제목 전용 — 세련된 프리미엄 글꼴 (UN번호·코드 등은 mono 유지) */
+    --font-display: 'Pretendard', 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -408,8 +410,8 @@ header h1 {
     z-index: 1;
     margin-left: 10px;
     color: #eafcff;
-    font-family: var(--font-mono);
-    font-size: 30px;
+    font-family: var(--font-display);
+    font-size: 31px;
     line-height: 1.2;
     font-weight: 800;
     letter-spacing: -0.4px;
