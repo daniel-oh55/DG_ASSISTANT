@@ -3104,6 +3104,7 @@ let FQ_FAQ_DATA = {
 // ───── 상태 ─────
 let fqAdminMode = sessionStorage.getItem(FQ_CONFIG.ADMIN_SESSION_KEY) === '1';
 let fqPosts = [];
+let fqNewPostAttachments = [];   // 새 문의 작성 시 첨부파일(임시) — {name,type,size,data(dataURL)}
 let fqCurrentCat = '전체';
 let fqEditingId = null;   // 이메일 문의 수정 중인 항목 id (null이면 신규 등록)
 let fqOpenPostId = null;
@@ -4810,6 +4811,73 @@ function fqBindBoard(scope) {
     scope.querySelector('#fqNpPwdWrap').style.display = e.target.checked ? 'block' : 'none';
   });
   scope.querySelector('#fqSubmitPostBtn').addEventListener('click', fqSubmitPost);
+
+  // 첨부파일 — 파일 선택 + 드래그앤드롭
+  const attInput = scope.querySelector('#fqNpAttachInput');
+  const attDrop = scope.querySelector('#fqNpAttachDrop');
+  if (attInput) attInput.addEventListener('change', e => { fqAddBoardFiles(e.target.files); e.target.value = ''; });
+  if (attDrop) {
+    attDrop.addEventListener('click', () => { if (attInput) attInput.click(); });
+    ['dragenter', 'dragover'].forEach(ev => attDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); attDrop.classList.add('drag'); }));
+    ['dragleave', 'dragend'].forEach(ev => attDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); attDrop.classList.remove('drag'); }));
+    attDrop.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation(); attDrop.classList.remove('drag');
+      if (e.dataTransfer && e.dataTransfer.files) fqAddBoardFiles(e.dataTransfer.files);
+    });
+  }
+}
+
+// ── 게시판 첨부파일 처리 ──
+const FQ_ATTACH_MAX = 2 * 1024 * 1024;   // 파일당 2MB 상한 (공용 DB 부담 방지)
+function fqFmtSize(b) { return b < 1024 ? b + 'B' : b < 1048576 ? Math.round(b / 1024) + 'KB' : (b / 1048576).toFixed(1) + 'MB'; }
+function fqAddBoardFiles(fileList) {
+  Array.from(fileList || []).forEach(f => {
+    if (f.size > FQ_ATTACH_MAX) { fqToast(`"${f.name}"는 2MB를 초과해 제외됩니다 (큰 파일은 이메일 문의 이용)`, 'warn'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      fqNewPostAttachments.push({ name: f.name, type: f.type || '', size: f.size, data: reader.result });
+      fqRenderNpAttachList();
+    };
+    reader.onerror = () => fqToast(`"${f.name}" 읽기 실패`, 'warn');
+    reader.readAsDataURL(f);
+  });
+}
+function fqRenderNpAttachList() {
+  const box = document.getElementById('fqNpAttachList');
+  if (!box) return;
+  box.innerHTML = fqNewPostAttachments.map((a, i) =>
+    `<span class="fq-attach-chip">${/^image\//.test(a.type) ? '🖼' : '📄'} ${fqEsc(a.name)} <span class="fq-attach-size">(${fqFmtSize(a.size)})</span><button type="button" class="fq-attach-x" onclick="fqRemoveNpAttach(${i})" title="제거">✕</button></span>`
+  ).join('');
+}
+function fqRemoveNpAttach(i) { fqNewPostAttachments.splice(i, 1); fqRenderNpAttachList(); }
+
+// 첨부 보기 — 글의 첨부(base64)를 Blob으로 열기(이미지·PDF는 새 탭, 그 외 다운로드)
+function fqOpenAttachment(postId, idx) {
+  const p = fqPosts.find(x => x.id === postId);
+  if (!p || !Array.isArray(p.attachments) || !p.attachments[idx]) return;
+  const a = p.attachments[idx];
+  try {
+    const arr = String(a.data).split(',');
+    const mime = (arr[0].match(/:(.*?);/) || [])[1] || a.type || 'application/octet-stream';
+    const bin = atob(arr[1]); const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type: mime }));
+    if (/^image\//.test(mime) || mime === 'application/pdf') {
+      window.open(url, '_blank');
+    } else {
+      const el = document.createElement('a'); el.href = url; el.download = a.name;
+      document.body.appendChild(el); el.click(); el.remove();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { fqToast('첨부 열기 실패: ' + e.message, 'warn'); }
+}
+// 게시글에 첨부 목록 표시(본문 열람 가능할 때만)
+function fqRenderPostAttachments(p, canSee) {
+  if (!canSee || !Array.isArray(p.attachments) || !p.attachments.length) return '';
+  const chips = p.attachments.map((a, i) =>
+    `<button type="button" class="fq-attach-view" onclick="fqOpenAttachment('${p.id}', ${i})" title="클릭하면 내용 보기">${/^image\//.test(a.type) ? '🖼' : '📄'} ${fqEsc(a.name)} <span class="fq-attach-size">(${fqFmtSize(a.size)})</span></button>`
+  ).join('');
+  return `<div class="fq-post-attachs"><span class="fq-attach-label">📎 첨부 ${p.attachments.length}개</span>${chips}</div>`;
 }
 
 // 게시판 카테고리 = FAQ 카테고리 사용 (전체 제외)
@@ -4828,6 +4896,8 @@ function fqResetNewForm() {
   });
   document.getElementById('fqNpPrivate').checked = false;
   document.getElementById('fqNpPwdWrap').style.display = 'none';
+  fqNewPostAttachments = [];
+  fqRenderNpAttachList();
   fqPopulateBoardCats();
 }
 
@@ -4854,6 +4924,7 @@ async function fqSubmitPost() {
     pwdHash: isPrivate ? await fqHash(pwd) : null,
     status: 'unanswered',
     createdAt: new Date().toISOString(),
+    attachments: fqNewPostAttachments.slice(),
     answer: null,
     answeredAt: null,
     answerBy: null
@@ -4913,6 +4984,7 @@ function fqRenderPosts() {
             <span class="fq-post-status ${p.status}">${p.status === 'answered' ? '✓ 답변완료' : '대기'}</span>
           </div>
           <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <span style="color:var(--fq-muted);font-size:12px;">담당자는 비밀번호 1234로 열람·답글 가능</span> <button class="fq-btn" onclick="fqUnlockPost(event,\'' + p.id + '\')">비밀번호 입력</button>'}</div>
+          ${fqRenderPostAttachments(p, canSeeBody)}
           ${p.answer ? `
             <div class="fq-post-answer">
               <div class="fq-post-answer-head">✓ 답변 — ${p.answerBy || '관리자'} · ${new Date(p.answeredAt).toLocaleString('ko')}</div>

@@ -647,8 +647,20 @@
         <div class="fq-new-row">
           <div>
             <label class="fq-field-label" for="fqNpBody">문의 내용 <span class="fq-req">*</span></label>
-            <p class="fq-hint" style="margin:2px 0 6px;">가능한 자세히 작성해주세요. <b>명확한 담당자 답변이 필요한 문의</b>를 적어주세요.</p>
-            <textarea id="fqNpBody" maxlength="3000" required placeholder="가능한 자세히 작성해주세요 — 명확한 담당자 답변이 필요한 문의를 적어주세요"></textarea>
+            <p class="fq-hint" style="margin:2px 0 6px;"><b>명확한 담당자 답변이 필요한 문의</b>를 적어주세요.</p>
+            <textarea id="fqNpBody" maxlength="3000" required placeholder="명확한 담당자 답변이 필요한 문의를 적어주세요"></textarea>
+          </div>
+        </div>
+        <div class="fq-new-row">
+          <div>
+            <label class="fq-field-label">첨부파일 (선택)</label>
+            <div class="fq-attach-drop" id="fqNpAttachDrop">
+              <input type="file" id="fqNpAttachInput" multiple hidden>
+              <span class="fq-attach-icon">📎</span>
+              <span class="fq-attach-text">파일을 끌어다 놓거나 <span class="fq-attach-pick">클릭해서 선택</span></span>
+              <span class="fq-attach-sub">이미지 · PDF · 문서 등 · 파일당 최대 2MB</span>
+            </div>
+            <div class="fq-attach-list" id="fqNpAttachList"></div>
           </div>
         </div>
         <div class="fq-private-wrap">
