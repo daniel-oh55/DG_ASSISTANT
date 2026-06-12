@@ -720,6 +720,14 @@ function renderLoadingState(title, message, meta = '') {
 function activateTab(targetId) {
     if (!targetId) return;
 
+    // 로그인 게이트 — 미로그인 시 HOME·관리자 리포트 외 메뉴 사용 차단(로그인 필요 안내).
+    //   (관리자 리포트는 회원 승인 부트스트랩을 위해 열어 둠 — 승인은 1234 필요)
+    if (typeof dgIsAuthed === 'function' && !dgIsAuthed()
+        && targetId !== 'tab-home' && targetId !== 'tab-report') {
+        dgShowLoginRequired();
+        return;
+    }
+
     menuItems.forEach(item => {
         item.classList.toggle('active', item.getAttribute('data-target') === targetId);
     });
@@ -3721,6 +3729,7 @@ function fqBindReport(scope) {
       scope.querySelectorAll('[data-rpt]').forEach(b => b.classList.toggle('active', b.dataset.rpt === t));
       scope.querySelectorAll('[data-rpt-panel]').forEach(p => p.classList.toggle('active', p.dataset.rptPanel === t));
       if (t === 'news') fqRenderNews();
+      if (t === 'members' && typeof dgRefreshMembers === 'function') dgRefreshMembers();
     });
   });
   const newsRefresh = scope.querySelector('#rptNewsRefresh');
@@ -4874,7 +4883,7 @@ function fqBindBoard(scope) {
   scope.querySelector('#fqNewPostBtn').addEventListener('click', () => {
     const form = scope.querySelector('#fqNewPostForm');
     form.hidden = !form.hidden;
-    if (!form.hidden) fqPopulateBoardCats();   // FAQ 카테고리로 채우기
+    if (!form.hidden) { fqPopulateBoardCats(); if (typeof dgAutofillForms === 'function') dgAutofillForms(); }   // FAQ 카테고리 + 로그인 정보 자동입력
   });
   scope.querySelector('#fqCancelPostBtn').addEventListener('click', () => {
     scope.querySelector('#fqNewPostForm').hidden = true;
@@ -5298,8 +5307,172 @@ function fqToast(msg, type) {
 }
 
 // 자동 초기화 + 사이드바 메뉴 → 모듈 내부 탭 연동
+// ════════════════════════════════════════════════════════════════
+//   사용자 로그인 / 회원가입 / 승인 (클라이언트 소프트 인증)
+//   저장: Supabase inquiry_state id='members' (publishable 키, fqRemoteGet/Set 재사용)
+//   ⚠️ 정적 사이트 소프트 게이트 — 일반 사용자 차단·회원관리·자동입력용(완전한 접근제어 아님)
+// ════════════════════════════════════════════════════════════════
+const DG_AUTH_KEY = 'dg_auth_user_v1';
+const DG_APPROVE_PWD = '1234';      // 회원가입 승인 비밀번호
+let dgMembers = [];
+let dgCurrentUser = null;
+
+function dgIsAuthed() { return !!dgCurrentUser; }
+
+async function dgLoadMembers() {
+  try { const data = await fqRemoteGet('members'); dgMembers = Array.isArray(data.members) ? data.members : []; }
+  catch (e) { dgMembers = []; }
+}
+async function dgSaveMembers() { await fqRemoteSet('members', { members: dgMembers }); }
+
+function dgRestoreSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DG_AUTH_KEY) || 'null');
+    if (saved && saved.id) {
+      const m = dgMembers.find(x => x.id === saved.id && x.status === 'approved');
+      if (m) dgCurrentUser = { id: m.id, company: m.company, name: m.name };
+      else { dgCurrentUser = null; localStorage.removeItem(DG_AUTH_KEY); }
+    }
+  } catch (e) { dgCurrentUser = null; }
+}
+
+async function dgLogin(id, pw) {
+  id = (id || '').trim();
+  if (!id || !pw) { fqToast('ID와 비밀번호를 입력하세요', 'warn'); return; }
+  await dgLoadMembers();
+  const m = dgMembers.find(x => String(x.id).toLowerCase() === id.toLowerCase());
+  if (!m) { fqToast('등록되지 않은 ID입니다', 'warn'); return; }
+  if (m.status !== 'approved') { fqToast('아직 승인되지 않은 계정입니다 (관리자 승인 대기 중)', 'warn'); return; }
+  if (await fqHash(pw) !== m.pwdHash) { fqToast('비밀번호가 일치하지 않습니다', 'warn'); return; }
+  dgCurrentUser = { id: m.id, company: m.company, name: m.name };
+  localStorage.setItem(DG_AUTH_KEY, JSON.stringify(dgCurrentUser));
+  dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms();
+  fqToast('✓ ' + (m.name || m.id) + '님 로그인되었습니다', 'success');
+}
+
+function dgLogout() {
+  dgCurrentUser = null;
+  localStorage.removeItem(DG_AUTH_KEY);
+  dgUpdateAuthUI();
+  if (typeof activateTab === 'function') activateTab('tab-home');
+  fqToast('로그아웃되었습니다', 'success');
+}
+
+async function dgSignup(company, name, id, pw) {
+  company = (company || '').trim(); name = (name || '').trim(); id = (id || '').trim();
+  if (!company || !name || !id || !pw) { fqToast('모든 항목을 입력하세요', 'warn'); return; }
+  if (pw.length < 4) { fqToast('비밀번호는 4자 이상이어야 합니다', 'warn'); return; }
+  await dgLoadMembers();
+  if (dgMembers.some(x => String(x.id).toLowerCase() === id.toLowerCase())) { fqToast('이미 사용 중인 ID입니다', 'warn'); return; }
+  dgMembers.push({ id, company, name, pwdHash: await fqHash(pw), status: 'pending', createdAt: new Date().toISOString(), approvedAt: null });
+  try { await dgSaveMembers(); }
+  catch (e) { fqToast('가입 요청 저장 실패: ' + e.message, 'warn'); return; }
+  dgCloseModals();
+  ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+  fqToast('✓ 가입 요청이 접수되었습니다 — 관리자 승인 후 로그인할 수 있습니다', 'success');
+}
+
+async function dgApprove(id) {
+  const pwd = prompt('회원 승인 비밀번호를 입력하세요:');
+  if (pwd === null) return;
+  if (pwd !== DG_APPROVE_PWD) { fqToast('✗ 승인 비밀번호가 일치하지 않습니다', 'warn'); return; }
+  await dgLoadMembers();
+  const m = dgMembers.find(x => x.id === id);
+  if (!m) { fqToast('대상을 찾을 수 없습니다', 'warn'); dgRenderMembers(); return; }
+  m.status = 'approved'; m.approvedAt = new Date().toISOString();
+  try { await dgSaveMembers(); fqToast('✓ ' + (m.name || m.id) + ' 승인 완료 — 이제 로그인할 수 있습니다', 'success'); }
+  catch (e) { fqToast('승인 저장 실패: ' + e.message, 'warn'); }
+  dgRenderMembers();
+}
+
+async function dgDeleteMember(id) {
+  const pwd = prompt('회원 삭제 비밀번호를 입력하세요 (1234):');
+  if (pwd === null) return;
+  if (pwd !== DG_APPROVE_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+  await dgLoadMembers();
+  dgMembers = dgMembers.filter(x => x.id !== id);
+  try { await dgSaveMembers(); fqToast('회원이 삭제되었습니다', 'success'); }
+  catch (e) { fqToast('삭제 저장 실패: ' + e.message, 'warn'); }
+  dgRenderMembers();
+}
+
+// ── UI ──
+function dgUpdateAuthUI() {
+  const box = document.getElementById('sidebarAuth');
+  if (!box) return;
+  if (dgCurrentUser) {
+    box.innerHTML =
+      '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 ' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '</div>' +
+      '<button type="button" class="dg-auth-btn dg-auth-logout" onclick="dgLogout()">로그아웃</button>';
+  } else {
+    box.innerHTML =
+      '<button type="button" class="dg-auth-btn dg-auth-login" onclick="dgShowLogin()">🔐 로그인</button>' +
+      '<button type="button" class="dg-auth-btn dg-auth-signup" onclick="dgShowSignup()">회원가입</button>';
+  }
+}
+function dgCloseModals() { document.querySelectorAll('.dg-modal').forEach(m => m.hidden = true); }
+function dgShowModal(id) { dgCloseModals(); const m = document.getElementById(id); if (m) m.hidden = false; }
+function dgShowLogin() { dgShowModal('dgLoginModal'); const i = document.getElementById('dgLoginId'); if (i) setTimeout(() => i.focus(), 60); }
+function dgShowSignup() { dgShowModal('dgSignupModal'); const i = document.getElementById('dgSuCompany'); if (i) setTimeout(() => i.focus(), 60); }
+function dgShowLoginRequired() { dgShowModal('dgLoginReqModal'); }
+
+function dgAutofillForms() {
+  if (!dgCurrentUser) return;
+  const c = document.getElementById('fqNpCompany'); if (c && !c.value) c.value = dgCurrentUser.company || '';
+  const a = document.getElementById('fqNpAuthor'); if (a && !a.value) a.value = dgCurrentUser.name || '';
+}
+
+// ── 회원관리 (관리자 리포트) ──
+async function dgRefreshMembers() { await dgLoadMembers(); dgRenderMembers(); }
+function dgRenderMembers() {
+  const box = document.getElementById('dgMemberList');
+  if (!box) return;
+  const pending = dgMembers.filter(m => m.status !== 'approved');
+  const approved = dgMembers.filter(m => m.status === 'approved');
+  const fmt = d => d ? new Date(d).toLocaleString('ko') : '-';
+  const row = (m, isPending) =>
+    '<div class="dg-mem-row' + (isPending ? ' pending' : '') + '">' +
+      '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
+      '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span></div>' +
+      '<div class="dg-mem-actions">' +
+        (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
+        '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' +
+      '</div></div>';
+  box.innerHTML =
+    '<div class="dg-mem-stats">전체 ' + dgMembers.length + '명 · 승인 ' + approved.length + ' · 대기 ' + pending.length + '</div>' +
+    '<div class="dg-mem-group-title">⏳ 승인 대기 (' + pending.length + ')</div>' +
+    (pending.length ? pending.map(m => row(m, true)).join('') : '<div class="dg-mem-empty">승인 대기 중인 가입 요청이 없습니다.</div>') +
+    '<div class="dg-mem-group-title">✅ 승인된 회원 (' + approved.length + ')</div>' +
+    (approved.length ? approved.map(m => row(m, false)).join('') : '<div class="dg-mem-empty">승인된 회원이 없습니다.</div>');
+  box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve));
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del));
+}
+
+// ── 바인딩 + 초기화 ──
+function dgBindAuth() {
+  const ls = document.getElementById('dgLoginSubmit');
+  if (ls) ls.addEventListener('click', () => dgLogin(document.getElementById('dgLoginId').value, document.getElementById('dgLoginPw').value));
+  const ss = document.getElementById('dgSignupSubmit');
+  if (ss) ss.addEventListener('click', () => dgSignup(document.getElementById('dgSuCompany').value, document.getElementById('dgSuName').value, document.getElementById('dgSuId').value, document.getElementById('dgSuPw').value));
+  ['dgLoginId', 'dgLoginPw'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('keydown', ev => { if (ev.key === 'Enter') dgLogin(document.getElementById('dgLoginId').value, document.getElementById('dgLoginPw').value); }); });
+  document.querySelectorAll('[data-dg-close]').forEach(b => b.addEventListener('click', dgCloseModals));
+  document.querySelectorAll('[data-dg-go-login]').forEach(b => b.addEventListener('click', dgShowLogin));
+  document.querySelectorAll('[data-dg-go-signup]').forEach(b => b.addEventListener('click', dgShowSignup));
+  document.querySelectorAll('.dg-modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) dgCloseModals(); }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') dgCloseModals(); });
+}
+async function dgInit() {
+  dgBindAuth();
+  dgUpdateAuthUI();           // 우선 버튼 표시
+  await dgLoadMembers();
+  dgRestoreSession();
+  dgUpdateAuthUI();           // 세션 복원 후 갱신
+  dgAutofillForms();
+}
+
 function fqBootstrap() {
   fqInit();
+  dgInit();
   // 사이드바 메뉴 (data-fq-init-tab) 클릭 시 module 내부 탭 자동 활성화
   document.querySelectorAll('.menu-item[data-fq-init-tab]').forEach(item => {
     item.addEventListener('click', () => {

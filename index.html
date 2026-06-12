@@ -69,6 +69,9 @@
     <div class="sidebar-subtitle">SKR/HAL DG CENTER</div>
 </div>
 
+<!-- 로그인 / 회원가입 (배지 아래) — dgUpdateAuthUI가 내용 채움 -->
+<div class="sidebar-auth" id="sidebarAuth"></div>
+
     <ul class="menu-list">
     <li class="menu-item active" data-target="tab-home">
         <span class="menu-icon">⌂</span>
@@ -699,6 +702,7 @@
       <button class="rpt-subtab active" data-rpt="stat">📊 문의 통계</button>
       <button class="rpt-subtab" data-rpt="audit">⚠️ 답변 오류·모순 검토</button>
       <button class="rpt-subtab" data-rpt="news">📰 위험물 사고 뉴스</button>
+      <button class="rpt-subtab" data-rpt="members">👤 회원관리</button>
     </div>
 
     <div class="rpt-section active" data-rpt-panel="stat">
@@ -739,6 +743,11 @@
         <span class="fq-hint" id="rptNewsUpdated"></span>
       </div>
       <div class="rpt-news-list" id="rptNewsList"></div>
+    </div>
+
+    <div class="rpt-section" data-rpt-panel="members">
+      <p class="fq-email-guide">가입 요청을 검토해 <b>승인</b>하면 해당 ID로 로그인할 수 있습니다. 승인 시 <b>비밀번호 1234</b>가 필요합니다. 승인된 회원 정보(회사/부서·이름)는 AI문의·이메일 문의·게시판 작성 시 자동 적용됩니다.</p>
+      <div class="dg-member-mgmt" id="dgMemberList"></div>
     </div>
   </div>
 </section>
@@ -845,6 +854,52 @@
 </section>
 
         </main>
+
+    <!-- ───── 로그인 / 회원가입 / 로그인필요 모달 ───── -->
+    <div class="dg-modal" id="dgLoginModal" hidden>
+      <div class="dg-modal-box">
+        <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
+        <div class="dg-modal-logo">🔐</div>
+        <h2 class="dg-modal-title">로그인</h2>
+        <p class="dg-modal-sub">DG ASSISTANT · SKR/HAL DG CENTER</p>
+        <label class="dg-modal-label" for="dgLoginId">ID</label>
+        <input type="text" id="dgLoginId" class="dg-modal-input" autocomplete="username" placeholder="아이디">
+        <label class="dg-modal-label" for="dgLoginPw">비밀번호</label>
+        <input type="password" id="dgLoginPw" class="dg-modal-input" autocomplete="current-password" placeholder="비밀번호">
+        <button type="button" class="dg-modal-submit" id="dgLoginSubmit">로그인</button>
+        <p class="dg-modal-foot">계정이 없으신가요? <button type="button" class="dg-modal-link" data-dg-go-signup>회원가입</button></p>
+      </div>
+    </div>
+
+    <div class="dg-modal" id="dgSignupModal" hidden>
+      <div class="dg-modal-box">
+        <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
+        <div class="dg-modal-logo">📝</div>
+        <h2 class="dg-modal-title">회원가입</h2>
+        <p class="dg-modal-sub">가입 요청 후 관리자 승인이 완료되면 로그인할 수 있습니다.</p>
+        <label class="dg-modal-label" for="dgSuCompany">회사 / 부서</label>
+        <input type="text" id="dgSuCompany" class="dg-modal-input" maxlength="100" placeholder="예: 장금상선 운항팀">
+        <label class="dg-modal-label" for="dgSuName">이름</label>
+        <input type="text" id="dgSuName" class="dg-modal-input" maxlength="60" placeholder="예: 이원태">
+        <label class="dg-modal-label" for="dgSuId">ID</label>
+        <input type="text" id="dgSuId" class="dg-modal-input" maxlength="40" autocomplete="username" placeholder="사용할 아이디">
+        <label class="dg-modal-label" for="dgSuPw">비밀번호 (4자 이상)</label>
+        <input type="password" id="dgSuPw" class="dg-modal-input" maxlength="60" autocomplete="new-password" placeholder="비밀번호">
+        <button type="button" class="dg-modal-submit" id="dgSignupSubmit">가입요청</button>
+        <p class="dg-modal-foot">이미 계정이 있으신가요? <button type="button" class="dg-modal-link" data-dg-go-login>로그인</button></p>
+      </div>
+    </div>
+
+    <div class="dg-modal" id="dgLoginReqModal" hidden>
+      <div class="dg-modal-box dg-modal-req">
+        <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
+        <div class="dg-modal-logo">🔒</div>
+        <h2 class="dg-modal-title">로그인이 필요합니다</h2>
+        <p class="dg-modal-sub">이 기능은 로그인한 사용자만 이용할 수 있습니다.<br>로그인 후 다시 시도해 주세요.</p>
+        <button type="button" class="dg-modal-submit" data-dg-go-login>로그인하기</button>
+        <p class="dg-modal-foot">계정이 없으신가요? <button type="button" class="dg-modal-link" data-dg-go-signup>회원가입</button></p>
+      </div>
+    </div>
 
     <!-- 스크립트 연결은 항상 body가 끝나기 직전에 위치해야 DOM 로딩 에러를 방지합니다. -->
 
