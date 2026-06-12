@@ -744,6 +744,7 @@ function activateTab(targetId) {
         if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote();
         if (typeof fqAuditAutoCheck === 'function') fqAuditAutoCheck();   // 정오 기준 하루 1회 답변 자동 검토
         else fqReportRender();
+        if (typeof dgRefreshMemberBadge === 'function') dgRefreshMemberBadge();   // 승인 대기 회원 알림 최신화
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -5452,7 +5453,20 @@ function dgRenderMembers() {
     (approved.length ? approved.map(m => row(m, false)).join('') : '<div class="dg-mem-empty">승인된 회원이 없습니다.</div>');
   box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve));
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del));
+  dgUpdateMemberBadge();
 }
+
+// 승인 대기 회원이 있으면 사이드바 '관리자 리포트' 메뉴 + '회원관리' 서브탭에 빨간 느낌표
+function dgUpdateMemberBadge() {
+  const pending = (Array.isArray(dgMembers) ? dgMembers : []).filter(m => m && m.status !== 'approved').length;
+  const show = pending > 0;
+  const nav = document.getElementById('dgReportAlert');
+  if (nav) { nav.hidden = !show; if (show) nav.title = '승인 대기 회원 ' + pending + '명'; }
+  const sub = document.getElementById('dgMembersTabAlert');
+  if (sub) sub.hidden = !show;
+}
+// 관리자 리포트 열 때 등 — 최신 회원을 불러와 배지만 갱신
+async function dgRefreshMemberBadge() { await dgLoadMembers(); dgUpdateMemberBadge(); }
 
 // ── 바인딩 + 초기화 ──
 function dgBindAuth() {
@@ -5474,6 +5488,7 @@ async function dgInit() {
   dgRestoreSession();
   dgUpdateAuthUI();           // 세션 복원 후 갱신
   dgAutofillForms();
+  dgUpdateMemberBadge();      // 승인 대기 회원 알림
 }
 
 function fqBootstrap() {

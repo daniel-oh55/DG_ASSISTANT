@@ -118,6 +118,7 @@
 <li class="menu-item" data-target="tab-report">
     <span class="menu-icon">▣</span>
     <span class="menu-text">관리자 리포트</span>
+    <span class="menu-alert" id="dgReportAlert" title="승인 대기 회원" hidden>!</span>
 </li>
 
 <li class="menu-item" data-target="tab-refsites">
@@ -703,7 +704,7 @@
       <button class="rpt-subtab active" data-rpt="stat">📊 문의 통계</button>
       <button class="rpt-subtab" data-rpt="audit">⚠️ 답변 오류·모순 검토</button>
       <button class="rpt-subtab" data-rpt="news">📰 위험물 사고 뉴스</button>
-      <button class="rpt-subtab" data-rpt="members">👤 회원관리</button>
+      <button class="rpt-subtab" data-rpt="members">👤 회원관리 <span class="rpt-tab-alert" id="dgMembersTabAlert" hidden>!</span></button>
     </div>
 
     <div class="rpt-section active" data-rpt-panel="stat">
