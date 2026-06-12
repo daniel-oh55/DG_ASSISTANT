@@ -5152,7 +5152,20 @@ body { top: 0 !important; position: static !important; }
   background: rgba(255,255,255,0.07); color: #e6edf3; transition: all .15s;
 }
 .dg-auth-btn:hover { background: rgba(255,255,255,0.16); }
-.dg-auth-login { background: linear-gradient(135deg, rgba(0,150,255,0.55), rgba(0,80,255,0.4)); border-color: rgba(130,185,255,0.55); color: #fff; }
+/* 로그인·회원가입 — 같은 파란 그라데이션 + 은은한 반짝임(글로우 펄스) */
+.dg-auth-login, .dg-auth-signup {
+  background: linear-gradient(135deg, rgba(0,150,255,0.55), rgba(0,80,255,0.4));
+  border-color: rgba(130,185,255,0.55);
+  color: #fff;
+  animation: dgAuthGlow 2.4s ease-in-out infinite;
+}
+.dg-auth-signup { animation-delay: 1.2s; }
+.dg-auth-login:hover, .dg-auth-signup:hover { filter: brightness(1.1); background: linear-gradient(135deg, rgba(0,160,255,0.7), rgba(0,90,255,0.55)); }
+@keyframes dgAuthGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(90,175,255,0), 0 0 5px rgba(90,175,255,0.25); }
+  50%      { box-shadow: 0 0 0 2px rgba(90,175,255,0.20), 0 0 12px rgba(90,175,255,0.55); }
+}
+@media (prefers-reduced-motion: reduce) { .dg-auth-login, .dg-auth-signup { animation: none; } }
 .dg-auth-user { flex: 1; min-width: 0; padding: 7px 8px; font-size: 12px; font-weight: 700; color: #e6edf3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dg-auth-logout { flex: 0 0 auto; }
 
