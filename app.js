@@ -534,6 +534,14 @@ function segLabel(level) {
   return String(level);
 }
 
+// 배지(숫자/OK) 아래에 들어갈 직관적 안내 문구
+function segNeedLabel(level) {
+  if (level === 1) return '<span class="pair-seg-need">분리필요!</span>';   // 1 = Away from(이격)
+  if (typeof level === 'number' && level >= 2) return '<span class="pair-seg-need">격리필요!</span>';   // 2~4 = 격리
+  if (level === 0) return '<span class="pair-seg-ok">격리 불필요</span>';
+  return '';
+}
+
 function render() {
   const list  = document.getElementById('cardList');
   const panel = document.getElementById('segPanel');
@@ -623,7 +631,9 @@ function render() {
   // 격리코드(Seg n / n Away from / Separated from / X 등)를 굵게·하이라이트로 강조
   const emphSeg = s => String(s)
     .replace(/(Seg\s*[1-4])/g, '<b class="seg-code-hl">$1</b>')
-    .replace(/([1-4]\s*Away from\([^)]*\)|[1-4]\s*Separated from\([^)]*\)|[1-4]\s*완전구획 격리|[1-4]\s*종방향 구획 격리|X\(격리 없음\)|격리적용없음)/g, '<b class="seg-code-hl">$1</b>');
+    .replace(/([1-4]\s*Away from\([^)]*\)|[1-4]\s*Separated from\([^)]*\)|[1-4]\s*완전구획 격리|[1-4]\s*종방향 구획 격리|X\(격리 없음\))/g, '<b class="seg-code-hl">$1</b>')
+    // "격리적용없음"은 강조하지 않음 — 격리코드로 오해할 수 있어, 얇은 참고 문구로만 표기
+    .replace(/격리적용없음/g, '<span class="seg-noseg-note">CLASS별 격리조건없음</span>');
 
   panel.innerHTML = `
     <div class="seg-panel">
@@ -641,11 +651,17 @@ function render() {
         </div>
       </div>
       <div class="pair-grid">
-        <div style="font-family:'Space Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px">PAIR DETAIL</div>
+        <div class="pair-grid-header">
+          <span class="pair-grid-label pair-grid-label--un">PAIR DETAIL</span>
+          <span class="pair-grid-label pair-grid-label--seg">격리조건</span>
+        </div>
         ${pairs.map(p => `
           <div class="pair-row">
             <span class="pair-un">UN${p.a} ↔ UN${p.b}</span>
-            <span class="seg-badge ${segBadgeClass(p.level)}">${segLabel(p.level)}</span>
+            <span class="pair-seg-col">
+              <span class="seg-badge ${segBadgeClass(p.level)}">${segLabel(p.level)}</span>
+              ${segNeedLabel(p.level)}
+            </span>
             <span class="pair-reason">${emphSeg(p.reasons.slice(0,3).join('<br>'))}</span>
           </div>
         `).join('')}

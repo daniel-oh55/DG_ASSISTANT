@@ -925,6 +925,61 @@ header span {
     background: rgba(255, 196, 0, 0.22);
 }
 
+/* "CLASS별 격리조건없음" — 강조 없이 얇은 참고 문구 */
+.seg-noseg-note {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--muted);
+    background: none;
+    padding: 0;
+}
+
+/* PAIR DETAIL 헤더 — 우측에 '격리조건' 칸 제목 */
+.pair-grid-header {
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+.pair-grid-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+}
+.pair-grid-label--un {
+    min-width: 150px;
+}
+.pair-grid-label--seg {
+    color: var(--text);
+    font-weight: 700;
+}
+
+/* 배지 + 안내문구를 세로로 묶는 칸 */
+.pair-seg-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+/* 숫자(1~4) 아래 강조 문구 — 분리필요!/격리필요! */
+.pair-seg-need {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--red);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+/* OK 아래 안내 — 격리 불필요 */
+.pair-seg-ok {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    white-space: nowrap;
+}
+
 .seg-badge {
     min-width: 58px;
     padding: 7px 16px;
