@@ -720,10 +720,9 @@ function renderLoadingState(title, message, meta = '') {
 function activateTab(targetId) {
     if (!targetId) return;
 
-    // 로그인 게이트 — 미로그인 시 HOME·관리자 리포트 외 메뉴 사용 차단(로그인 필요 안내).
-    //   (관리자 리포트는 회원 승인 부트스트랩을 위해 열어 둠 — 승인은 1234 필요)
-    if (typeof dgIsAuthed === 'function' && !dgIsAuthed()
-        && targetId !== 'tab-home' && targetId !== 'tab-report') {
+    // 로그인 게이트 — 미로그인 시 HOME 외 메뉴 사용 차단(로그인 필요 안내).
+    //   관리자 ID(wtlee 등)는 가입 시 자동 승인+관리자라 첫 로그인 후 회원관리 접근 가능(부트스트랩 OK).
+    if (typeof dgIsAuthed === 'function' && !dgIsAuthed() && targetId !== 'tab-home') {
         dgShowLoginRequired();
         return;
     }
@@ -745,6 +744,7 @@ function activateTab(targetId) {
         if (typeof fqAuditAutoCheck === 'function') fqAuditAutoCheck();   // 정오 기준 하루 1회 답변 자동 검토
         else fqReportRender();
         if (typeof dgRefreshMemberBadge === 'function') dgRefreshMemberBadge();   // 승인 대기 회원 알림 최신화
+        if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();     // 권한별 서브탭 표시(관리자만 전체)
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3443,7 +3443,9 @@ function fqReportRender() {
       return '<div class="rpt-li' + (issue ? ' rpt-li-flagged' : '') + '">' +
         '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
         '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
-        '<span class="rpt-li-cat"><select class="fq-cat-select rpt-cat-select" title="카테고리 변경" onclick="event.stopPropagation()" onchange="fqChangeRptCat(\'' + x.id + '\',\'' + x.src + '\',this.value)">' + fqEmailCatOptions(x.cat) + '</select></span>' +
+        '<span class="rpt-li-cat">' + ((typeof dgIsAdmin === 'function' && dgIsAdmin())
+          ? '<select class="fq-cat-select rpt-cat-select" title="카테고리 변경" onclick="event.stopPropagation()" onchange="fqChangeRptCat(\'' + x.id + '\',\'' + x.src + '\',this.value)">' + fqEmailCatOptions(x.cat) + '</select>'
+          : fqEsc(x.cat || '-')) + '</span>' +
         '<span class="rpt-li-q rpt-li-q-click" title="클릭 시 답변 펼치기" onclick="fqToggleRptAnswer(\'' + x.id + '\')">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
         flag +
         '</div>' + detail +
@@ -5005,6 +5007,7 @@ async function fqSubmitPost() {
     subject, body,
     isPrivate,
     pwdHash: isPrivate ? await fqHash(pwd) : null,
+    userId: (typeof dgCurrentUser !== 'undefined' && dgCurrentUser) ? dgCurrentUser.id : null,   // 작성자(비밀글 본인 열람용)
     status: 'unanswered',
     createdAt: new Date().toISOString(),
     attachments: fqNewPostAttachments.slice(),
@@ -5045,8 +5048,9 @@ function fqRenderPosts() {
     ? '<div class="fq-empty">등록된 문의가 없습니다. 새 문의를 작성해보세요.</div>'
     : fqPosts.map(p => {
       const isOpen = fqOpenPostId === p.id;
-      const canSeeBody = !p.isPrivate || fqAdminMode || sessionStorage.getItem('fq_reply_ok') === '1' || (sessionStorage.getItem('fq_unlocked_' + p.id) === '1');
-      // 담당자용 카테고리 변경 옵션 (FAQ 카테고리). 기존 값이 목록에 없으면 상단에 추가.
+      const canManage = (typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode;   // 관리자 권한(회원 역할 또는 admin1234 모드)
+      const isOwner = !!(dgCurrentUser && p.userId && dgCurrentUser.id === p.userId);       // 작성 본인
+      const canSeeBody = !p.isPrivate || canManage || isOwner;
       const pcats = (FQ_FAQ_DATA.categories || []).filter(c => c && c !== '전체');
       let catOpts = pcats.map(c => `<option value="${fqEsc(c)}"${c === p.category ? ' selected' : ''}>${fqEsc(c)}</option>`).join('');
       if (p.category && !pcats.includes(p.category)) catOpts = `<option value="${fqEsc(p.category)}" selected>${fqEsc(p.category)}</option>` + catOpts;
@@ -5059,23 +5063,26 @@ function fqRenderPosts() {
                 ${(p.author && p.company) ? `<span>· ${fqEsc(p.author)}</span>` : ''}
                 <span>·</span>
                 <span class="fq-post-date">${new Date(p.createdAt).toLocaleString('ko')}</span>
-                <span class="fq-post-catsel-wrap" onclick="event.stopPropagation()" title="카테고리 — 담당자가 바로 변경 가능">🏷<select class="fq-post-catsel" onchange="fqChangePostCat('${p.id}', this.value)">${catOpts}</select></span>
+                ${canManage
+                  ? `<span class="fq-post-catsel-wrap" onclick="event.stopPropagation()" title="카테고리 변경 (관리자)">🏷<select class="fq-post-catsel" onchange="fqChangePostCat('${p.id}', this.value)">${catOpts}</select></span>`
+                  : `<span class="fq-post-cat-plain">🏷 ${fqEsc(p.category || '-')}</span>`}
                 ${p.isPrivate ? '<span class="fq-post-private-icon">🔒</span>' : ''}
               </div>
               <div class="fq-post-subject">${fqEsc(p.subject)}</div>
             </div>
             <span class="fq-post-status ${p.status}">${p.status === 'answered' ? '✓ 답변완료' : '대기'}</span>
           </div>
-          <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <span style="color:var(--fq-muted);font-size:12px;">담당자는 비밀번호 1234로 열람·답글 가능</span> <button class="fq-btn" onclick="fqUnlockPost(event,\'' + p.id + '\')">비밀번호 입력</button>'}</div>
+          <div class="fq-post-body">${canSeeBody ? fqRenderText(p.body) : '🔒 비밀글입니다. <span style="color:var(--fq-muted);font-size:12px;">관리자 또는 작성 본인만 열람할 수 있습니다.</span>'}</div>
           ${fqRenderPostAttachments(p, canSeeBody)}
           ${p.answer ? `
             <div class="fq-post-answer">
               <div class="fq-post-answer-head">✓ 답변 — ${p.answerBy || '관리자'} · ${new Date(p.answeredAt).toLocaleString('ko')}</div>
               ${fqRenderText(p.answer)}
             </div>` : ''}
+          ${canManage ? `
           <div class="fq-post-actions">
-            <button class="fq-btn accent" onclick="fqRequestReply('${p.id}')">${p.answer ? '✏️ 답변 수정' : '✏️ 답글 작성 (담당자)'}</button>
-            ${fqAdminMode ? `<button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>` : ''}
+            <button class="fq-btn accent" onclick="fqRequestReply('${p.id}')">${p.answer ? '✏️ 답변 수정' : '✏️ 답글 작성'}</button>
+            <button class="fq-btn danger" onclick="fqDeletePost('${p.id}')">🗑 삭제</button>
           </div>
           <div class="fq-answer-form" id="fqAnsForm-${p.id}">
             <textarea id="fqAnsText-${p.id}" placeholder="답변 내용 입력... (저장하면 FAQ에도 자동 등록됩니다)">${fqEsc(p.answer || '')}</textarea>
@@ -5083,7 +5090,7 @@ function fqRenderPosts() {
               <button class="fq-btn ghost" onclick="fqCloseAnswerForm('${p.id}')">취소</button>
               <button class="fq-btn primary" onclick="fqSaveAnswer('${p.id}')">저장</button>
             </div>
-          </div>
+          </div>` : ''}
         </div>`;
     }).join('');
 }
@@ -5097,11 +5104,9 @@ function fqTogglePost(id) {
 async function fqChangePostCat(id, cat) {
   const p = fqPosts.find(x => x.id === id);
   if (!p || p.category === cat) return;
-  // 담당자 인증 (관리자 모드거나 이번 세션에 담당자 인증 완료면 통과)
-  if (!fqAdminMode && sessionStorage.getItem('fq_reply_ok') !== '1') {
-    const pwd = prompt('담당자 비밀번호를 입력하세요 (카테고리 변경):');
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); fqRenderPosts(); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');
+  // 관리자 권한 회원만 카테고리 변경 가능
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 변경할 수 있습니다', 'warn'); fqRenderPosts(); return;
   }
   p.category = cat;
   fqSavePosts();
@@ -5134,15 +5139,10 @@ async function fqUnlockPost(evt, id) {
   }
 }
 
-// 답글 작성 요청 — 관리자는 바로, 그 외는 담당자 비밀번호(1234) 확인 후 작성 폼 오픈
+// 답글 작성 요청 — 관리자 권한 회원만(비밀번호 기능 제거)
 function fqRequestReply(id) {
-  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요 (1234):');
-    if (pwd === null) return;
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');   // 세션 동안 재입력 생략
-    fqOpenPostId = id;                             // 해당 글 펼친 상태 유지
-    fqRenderPosts();                               // 비밀글 본문도 즉시 열람되도록 재렌더
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 답변할 수 있습니다', 'warn'); return;
   }
   fqOpenAnswerForm(id);
 }
@@ -5155,11 +5155,9 @@ function fqCloseAnswerForm(id) {
 async function fqSaveAnswer(id) {
   const text = document.getElementById('fqAnsText-' + id).value.trim();
   if (!text) { fqToast('답변 내용 필요', 'warn'); return; }
-  // 작성 권한 재확인 (폼이 직접 열렸을 경우 대비)
-  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요:');
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');
+  // 작성 권한 재확인 — 관리자 권한 회원만
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 답변할 수 있습니다', 'warn'); return;
   }
   const post = fqPosts.find(p => p.id === id);
   if (!post) return;
@@ -5315,10 +5313,13 @@ function fqToast(msg, type) {
 // ════════════════════════════════════════════════════════════════
 const DG_AUTH_KEY = 'dg_auth_user_v1';
 const DG_APPROVE_PWD = '1234';      // 회원가입 승인 비밀번호
+const DG_ADMIN_IDS = ['wtlee'];     // 내장 관리자 ID(가입 시 자동 승인+관리자, 로그인 시 항상 관리자)
 let dgMembers = [];
 let dgCurrentUser = null;
 
 function dgIsAuthed() { return !!dgCurrentUser; }
+function dgIsAdminId(id) { return DG_ADMIN_IDS.includes(String(id || '').toLowerCase()); }
+function dgIsAdmin() { return !!dgCurrentUser && (dgCurrentUser.role === 'admin' || dgIsAdminId(dgCurrentUser.id)); }
 
 async function dgLoadMembers() {
   try { const data = await fqRemoteGet('members'); dgMembers = Array.isArray(data.members) ? data.members : []; }
@@ -5331,7 +5332,7 @@ function dgRestoreSession() {
     const saved = JSON.parse(localStorage.getItem(DG_AUTH_KEY) || 'null');
     if (saved && saved.id) {
       const m = dgMembers.find(x => x.id === saved.id && x.status === 'approved');
-      if (m) dgCurrentUser = { id: m.id, company: m.company, name: m.name };
+      if (m) dgCurrentUser = { id: m.id, company: m.company, name: m.name, role: (m.role === 'admin' || dgIsAdminId(m.id)) ? 'admin' : 'general' };
       else { dgCurrentUser = null; localStorage.removeItem(DG_AUTH_KEY); }
     }
   } catch (e) { dgCurrentUser = null; }
@@ -5345,8 +5346,9 @@ async function dgLogin(id, pw) {
   if (!m) { fqToast('등록되지 않은 ID입니다', 'warn'); return; }
   if (m.status !== 'approved') { fqToast('아직 승인되지 않은 계정입니다 (관리자 승인 대기 중)', 'warn'); return; }
   if (await fqHash(pw) !== m.pwdHash) { fqToast('비밀번호가 일치하지 않습니다', 'warn'); return; }
-  dgCurrentUser = { id: m.id, company: m.company, name: m.name };
+  dgCurrentUser = { id: m.id, company: m.company, name: m.name, role: (m.role === 'admin' || dgIsAdminId(m.id)) ? 'admin' : 'general' };
   localStorage.setItem(DG_AUTH_KEY, JSON.stringify(dgCurrentUser));
+  if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
   dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms();
   fqToast('✓ ' + (m.name || m.id) + '님 로그인되었습니다', 'success');
 }
@@ -5365,12 +5367,17 @@ async function dgSignup(company, name, id, pw) {
   if (pw.length < 4) { fqToast('비밀번호는 4자 이상이어야 합니다', 'warn'); return; }
   await dgLoadMembers();
   if (dgMembers.some(x => String(x.id).toLowerCase() === id.toLowerCase())) { fqToast('이미 사용 중인 ID입니다', 'warn'); return; }
-  dgMembers.push({ id, company, name, pwdHash: await fqHash(pw), status: 'pending', createdAt: new Date().toISOString(), approvedAt: null });
+  const isAdminId = dgIsAdminId(id);
+  dgMembers.push({ id, company, name, pwdHash: await fqHash(pw),
+    role: isAdminId ? 'admin' : 'general',
+    status: isAdminId ? 'approved' : 'pending',
+    createdAt: new Date().toISOString(), approvedAt: isAdminId ? new Date().toISOString() : null });
   try { await dgSaveMembers(); }
   catch (e) { fqToast('가입 요청 저장 실패: ' + e.message, 'warn'); return; }
   dgCloseModals();
   ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
-  fqToast('✓ 가입 요청이 접수되었습니다 — 관리자 승인 후 로그인할 수 있습니다', 'success');
+  if (typeof dgUpdateMemberBadge === 'function') dgUpdateMemberBadge();
+  fqToast(isAdminId ? '✓ 관리자 계정으로 가입·승인 완료 — 바로 로그인하세요' : '✓ 가입 요청이 접수되었습니다 — 관리자 승인 후 로그인할 수 있습니다', 'success');
 }
 
 async function dgApprove(id) {
@@ -5437,12 +5444,17 @@ function dgRenderMembers() {
   const pending = dgMembers.filter(m => m.status !== 'approved');
   const approved = dgMembers.filter(m => m.status === 'approved');
   const fmt = d => d ? new Date(d).toLocaleString('ko') : '-';
+  const isAdm = m => m.role === 'admin' || dgIsAdminId(m.id);
   const row = (m, isPending) =>
     '<div class="dg-mem-row' + (isPending ? ' pending' : '') + '">' +
-      '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
-      '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span></div>' +
+      '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> ' +
+        (isAdm(m) ? '<span class="dg-role-badge admin">👑 관리자</span>' : '<span class="dg-role-badge">일반</span>') +
+        ' · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
+        '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span></div>' +
       '<div class="dg-mem-actions">' +
         (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
+        (!isPending && !isAdm(m) ? '<button class="fq-btn accent" data-grant="' + fqEsc(m.id) + '">👑 관리자 지정</button>' : '') +
+        (!isPending && m.role === 'admin' && !dgIsAdminId(m.id) ? '<button class="fq-btn ghost" data-revoke="' + fqEsc(m.id) + '">관리자 해제</button>' : '') +
         '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' +
       '</div></div>';
   box.innerHTML =
@@ -5453,7 +5465,22 @@ function dgRenderMembers() {
     (approved.length ? approved.map(m => row(m, false)).join('') : '<div class="dg-mem-empty">승인된 회원이 없습니다.</div>');
   box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve));
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del));
+  box.querySelectorAll('[data-grant]').forEach(b => b.onclick = () => dgSetRole(b.dataset.grant, 'admin'));
+  box.querySelectorAll('[data-revoke]').forEach(b => b.onclick = () => dgSetRole(b.dataset.revoke, 'general'));
   dgUpdateMemberBadge();
+}
+
+// 관리자 권한 부여/해제 (관리자만)
+async function dgSetRole(id, role) {
+  if (!dgIsAdmin()) { fqToast('관리자만 권한을 변경할 수 있습니다', 'warn'); return; }
+  if (!confirm(role === 'admin' ? '이 회원에게 관리자 권한을 부여하시겠습니까?' : '이 회원의 관리자 권한을 해제하시겠습니까?')) return;
+  await dgLoadMembers();
+  const m = dgMembers.find(x => x.id === id);
+  if (!m) { dgRenderMembers(); return; }
+  m.role = role;
+  try { await dgSaveMembers(); fqToast(role === 'admin' ? '✓ 관리자로 지정되었습니다' : '관리자 권한이 해제되었습니다', 'success'); }
+  catch (e) { fqToast('저장 실패: ' + e.message, 'warn'); }
+  dgRenderMembers();
 }
 
 // 승인 대기 회원이 있으면 사이드바 '관리자 리포트' 메뉴 + '회원관리' 서브탭에 빨간 느낌표
@@ -5467,6 +5494,19 @@ function dgUpdateMemberBadge() {
 }
 // 관리자 리포트 열 때 등 — 최신 회원을 불러와 배지만 갱신
 async function dgRefreshMemberBadge() { await dgLoadMembers(); dgUpdateMemberBadge(); }
+
+// 관리자 리포트 접근제어 — 관리자만 모든 서브탭(검토·뉴스·회원관리), 일반회원은 문의통계만
+function dgApplyReportAccess() {
+  const admin = dgIsAdmin();
+  const adminTabs = ['audit', 'news', 'members'];
+  document.querySelectorAll('#tab-report [data-rpt]').forEach(b => {
+    if (adminTabs.includes(b.dataset.rpt)) b.style.display = admin ? '' : 'none';
+  });
+  if (!admin) {   // 일반회원: 문의통계만 활성
+    document.querySelectorAll('#tab-report [data-rpt]').forEach(b => b.classList.toggle('active', b.dataset.rpt === 'stat'));
+    document.querySelectorAll('#tab-report [data-rpt-panel]').forEach(p => p.classList.toggle('active', p.dataset.rptPanel === 'stat'));
+  }
+}
 
 // ── 바인딩 + 초기화 ──
 function dgBindAuth() {
@@ -5489,6 +5529,7 @@ async function dgInit() {
   dgUpdateAuthUI();           // 세션 복원 후 갱신
   dgAutofillForms();
   dgUpdateMemberBadge();      // 승인 대기 회원 알림
+  dgApplyReportAccess();      // 권한별 리포트 서브탭 표시
 }
 
 function fqBootstrap() {
