@@ -333,8 +333,8 @@ ${sources}
 [Inquiry subject] ${subjText}
 [Inquiry body] ${inqText}
 
-Format: greeting -> key conclusion (the answer to what was asked + brief basis, referencing the MSDS if attached) -> closing. Concise, body text only.
-Last line: "* This is an AI-generated draft. Final acceptance is subject to the IMDG Code, carrier/terminal/national regulations and confirmation by the person in charge."`
+Output format (STRICT): Output ONLY the answer body — the key conclusion to what was asked plus a brief basis (reference the MSDS if attached). Be concise.
+Do NOT add any greeting, closing, signature, company info, or AI-disclaimer line. The system automatically wraps your text in a fixed company template (greeting + signature), so output the body text only.`
         : `당신은 장금상선/흥아라인 운항팀 위험물(DG) 담당자를 대신해 회신 초안을 쓰는 보조 AI입니다.
 받은 문의에 대해 한국어 회신 본문을 **간결하게** 작성하세요.
 
@@ -352,11 +352,47 @@ ${sources}
 [문의 제목] ${subjText}
 [문의 내용] ${inqText}
 
-형식: 인사말 → 핵심 결론(문의가 물은 것에 대한 답 + 간단 근거, 첨부 MSDS가 있으면 참고) → 맺음말. 군더더기 없이 간결하게. 본문 텍스트만.
-마지막 줄: "※ 본 회신은 AI 초안이며, 최종 선적 가부는 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다."`;
+출력 형식(반드시 지킬 것):
+- 맨 첫 줄: \`수신: <문의를 보낸 사람의 팀·직책·이름>\` — 문의 본문이나 서명에서 찾아 적으세요. 알 수 없으면 \`수신: 담당자님\` 으로 하세요.
+- 둘째 줄부터: 답변 본문(핵심 결론 + 간단 근거, 첨부 MSDS가 있으면 참고)만 간결하게.
+- 인사말·맺음말·서명·회사정보·AI 안내문구는 절대 넣지 마세요. 시스템이 정해진 회사 양식(인사말 + 서명)으로 자동으로 감쌉니다. 당신은 수신 한 줄과 본문만 출력하세요.`;
 
-      const finalReply = await gen(replyPrompt, 0);
-      return res.status(200).json({ ok: true, model, reply: finalReply, used: ctx.length, seg: segInfo ? segInfo.verdict : null, attachments: attRows.length, lang });
+      const aiBody = (await gen(replyPrompt, 0) || '').trim();
+
+      // ── 회사 표준 양식으로 감싸기 (국문/영문) ──
+      const SIG = `-----------------------------------------------
+Liner Management Team
+Sinokor Merchant Marine Co., Ltd.
+E-MAIL : dgcenter@sinokor.co.kr / vot@sinokor.co.kr
+-----------------------------------------------`;
+      let formatted;
+      if (lang === 'en') {
+        formatted = `Dear Partner
+
+Good day.
+
+${aiBody}
+
+Thanks & Best Regards.
+${SIG}`;
+      } else {
+        // 첫 줄에서 '수신:' 추출 (없으면 기본값), 나머지는 본문
+        let recipient = '담당자님';
+        let bodyKo = aiBody;
+        const m = bodyKo.match(/^\s*수신\s*[:：]\s*(.+?)\s*(?:\r?\n|$)/);
+        if (m) { if (m[1].trim()) recipient = m[1].trim(); bodyKo = bodyKo.slice(m[0].length).trim(); }
+        formatted = `수신 : ${recipient}
+발신 : 장금상선 운항팀
+
+안녕하십니까! 오늘도 좋은 하루 보내십시오~!
+
+${bodyKo}
+
+감사합니다.
+
+${SIG}`;
+      }
+      return res.status(200).json({ ok: true, model, reply: formatted, used: ctx.length, seg: segInfo ? segInfo.verdict : null, attachments: attRows.length, lang });
     }
 
     // ───────────────────────── 답변 검토(audit) ─────────────────────────
