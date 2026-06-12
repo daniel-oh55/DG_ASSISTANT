@@ -4943,3 +4943,63 @@ body { top: 0 !important; position: static !important; }
 [data-theme="bright"] .refsite-card:hover .refsite-url {
     color: #1f6feb;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE — FAQ · 담당자 직접문의 게시판 · 관리자 리포트 모듈
+   (바탕톤 어둡게 / 글씨 밝게) — bright 모드는 영향 없음
+   ※ :root의 --fq-* 정의보다 뒤에 와야 적용됨(소스 순서)
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+    --fq-card:     #161b22;
+    --fq-bg:       #1c2230;
+    --fq-text:     #e6edf3;
+    --fq-muted:    #9aa4af;
+    --fq-border:   rgba(255, 255, 255, 0.10);
+    --fq-border-s: rgba(255, 255, 255, 0.18);
+    --fq-primary:  #4a86c9;   /* 제목·표머리·활성칩 등 — 다크에서 잘 보이게 밝은 파랑 */
+    --fq-accent-2: #4fd1c5;   /* 링크 가독성 */
+}
+/* 흰색으로 하드코딩된 표면 → 다크 카드색 + 밝은 글씨 */
+[data-theme="dark"] .fq-item,
+[data-theme="dark"] .fq-post,
+[data-theme="dark"] .fq-ai-result,
+[data-theme="dark"] .fq-ai-loading,
+[data-theme="dark"] .fq-private-wrap,
+[data-theme="dark"] .fq-em-form-toggle,
+[data-theme="dark"] .fq-empty,
+[data-theme="dark"] .rpt-list,
+[data-theme="dark"] .news-item,
+[data-theme="dark"] .fq-search,
+[data-theme="dark"] .fq-post-catsel,
+[data-theme="dark"] .fq-cat-select {
+    background: var(--fq-card);
+    color: var(--fq-text);
+    border-color: var(--fq-border-s);
+}
+/* 입력 요소(검색·폼·드롭다운·텍스트영역) */
+[data-theme="dark"] #tab-support input,
+[data-theme="dark"] #tab-support select,
+[data-theme="dark"] #tab-support textarea,
+[data-theme="dark"] #tab-report input,
+[data-theme="dark"] #tab-report select,
+[data-theme="dark"] #tab-report textarea {
+    background: var(--fq-card);
+    color: var(--fq-text);
+    border-color: var(--fq-border-s);
+}
+[data-theme="dark"] #tab-support input::placeholder,
+[data-theme="dark"] #tab-report input::placeholder { color: var(--fq-muted); }
+/* 기능 버튼 / 카테고리 칩 / 리포트 서브탭 (비활성) */
+[data-theme="dark"] .fq-btn:not(.primary):not(.accent):not(.danger):not(.ghost),
+[data-theme="dark"] .fq-cat-chip:not(.active),
+[data-theme="dark"] .rpt-subtab:not(.active) {
+    background: var(--fq-card);
+    color: var(--fq-text);
+    border-color: var(--fq-border-s);
+}
+/* 활성(선택된) 버튼은 강조색 유지 */
+[data-theme="dark"] .rpt-subtab.active {
+    background: var(--fq-primary);
+    color: #fff;
+    border-color: var(--fq-primary);
+}
