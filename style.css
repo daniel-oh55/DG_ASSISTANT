@@ -5003,3 +5003,24 @@ body { top: 0 !important; position: static !important; }
     color: #fff;
     border-color: var(--fq-primary);
 }
+/* 오류체크 플래그·감사 패널·AI오류 — 연빨강(라이트)이 다크에서 흰색처럼 뜸 → 어두운 적색 톤 */
+[data-theme="dark"] .rpt-li-flagged { background: rgba(192, 21, 21, 0.15); }
+[data-theme="dark"] .rpt-flag {
+    background: rgba(192, 21, 21, 0.22);
+    color: #ff9b9b;
+    border-color: rgba(255, 120, 120, 0.45);
+}
+[data-theme="dark"] .rpt-flag:hover { background: rgba(192, 21, 21, 0.35); }
+[data-theme="dark"] .rpt-audit-detail { background: rgba(192, 21, 21, 0.10); }
+[data-theme="dark"] .rpt-ad-issue { color: #ff9b9b; }
+[data-theme="dark"] .rpt-ad-issue b { color: #ff7676; }
+[data-theme="dark"] .fq-ai-error {
+    background: rgba(192, 21, 21, 0.12);
+    color: #ff9b9b;
+    border-color: rgba(255, 120, 120, 0.40);
+}
+/* 문의 통계 — KPI 뱃지·막대 트랙·라벨 (연회색/어두운 글씨 → 다크 톤) */
+[data-theme="dark"] .rpt-kpi-sm { background: rgba(255, 255, 255, 0.06); color: var(--fq-text); }
+[data-theme="dark"] .rpt-bar { background: rgba(255, 255, 255, 0.08); }
+[data-theme="dark"] .rpt-bar-label { color: var(--fq-text); }
+[data-theme="dark"] .rpt-bar-val { color: var(--fq-muted); }
