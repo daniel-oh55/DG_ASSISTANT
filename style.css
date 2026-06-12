@@ -539,6 +539,14 @@ header span {
 }
 .carrier-port-input::placeholder { color: #94a3b8; font-family: var(--font-main); letter-spacing: 0; text-transform: none; }
 .carrier-port-input:focus { border-color: var(--accent, #00f2ff); box-shadow: 0 0 0 3px rgba(0,242,255,0.18); }
+/* 다크모드: 선적지/양하지/경유지 입력칸 — 흰색(#fff) → 어두운 톤 + 밝은 글씨 */
+[data-theme="dark"] .carrier-port-input {
+    background: var(--surface-solid, #161b22);
+    color: var(--text, #e6edf3);
+    border-color: var(--border, rgba(255,255,255,0.18));
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.30);
+}
+[data-theme="dark"] .carrier-port-input::placeholder { color: var(--muted, #8b949e); }
 .carrier-route-hint { margin-top: 10px; font-size: 12px; color: rgba(148, 163, 184, 0.82); line-height: 1.6; }
 .carrier-route-hint b { color: #cfe6ef; }
 /* 선적가부 결과 — 선사별/포트별 구분 */
