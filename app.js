@@ -548,7 +548,7 @@ function segLabel(level) {
 function segNeedLabel(level) {
   if (level === 1) return '<span class="pair-seg-need">분리필요!</span>';   // 1 = Away from(이격)
   if (typeof level === 'number' && level >= 2) return '<span class="pair-seg-need">격리필요!</span>';   // 2~4 = 격리
-  if (level === 0) return '<span class="pair-seg-ok">격리 불필요</span>';
+  if (level === 0) return '<span class="pair-seg-ok">혼적가능</span>';
   return '';
 }
 
@@ -677,7 +677,7 @@ function render() {
         `).join('')}
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;padding:12px 24px;border-top:1px solid var(--border)">
-        ${['OK — 격리 불필요','1 — Away from','2 — Separated from','3 — Sep. by compartment','4 — Sep. longitudinally','X — 격리 적용 없음'].map((t,i) => {
+        ${['OK — 혼적가능','1 — Away from','2 — Separated from','3 — Sep. by compartment','4 — Sep. longitudinally','X — 격리 적용 없음'].map((t,i) => {
           const cls = ['s0','s1','s2','s3','s0','s0'][i];
           const lbl = ['OK','1','2','3','4','X'][i];
           return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span class="seg-badge ${cls}" style="min-width:28px;padding:2px 6px">${lbl}</span>${t}</div>`;
