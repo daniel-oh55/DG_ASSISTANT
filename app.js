@@ -5398,6 +5398,12 @@ async function dgDeleteMember(id) {
 
 // ── UI ──
 function dgUpdateAuthUI() {
+  // 우측상단(언어 버튼 옆) 로그인 표시
+  const top = document.getElementById('dgTopUser');
+  if (top) {
+    if (dgCurrentUser) { top.hidden = false; top.innerHTML = '<span class="dg-top-dot"></span>' + fqEsc(dgCurrentUser.id) + ' 로그인됨'; top.title = fqEsc((dgCurrentUser.name || '') + ' · ' + (dgCurrentUser.company || '')); }
+    else top.hidden = true;
+  }
   const box = document.getElementById('sidebarAuth');
   if (!box) return;
   if (dgCurrentUser) {
