@@ -4868,3 +4868,78 @@ body { top: 0 !important; position: static !important; }
 .news-meta { font-size: 11px; color: #94a3b8; margin-top: 3px; }
 .news-opinion { margin-top: 8px; font-size: 12px; color: #475569; background: #f8fafc; border-left: 3px solid #2563eb; padding: 7px 10px; border-radius: 0 6px 6px 0; line-height: 1.5; }
 .news-dg { display: inline-block; font-weight: 600; color: #b45309; margin-bottom: 3px; }
+
+/* ─────────────────────────────────────────────────────────────
+   참고사이트 (Reference Links)
+   ───────────────────────────────────────────────────────────── */
+.refsite-group {
+    margin-bottom: 36px;
+}
+.refsite-group-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+.refsite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+}
+.refsite-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 20px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.refsite-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+.refsite-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+}
+.refsite-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+    flex: 1;
+}
+.refsite-url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.85;
+    letter-spacing: 0.3px;
+}
+.refsite-card:hover .refsite-url {
+    color: var(--accent);
+    opacity: 1;
+}
+.refsite-foot {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+[data-theme="bright"] .refsite-name {
+    color: #1f6feb;
+}
+[data-theme="bright"] .refsite-card:hover {
+    border-color: #1f6feb;
+    box-shadow: 0 10px 24px rgba(31, 111, 235, 0.14);
+}
+[data-theme="bright"] .refsite-card:hover .refsite-url {
+    color: #1f6feb;
+}
