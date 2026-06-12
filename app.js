@@ -3184,7 +3184,7 @@ let FQ_FAQ_DATA = {
 };
 
 // ───── 상태 ─────
-let fqAdminMode = sessionStorage.getItem(FQ_CONFIG.ADMIN_SESSION_KEY) === '1';
+let fqAdminMode = false;   // FAQ 관리자 모드(admin1234) 폐지 — 회원 관리자 권한(dgIsAdmin)으로 일원화
 let fqPosts = [];
 let fqNewPostAttachments = [];   // 새 문의 작성 시 첨부파일(임시) — {name,type,size,data(dataURL)}
 let fqCurrentCat = '전체';
@@ -3438,9 +3438,10 @@ function fqReportRender() {
     const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const body = withDate.map(x => {
       const issue = fqAuditResults[x.id];   // 답변 오류·모순 발견 시 표시
-      const flag = issue ? '<button class="rpt-flag" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="답변 오류·모순 발견 — 클릭해 확인/수정">❗ 오류체크</button>' : '';
-      const detail = issue ? '<div class="rpt-audit-detail" id="fqAuditDetail-' + x.id + '" hidden></div>' : '';
-      return '<div class="rpt-li' + (issue ? ' rpt-li-flagged' : '') + '">' +
+      const _adm = (typeof dgIsAdmin === 'function' && dgIsAdmin());   // 오류체크(검토 결과)는 관리자만
+      const flag = (issue && _adm) ? '<button class="rpt-flag" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="답변 오류·모순 발견 — 클릭해 확인/수정">❗ 오류체크</button>' : '';
+      const detail = (issue && _adm) ? '<div class="rpt-audit-detail" id="fqAuditDetail-' + x.id + '" hidden></div>' : '';
+      return '<div class="rpt-li' + (issue && _adm ? ' rpt-li-flagged' : '') + '">' +
         '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
         '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
         '<span class="rpt-li-cat">' + ((typeof dgIsAdmin === 'function' && dgIsAdmin())
@@ -3468,6 +3469,7 @@ function fqReportRender() {
 }
 // AI 답변 검토 (오류·모순 탐지) — faq-ai mode='audit'
 async function fqRunAudit() {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 답변 검토를 실행할 수 있습니다', 'warn'); return; }
   const out = document.getElementById('rptAuditResult');
   const btn = document.getElementById('rptAuditBtn');
   if (!out) return;
@@ -3536,6 +3538,7 @@ function fqRowSeg(text, unMap) {
 // 증분 검토: 이미 검토한(시그니처 동일) 답변은 건너뛰고 새/변경된 답변만 검토
 async function fqRunDailyAudit(fullRecheck) {
   if (fqAuditRunning) return;
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 답변 검토를 실행할 수 있습니다', 'warn'); return; }
   const all = fqAuditableRows();
   const statusEl = document.getElementById('rptAuditStatus');
   // 사라진 항목은 결과·시그니처에서 정리
@@ -3797,23 +3800,7 @@ function fqBindFaq(scope) {
   scope.querySelector('#fqCollapseAll').addEventListener('click', () => {
     scope.querySelectorAll('.fq-item').forEach(i => i.classList.remove('open'));
   });
-  scope.querySelector('#fqAdminBtn').addEventListener('click', fqToggleAdmin);
-  scope.querySelector('#fqAdminSave').addEventListener('click', () => {
-    try {
-      const txt = scope.querySelector('#fqAdminEditor').value;
-      const parsed = JSON.parse(txt);
-      if (!parsed.items || !Array.isArray(parsed.items)) throw new Error('items 배열 필요');
-      FQ_FAQ_DATA = parsed;
-      fqSaveFaq();
-      fqRenderFaq();
-      fqToast('✓ FAQ 저장 완료', 'success');
-    } catch (e) { alert('JSON 파싱 오류: ' + e.message); }
-  });
-  scope.querySelector('#fqAdminReset').addEventListener('click', () => {
-    if (!confirm('FAQ 로컬 캐시를 초기화하고 공용 DB에서 다시 불러오시겠습니까?')) return;
-    localStorage.removeItem(FQ_CONFIG.FAQ_CACHE_KEY);
-    location.reload();
-  });
+  // (FAQ 관리자 모드 폐지 — 🔐관리자 버튼/JSON 편집기 제거됨)
   // AI에게 문의
   const aiBtn = scope.querySelector('#fqAiBtn');
   if (aiBtn) aiBtn.addEventListener('click', () => {
@@ -4862,8 +4849,8 @@ async function fqToggleAdmin() {
 }
 
 function fqUpdateAdminUI() {
-  document.getElementById('fqAdminBadge').hidden = !fqAdminMode;
-  document.getElementById('fqAdminTools').classList.toggle('show', fqAdminMode);
+  const badge = document.getElementById('fqAdminBadge'); if (badge) badge.hidden = !fqAdminMode;
+  const tools = document.getElementById('fqAdminTools'); if (tools) tools.classList.toggle('show', fqAdminMode);
   fqRenderPosts();
 }
 
@@ -5499,6 +5486,8 @@ function dgApplyReportAccess() {
   document.querySelectorAll('#tab-report [data-rpt]').forEach(b => {
     if (adminTabs.includes(b.dataset.rpt)) b.style.display = admin ? '' : 'none';
   });
+  // 문의통계 내 '🔄 새 답변 검토' 도구는 관리자만
+  document.querySelectorAll('#tab-report .rpt-audit-bar').forEach(el => { el.style.display = admin ? '' : 'none'; });
   if (!admin) {   // 일반회원: 문의통계만 활성
     document.querySelectorAll('#tab-report [data-rpt]').forEach(b => b.classList.toggle('active', b.dataset.rpt === 'stat'));
     document.querySelectorAll('#tab-report [data-rpt-panel]').forEach(p => p.classList.toggle('active', p.dataset.rptPanel === 'stat'));
