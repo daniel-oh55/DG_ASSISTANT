@@ -506,6 +506,16 @@ const data = result.data || [];
   input.focus();
 }
 
+// UNNO 조회: 기존 결과를 초기화하고, 입력한 UNNO로 새 격리 결과를 본다.
+//   (새 UNNO를 넣고 '조회'를 누르면 자동으로 이전 목록이 비워짐)
+async function lookupEntries() {
+  const input = document.getElementById('searchInput');
+  entries = [];
+  document.getElementById('errorMsg').innerHTML = '';
+  if (!input || !input.value.trim()) { render(); return; }
+  await addEntries();   // 빈 목록에 입력값을 추가 → 새 격리 결과
+}
+
 function removeEntry(unno) {
   entries = entries.filter(e => String(e.UNNO) !== String(unno));
   render();
@@ -677,10 +687,10 @@ function render() {
 }
 
 // ── 10. 이벤트 리스너 ─────────────────────────────────────────
-document.getElementById('addBtn').addEventListener('click', addEntries);
-document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('lookupBtn').addEventListener('click', lookupEntries);   // 새 조회(초기화 후)
+document.getElementById('addBtn').addEventListener('click', addEntries);          // 기존 결과에 추가
 document.getElementById('searchInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addEntries();
+  if (e.key === 'Enter') lookupEntries();   // Enter = 새 조회
 });
 
 
@@ -2136,7 +2146,7 @@ function runHomeCarrierQuickSearch() {
     checkCarrierLoadingPossibility();
 }
 
-function runHomeSegQuickSearch() {
+async function runHomeSegQuickSearch() {
     const homeInput = document.getElementById('homeSegQuickInput');
     const targetInput = document.getElementById('searchInput');
 
@@ -2153,7 +2163,13 @@ function runHomeSegQuickSearch() {
     activateTab('tab-segregation');
 
     targetInput.value = value;
-    addEntries();
+    await lookupEntries();   // 새 조회(초기화 후)
+
+    // 조회 결과(격리 분석 패널)로 바로 이동
+    const panel = document.getElementById('segPanel');
+    if (panel && entries.length) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 const homeLookupQuickBtn = document.getElementById('homeLookupQuickBtn');
@@ -4851,7 +4867,22 @@ async function fqSubmitPost() {
   fqToast(fqRemoteOK ? '✓ 문의 등록됨 (전체 공유)' : '✓ 문의 등록됨 (로컬)', 'success');
 }
 
+// 사이드바 '담당자 직접문의 게시판' 메뉴에 미답변 알림(반짝이는 빨간 느낌표) 표시
+function fqUpdateBoardBadge() {
+  const badge = document.getElementById('fqBoardAlert');
+  if (!badge) return;
+  const list = (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts)) ? fqPosts : [];
+  const pending = list.filter(p => p && p.status !== 'answered').length;
+  if (pending > 0) {
+    badge.hidden = false;
+    badge.title = `답변 대기 문의 ${pending}건`;
+  } else {
+    badge.hidden = true;
+  }
+}
+
 function fqRenderPosts() {
+  fqUpdateBoardBadge();
   const total = fqPosts.length;
   const answered = fqPosts.filter(p => p.status === 'answered').length;
   document.getElementById('fqBoardStats').textContent = total > 0 ? `${total}개 문의 · ${answered}개 답변 완료` : '';

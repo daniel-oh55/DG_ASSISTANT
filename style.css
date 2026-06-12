@@ -339,6 +339,36 @@ button {
     white-space: nowrap;
 }
 
+/* 게시판 미답변 알림 — 고급스럽게 반짝이는 빨간 느낌표 (우측 절대배치) */
+.menu-alert {
+    position: absolute;
+    right: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff6b81, #e60026 70%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 0 0 0 rgba(255, 40, 75, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35);
+    animation: menuAlertPulse 1.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+.menu-alert[hidden] { display: none; }
+@keyframes menuAlertPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 40, 75, 0.55), 0 1px 3px rgba(0,0,0,0.35); transform: translateY(-50%) scale(1); }
+    70%  { box-shadow: 0 0 0 6px rgba(255, 40, 75, 0),   0 1px 3px rgba(0,0,0,0.35); transform: translateY(-50%) scale(1.08); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 40, 75, 0),     0 1px 3px rgba(0,0,0,0.35); transform: translateY(-50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .menu-alert { animation: none; } }
+
 /* ─────────────────────────────────────────────────────────────
    Main Content / Header / Search
    ───────────────────────────────────────────────────────────── */
@@ -2616,7 +2646,7 @@ header span {
 .home-bento-card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
     justify-self: center;
-    width: calc((100% - 16px) / 2);
+    width: auto;
 }
 
 /* 기존 대각선 절단 느낌 제거: 부드러운 유리 반사만 유지 */
@@ -4340,7 +4370,7 @@ header span {
 
 [data-theme="bright"] .home-bento-card:last-child:nth-child(odd) {
     min-height: 270px;
-    width: calc((100% - 16px) / 2);
+    width: auto;
 }
 
 [data-theme="bright"] .home-card-icon-wrap {
@@ -5024,3 +5054,36 @@ body { top: 0 !important; position: static !important; }
 [data-theme="dark"] .rpt-bar { background: rgba(255, 255, 255, 0.08); }
 [data-theme="dark"] .rpt-bar-label { color: var(--fq-text); }
 [data-theme="dark"] .rpt-bar-val { color: var(--fq-muted); }
+
+/* ═══════════════════════════════════════════════════════════════
+   홈 화면 3열 배치 — 한 화면에 카드가 모두 보이도록 (양 테마 공통)
+   ═══════════════════════════════════════════════════════════════ */
+.home-shell, [data-theme="bright"] .home-shell { max-width: 1360px; }
+.home-board, [data-theme="bright"] .home-board { max-width: 1280px; }
+.home-bento-grid, [data-theme="bright"] .home-bento-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.home-bento-card, [data-theme="bright"] .home-bento-card { min-height: 208px; }
+/* 3열에선 마지막 홀수 카드의 '전체폭 차지(span)'를 해제해 정상 셀로 */
+.home-bento-card:last-child:nth-child(odd),
+[data-theme="bright"] .home-bento-card:last-child:nth-child(odd) {
+    min-height: 208px;
+    width: auto;
+    grid-column: auto;
+    justify-self: stretch;
+}
+.home-bento-card .home-card-icon-wrap,
+[data-theme="bright"] .home-bento-card .home-card-icon-wrap {
+    width: 64px; height: 64px;
+}
+@media (max-width: 1080px) {
+    .home-bento-grid, [data-theme="bright"] .home-bento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* 2열에서 마지막 홀수 카드는 전체폭으로 가운데 정렬 */
+    .home-bento-card:last-child:nth-child(odd),
+    [data-theme="bright"] .home-bento-card:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; }
+}
+@media (max-width: 680px) {
+    .home-bento-grid, [data-theme="bright"] .home-bento-grid { grid-template-columns: 1fr; }
+    .home-bento-card:last-child:nth-child(odd),
+    [data-theme="bright"] .home-bento-card:last-child:nth-child(odd) { grid-column: auto; width: 100%; }
+}
