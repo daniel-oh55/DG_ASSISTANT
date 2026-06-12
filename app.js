@@ -5381,9 +5381,7 @@ async function dgSignup(company, name, id, pw) {
 }
 
 async function dgApprove(id) {
-  const pwd = prompt('회원 승인 비밀번호를 입력하세요:');
-  if (pwd === null) return;
-  if (pwd !== DG_APPROVE_PWD) { fqToast('✗ 승인 비밀번호가 일치하지 않습니다', 'warn'); return; }
+  if (!dgIsAdmin()) { fqToast('관리자만 승인할 수 있습니다', 'warn'); return; }
   await dgLoadMembers();
   const m = dgMembers.find(x => x.id === id);
   if (!m) { fqToast('대상을 찾을 수 없습니다', 'warn'); dgRenderMembers(); return; }
@@ -5394,9 +5392,8 @@ async function dgApprove(id) {
 }
 
 async function dgDeleteMember(id) {
-  const pwd = prompt('회원 삭제 비밀번호를 입력하세요 (1234):');
-  if (pwd === null) return;
-  if (pwd !== DG_APPROVE_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
+  if (!dgIsAdmin()) { fqToast('관리자만 삭제할 수 있습니다', 'warn'); return; }
+  if (!confirm('이 회원을 삭제하시겠습니까?')) return;
   await dgLoadMembers();
   dgMembers = dgMembers.filter(x => x.id !== id);
   try { await dgSaveMembers(); fqToast('회원이 삭제되었습니다', 'success'); }
