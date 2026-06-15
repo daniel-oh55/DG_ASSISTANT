@@ -285,6 +285,7 @@ ${list}`, 0.2, NEWS_KEYS);
       const attText = attRows.length
         ? attRows.map((a, i) => `[첨부 MSDS ${i + 1}] ${a.name || ''}
  - 판독: DG여부=${a.dg_status || '?'}, UN=${a.unno || '-'}, Class=${a.class || '-'}, 부위험성=${a.subsidiary_risk || '-'}, PG=${a.packing_group || '-'}, 해양오염=${a.marine_pollutant || '-'}
+ - 제조사: ${a.manufacturer || '-'} (승인여부=${a.manufacturer_status || 'N/A'}; 승인 제조사=SAMSUNG SDI/LG ENERGY SOLUTION/SK ON, 그 외·미상이면 "운항팀에 가능 제조사 확인" 안내)
  - 품명/물질: ${a.product_name || '-'} / ${a.substance_name || '-'}
  - 정식운송명(PSN): ${a.proper_shipping_name || '-'}
  - 근거: ${String(a.basis || '').slice(0, 300)}`).join('\n\n').slice(0, 8000)

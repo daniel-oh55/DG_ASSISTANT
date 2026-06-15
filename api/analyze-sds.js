@@ -47,6 +47,8 @@ function normalizeResult(result) {
     confidence: result.confidence || 'LOW',
     product_name: result.product_name || '-',
     substance_name: result.substance_name || '-',
+    manufacturer: result.manufacturer || '-',
+    manufacturer_status: result.manufacturer_status || 'N/A',
     unno: normalizeUnno(result.unno || ''),
     proper_shipping_name: result.proper_shipping_name || '-',
     class: result.class || '-',
@@ -165,6 +167,11 @@ Important rules:
   * SP188 (lithium batteries/cells): a lithium ION cell <= 20 Wh or battery <= 100 Wh, OR a lithium METAL cell <= 1 g or battery <= 2 g lithium content, that meets the SP188 conditions, is EXCEPTED -> set dg_status = "NON_DG", put "SP188" in special_provisions, and explain the threshold in basis (e.g., "17.96 Wh <= 20 Wh per cell, excepted under SP188"). Still record the reference UN number (UN3480 / UN3481 / UN3090 / UN3091) in unno.
   * If any other special provision, limited/excepted quantity, or an explicit "not subject to the IMDG Code" statement applies, set "NON_DG" and cite it in special_provisions / basis.
 - When a special provision exempts the item, dg_status MUST be "NON_DG" even though a UN number exists.
+- LITHIUM BATTERY MANUFACTURER CHECK (only for lithium battery/cell docs — UN3480 / UN3481 / UN3090 / UN3091): Extract the cell/battery manufacturer (maker) from the document (usually Section 1 product/company identifier, the brand, or the UN 38.3 test applicant). The carrier's operations team (운항팀) approves ONLY these makers for DG lithium batteries: **SAMSUNG SDI, LG ENERGY SOLUTION (incl. LG Chem), SK ON**.
+  * Manufacturer clearly matches one of the approved makers -> manufacturer_status = "APPROVED". In basis (Korean): note "승인 제조사(<maker>) — 위험물 리튬배터리 선적 가능 대상".
+  * Manufacturer is clearly a different maker (e.g., CATL, BYD, EVE, Gotion, Panasonic, etc.) -> manufacturer_status = "NOT_APPROVED". In basis (Korean): "승인 제조사 아님(<maker>) — 운항팀(DG Center)에 선적 가능한 제조사인지 확인 필요" and add the same to warnings.
+  * Manufacturer missing or cannot be reliably identified -> manufacturer_status = "UNKNOWN". In basis (Korean): "제조사 확인 불가 — 운항팀(DG Center)에 선적 가능한 제조사인지 확인 필요" and add the same to warnings.
+  * For non-lithium-battery documents, set manufacturer = "" and manufacturer_status = "N/A".
 - Do not invent UN numbers or classes.
 - Evidence quotes must be short exact snippets from the document.
 - Return JSON only. No markdown. No code block.
@@ -176,6 +183,8 @@ Return this exact JSON structure:
   "confidence": "HIGH | MEDIUM | LOW",
   "product_name": "string",
   "substance_name": "string",
+  "manufacturer": "battery/cell maker if found (e.g. 'SAMSUNG SDI'), else empty string",
+  "manufacturer_status": "APPROVED | NOT_APPROVED | UNKNOWN | N/A",
   "unno": "4 digit UN number or empty string",
   "proper_shipping_name": "string",
   "class": "string",

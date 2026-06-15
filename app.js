@@ -2318,6 +2318,12 @@ function renderSdsAnalysisResult(payload) {
             ${renderSdsField('Packing Group', result.packing_group)}
             ${renderSdsField('특별규정 (SP)', result.special_provisions)}
             ${renderSdsField('Watt-hour', result.watt_hour)}
+            ${(result.manufacturer_status && result.manufacturer_status !== 'N/A')
+              ? renderSdsField('제조사', result.manufacturer) +
+                renderSdsField('제조사 승인', result.manufacturer_status === 'APPROVED' ? '✅ 승인 제조사'
+                  : result.manufacturer_status === 'NOT_APPROVED' ? '❌ 승인 아님 — 운항팀 확인'
+                  : '⚠️ 확인불가 — 운항팀 확인')
+              : ''}
             ${renderSdsField('Marine Pollutant', result.marine_pollutant)}
             ${renderSdsField('Mode Basis', result.transport_mode_basis)}
             ${renderSdsField('Section 14 Found', result.section_14_found ? 'YES' : 'NO')}
@@ -4436,7 +4442,7 @@ function fqRenderEmailList() {
           <button type="button" class="fq-btn primary" onclick="fqSendReply('${fqEsc(m.id)}')">✉️ 회신 보내기</button>
           <button type="button" class="fq-btn" onclick="fqEditEmail('${fqEsc(m.id)}')">✏️ 수정</button>
           <button type="button" class="fq-btn danger" onclick="fqDeleteEmail('${fqEsc(m.id)}')">🗑 삭제</button>
-          <span style="font-size:12px;color:#888;">${toCount ? `수신 ${toCount}명 · 참조 dg@sinokor.co.kr` : '⚠️ 저장된 수신주소 없음 — 재등록 시 받는사람란을 채워주세요'}</span>
+          <span style="font-size:12px;color:#888;">${toCount ? `수신 ${toCount}명 · 참조 dgcenter@sinokor.co.kr` : '⚠️ 저장된 수신주소 없음 — 재등록 시 받는사람란을 채워주세요'}</span>
         </div>
       </div>
     </div>`;
@@ -4447,7 +4453,7 @@ function fqRenderEmailList() {
 function fqOpenOutlookReply(toList, subject, body) {
   const to = (toList || []).filter(Boolean).join(';');   // Outlook 다중 수신인 구분자
   if (!to) { fqToast('받는사람(수신) 메일주소가 없습니다 — 받는사람란을 채워주세요', 'warn'); return false; }
-  const url = 'mailto:' + to + '?cc=' + encodeURIComponent('dg@sinokor.co.kr')
+  const url = 'mailto:' + to + '?cc=' + encodeURIComponent('dgcenter@sinokor.co.kr')
     + '&subject=' + encodeURIComponent(subject || '') + '&body=' + encodeURIComponent(body || '');
   window.location.href = url;
   fqToast('✉️ 아웃룩 회신창을 엽니다 (수신·참조·내용 자동 입력)', 'success');
@@ -4559,7 +4565,7 @@ function fqExtractEmails(text) {
   (String(text || '').match(re) || []).forEach(e => {
     const k = e.toLowerCase();
     // 발신(wtlee)·참조(dg@) 자기주소는 수신인에서 제외 (참조는 별도 고정)
-    if (k === 'wtlee@sinokor.co.kr' || k === 'dg@sinokor.co.kr') return;
+    if (k === 'wtlee@sinokor.co.kr' || k === 'dgcenter@sinokor.co.kr') return;
     if (!seen.has(k)) { seen.add(k); out.push(e); }
   });
   return out;
