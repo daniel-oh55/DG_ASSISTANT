@@ -4531,6 +4531,7 @@ function fqParseMsg(arrayBuffer) {
     subject: getStr('0037001F', '0037001E').replace(/ +$/, '').trim(),
     body: getStr('1000001F', '1000001E').replace(/ +$/, '').trim(),
     from: getStr('0C1A001F', '0C1A001E').replace(/ +$/, '').trim(),
+    headers: getStr('007D001F', '007D001E'),
     attachments: __fqMsgAtt(entries, readStream, utf16)
   };
 }
@@ -4564,11 +4565,20 @@ function fqExtractEmails(text) {
   const seen = new Set(), out = [];
   (String(text || '').match(re) || []).forEach(e => {
     const k = e.toLowerCase();
-    // 발신(wtlee)·참조(dg@) 자기주소는 수신인에서 제외 (참조는 별도 고정)
-    if (k === 'wtlee@sinokor.co.kr' || k === 'dgcenter@sinokor.co.kr') return;
+    // 수신인·발신인·참조인 모든 주소를 전부 추출 (중복만 제거)
     if (!seen.has(k)) { seen.add(k); out.push(e); }
   });
   return out;
+}
+// .msg 전체를 UTF-16/Latin1로 디코드 — 헤더·수신자 스트림에 저장된 주소(수신/참조)까지 스캔용
+function fqMsgTextDump(arrayBuffer) {
+  try {
+    const u8 = new Uint8Array(arrayBuffer);
+    let s = '';
+    try { s += new TextDecoder('utf-16le').decode(u8); } catch (_) {}
+    try { s += '\n' + new TextDecoder('latin1').decode(u8); } catch (_) {}
+    return s;
+  } catch (_) { return ''; }
 }
 function fqReadEmailFile(e) {
   const file = e.target.files && e.target.files[0];
@@ -4585,7 +4595,8 @@ function fqProcessEmailFile(file) {
       if (isMsg) {
         const r = fqParseMsg(ev.target.result);
         subject = r.subject; body = r.body;
-        emailSrc = (r.from || '') + '\n' + (r.subject || '') + '\n' + body;
+        // 발신(from)+전송헤더(To/Cc)+.msg 전체 텍스트(수신자 스트림)+본문 → 수신/발신/참조 전부 추출
+        emailSrc = (r.from || '') + '\n' + (r.headers || '') + '\n' + fqMsgTextDump(ev.target.result) + '\n' + (r.subject || '') + '\n' + body;
         fqEmailAttachments = fqCollectPdfAttachments(r.attachments || []);
       } else {
         const raw = String(ev.target.result || '');
