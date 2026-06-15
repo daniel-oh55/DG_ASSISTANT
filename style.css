@@ -5241,3 +5241,12 @@ body { top: 0 !important; position: static !important; }
 [data-theme="dark"] .rpt-resolved { background: rgba(16,185,129,0.18); color: #6ee7b7; border-color: rgba(16,185,129,0.5); }
 .rpt-ad-resolved-banner { font-size: 12px; font-weight: 700; color: #047857; background: #d1fae5; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
 [data-theme="dark"] .rpt-ad-resolved-banner { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+
+/* 선사별 선적가부 — 리튬이온(3480/3481) RFDG Remark 강조 박스 */
+.carrier-rfdg-remark { margin-top: 8px; padding: 10px 12px; border-radius: 8px; border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.12); font-size: 12.5px; line-height: 1.6; }
+.carrier-rfdg-remark > b { display: block; margin-bottom: 4px; }
+.carrier-rfdg-remark div { margin-top: 3px; }
+
+/* 문의 내역 삭제 버튼 */
+.rpt-del { flex: 0 0 auto; margin-left: 6px; border: 1px solid var(--fq-border-s, #d1d5db); background: transparent; color: var(--fq-red, #dc2626); cursor: pointer; font-size: 12px; line-height: 1; padding: 3px 7px; border-radius: 8px; }
+.rpt-del:hover { background: var(--fq-red, #dc2626); color: #fff; border-color: var(--fq-red, #dc2626); }

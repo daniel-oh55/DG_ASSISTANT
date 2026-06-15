@@ -1767,6 +1767,13 @@ const CARRIER_DOCS = {
     CKL_PARTNER: { url: '/carriers/ckl.pdf',      label: 'CKL DG Prohibited & Restricted List (2024.06.28)' }
 };
 
+// SKR/HAL 리튬이온 배터리(UN3480·3481) RFDG 선적 조건 Remark (선사 규정집 L항)
+const SKR_RFDG_REMARK = `<div class="carrier-rfdg-remark">
+    <b>📌 LITHIUM ION BATTERIES — RFDG 선적 조건 (SKR/HAL)</b>
+    <div>- ALL LITHIUM ION BATTERIES are <b>RFDG</b>. *SP188로 <b>비위험물(NON-DG)로 분류되는 9/3480·3481만</b> 예외적으로 <b>DRY 컨테이너</b>(DRY CNTR) 선적 가능.</div>
+    <div>- 리튬이온 배터리는 <b>SKR/HAS 본사 승인 제조사</b>(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON)인 경우에만 선적 가능.</div>
+</div>`;
+
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
 
@@ -1835,6 +1842,7 @@ function renderCarrierResultFromApi(dgItem, results) {
                 </div>
                 <div class="carrier-rule-box">
                     ${ruleHtml}
+                    ${(isOwn && /^0*(3480|3481)$/.test(String(dgItem.UNNO || '').trim())) ? SKR_RFDG_REMARK : ''}
                     ${commonButtonHtml}
                     ${docHtml}
                 </div>
@@ -3458,6 +3466,7 @@ function fqReportRender() {
           : fqEsc(x.cat || '-')) + '</span>' +
         '<span class="rpt-li-q rpt-li-q-click" title="클릭 시 답변 펼치기" onclick="fqToggleRptAnswer(\'' + x.id + '\')">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
         flag +
+        (_adm ? '<button class="rpt-del" onclick="fqDeleteInquiry(\'' + x.id + '\',\'' + fqEsc(x.src) + '\')" title="이 문의 내역 삭제(유사 문의 재등록용)">🗑</button>' : '') +
         '</div>' + detail +
         '<div class="rpt-ans" id="fqRptAns-' + x.id + '" hidden></div>';
     }).join('');
@@ -3642,6 +3651,35 @@ function fqToggleRptAnswer(id) {
     (a ? '<div class="rpt-ans-a"><b>답변</b><br>' + fqRenderText(a) + '</div>'
        : '<div class="rpt-ans-empty">아직 등록된 답변이 없습니다.</div>');
   box.hidden = false;
+}
+// 문의 내역 삭제 (관리자 전용) — 동적 FAQ(AI/이메일) 또는 게시판 글 제거. 유사문의 중복으로 더 나은 답을 못 올릴 때 기존 항목 정리용.
+async function fqDeleteInquiry(id, src) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 삭제할 수 있습니다', 'warn'); return; }
+  if (!confirm('이 문의 내역을 삭제하시겠습니까?\n(유사 문의 재등록을 위해 기존 항목을 지웁니다. 복구 불가)')) return;
+  let removed = false;
+  const before = (FQ_FAQ_DATA.items || []).length;
+  FQ_FAQ_DATA.items = (FQ_FAQ_DATA.items || []).filter(i => i.id !== id);
+  if ((FQ_FAQ_DATA.items || []).length < before) {
+    fqSaveFaq();
+    try { await fqPushFaqRemote(); } catch (e) { fqToast('공용 저장 실패(로컬만): ' + e.message, 'warn'); }
+    removed = true;
+  } else if (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts)) {
+    const b2 = fqPosts.length;
+    fqPosts = fqPosts.filter(p => p.id !== id);
+    if (fqPosts.length < b2) {
+      fqSavePosts();
+      try { await fqPushPostsRemote(); } catch (e) { fqToast('공용 저장 실패(로컬만): ' + e.message, 'warn'); }
+      if (typeof fqRenderPosts === 'function') fqRenderPosts();
+      removed = true;
+    }
+  }
+  // 오류체크 캐시 정리
+  if (fqAuditResults) delete fqAuditResults[id];
+  if (fqAuditResolved) delete fqAuditResolved[id];
+  if (fqAuditedSigs) delete fqAuditedSigs[id];
+  if (typeof fqSaveAuditCache === 'function') fqSaveAuditCache();
+  fqReportRender();
+  fqToast(removed ? '✓ 문의 내역 삭제됨 — 이제 유사 문의도 새로 등록할 수 있습니다' : '대상을 찾지 못했습니다', removed ? 'success' : 'warn');
 }
 function fqToggleAuditDetail(id) {
   const box = document.getElementById('fqAuditDetail-' + id);
