@@ -3439,9 +3439,12 @@ function fqReportRender() {
     const body = withDate.map(x => {
       const issue = fqAuditResults[x.id];   // 답변 오류·모순 발견 시 표시
       const _adm = (typeof dgIsAdmin === 'function' && dgIsAdmin());   // 오류체크(검토 결과)는 관리자만
-      const flag = (issue && _adm) ? '<button class="rpt-flag" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="답변 오류·모순 발견 — 클릭해 확인/수정">❗ 오류체크</button>' : '';
-      const detail = (issue && _adm) ? '<div class="rpt-audit-detail" id="fqAuditDetail-' + x.id + '" hidden></div>' : '';
-      return '<div class="rpt-li' + (issue && _adm ? ' rpt-li-flagged' : '') + '">' +
+      const _resolved = fqAuditResolved[x.id];                          // 담당자 정리·해결 완료
+      const flag = !_adm ? '' : (_resolved
+        ? '<button class="rpt-resolved" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="담당자 정리·해결 완료 — 클릭해 확인">✓ 오류정리 완료</button>'
+        : (issue ? '<button class="rpt-flag" onclick="fqToggleAuditDetail(\'' + x.id + '\')" title="답변 오류·모순 발견 — 클릭해 확인/수정">❗ 오류체크</button>' : ''));
+      const detail = (_adm && (issue || _resolved)) ? '<div class="rpt-audit-detail" id="fqAuditDetail-' + x.id + '" hidden></div>' : '';
+      return '<div class="rpt-li' + (issue && !_resolved && _adm ? ' rpt-li-flagged' : '') + '">' +
         '<span class="rpt-li-date">' + fmt(x.date) + '</span>' +
         '<span class="rpt-li-src"><span class="rpt-src rpt-src-' + (badgeCls[x.src] || 'etc') + '">' + fqEsc(x.src) + '</span></span>' +
         '<span class="rpt-li-cat">' + ((typeof dgIsAdmin === 'function' && dgIsAdmin())
@@ -3496,6 +3499,7 @@ async function fqRunAudit() {
 // ═══ 항목별 답변 오류·모순 자동 검토 (하루 1회 정오 기준) ═══
 const FQ_AUDIT_CACHE_KEY = 'fq_audit_daily_v1';
 let fqAuditResults = {};   // { id: issueText } — 오류·모순이 발견된 항목
+let fqAuditResolved = {};  // { id: { decision, at } } — 담당자가 정리·해결 처리한 항목(초록 '오류정리 완료')
 let fqAuditMeta = { date: '', checked: 0 };
 let fqAuditRunning = false;
 let fqAuditedSigs = {};   // { id: 답변 시그니처 } — 이미 검토한 항목(증분 검토용)
@@ -3517,11 +3521,12 @@ function fqLoadAuditCache() {
     const c = JSON.parse(localStorage.getItem(FQ_AUDIT_CACHE_KEY) || '{}');
     if (c && c.results) { fqAuditResults = c.results; fqAuditMeta = { date: c.date || '', checked: c.checked || 0 }; }
     if (c && c.audited) fqAuditedSigs = c.audited;
+    if (c && c.resolved) fqAuditResolved = c.resolved;
   } catch (e) {}
 }
 function fqAnsSig(a) { a = String(a || ''); return a.length + '|' + a.slice(0, 30) + '|' + a.slice(-30); }
 function fqSaveAuditCache() {
-  try { localStorage.setItem(FQ_AUDIT_CACHE_KEY, JSON.stringify({ date: fqAuditMeta.date, checked: fqAuditMeta.checked, results: fqAuditResults, audited: fqAuditedSigs })); } catch (e) {}
+  try { localStorage.setItem(FQ_AUDIT_CACHE_KEY, JSON.stringify({ date: fqAuditMeta.date, checked: fqAuditMeta.checked, results: fqAuditResults, audited: fqAuditedSigs, resolved: fqAuditResolved })); } catch (e) {}
 }
 // 혼적/격리 항목의 IMDG 격리표 결정론적 판정 문자열 (감사 근거 주입용)
 function fqRowSeg(text, unMap) {
@@ -3586,6 +3591,7 @@ async function fqRunDailyAudit(fullRecheck) {
     const issueByIdx = {};
     (j.issues || []).forEach(it => { issueByIdx[it.i] = it.issue; });
     targets.forEach((r, i) => {
+      if (fqAuditResolved[r.id]) { delete fqAuditResults[r.id]; fqAuditedSigs[r.id] = fqAnsSig(r.a); return; }  // 담당자 정리완료 → 재플래그 안 함
       if (issueByIdx[i]) fqAuditResults[r.id] = issueByIdx[i];   // 문제 발견 → 등록
       else delete fqAuditResults[r.id];                          // 재검토 후 깨끗 → 기존 표시 제거
       fqAuditedSigs[r.id] = fqAnsSig(r.a);                       // 검토 완료 기록
@@ -3635,17 +3641,75 @@ function fqToggleAuditDetail(id) {
   const box = document.getElementById('fqAuditDetail-' + id);
   if (!box) return;
   if (!box.hidden) { box.hidden = true; box.innerHTML = ''; return; }
-  const issue = fqAuditResults[id] || '(내용 없음)';
+  const resolved = fqAuditResolved[id];
+  const priorDec = (resolved && resolved.decision) ? resolved.decision : '';
+  const issue = fqAuditResults[id] || (resolved ? '(정리 완료된 항목)' : '(내용 없음)');
   box.innerHTML =
+    (resolved ? '<div class="rpt-ad-resolved-banner">✓ 담당자 정리·해결 완료' + (resolved.at ? ' · ' + new Date(resolved.at).toLocaleString('ko') : '') + '</div>' : '') +
     '<div class="rpt-ad-issue"><b>⚠️ 지적된 오류·모순</b><div>' + fqEsc(issue) + '</div></div>' +
     '<label class="rpt-ad-label">담당자 결정 / 수정 방향 (직접 입력)</label>' +
-    '<textarea class="rpt-ad-decision" id="fqAdDec-' + id + '" placeholder="예: 산+염기 격리는 Away from(1)로 정정. 근거: IMDG 7.2.4 …"></textarea>' +
+    '<textarea class="rpt-ad-decision" id="fqAdDec-' + id + '" placeholder="예: 산+염기 격리는 Away from(1)로 정정. 근거: IMDG 7.2.4 …">' + fqEsc(priorDec) + '</textarea>' +
     '<div class="rpt-ad-actions">' +
       '<button class="fq-btn ghost" onclick="fqCopyAuditFix(\'' + id + '\')">📋 수정요청 복사</button>' +
-      '<button class="fq-btn primary" onclick="fqAiFixAnswer(\'' + id + '\')">🤖 AI 수정안 작성</button>' +
+      '<button class="fq-btn ghost" onclick="fqAiFixAnswer(\'' + id + '\')">🤖 AI 수정안 작성</button>' +
+      '<button class="fq-btn accent" onclick="fqApplyDecision(\'' + id + '\')">✓ 적용 (AI 답변에 반영)</button>' +
+      (resolved
+        ? '<button class="fq-btn ghost" onclick="fqReopenAudit(\'' + id + '\')">↩ 검토대상으로 되돌리기</button>'
+        : '<button class="fq-btn primary" onclick="fqResolveAudit(\'' + id + '\')">✓ 오류 해결 처리 (답변 정확)</button>') +
     '</div>' +
     '<div class="rpt-ad-result" id="fqAdRes-' + id + '"></div>';
   box.hidden = false;
+}
+
+// 담당자 결정을 답변에 반영(AI 참고용) + 해결 처리
+async function fqApplyDecision(id) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 적용할 수 있습니다', 'warn'); return; }
+  const decEl = document.getElementById('fqAdDec-' + id);
+  const dec = decEl ? decEl.value.trim() : '';
+  if (!dec) { fqToast('담당자 결정/수정 방향을 입력하세요', 'warn'); return; }
+  const note = '\n\n[담당자 정정 · ' + (new Date().toLocaleDateString('ko')) + '] ' + dec;
+  let applied = false;
+  const fi = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (fi) {
+    fi.a = (fi.a || '') + note; fi.decision = dec;
+    fqSaveFaq();
+    try { await fqPushFaqRemote(); applied = true; } catch (e) { fqToast('공용 저장 실패(로컬만 반영): ' + e.message, 'warn'); applied = true; }
+  } else {
+    const p = (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).find(x => x.id === id);
+    if (p) {
+      p.answer = (p.answer || '') + note; p.decision = dec;
+      fqSavePosts();
+      try { await fqPushPostsRemote(); applied = true; } catch (e) { fqToast('공용 저장 실패(로컬만 반영): ' + e.message, 'warn'); applied = true; }
+      if (typeof fqRenderPosts === 'function') fqRenderPosts();
+    }
+  }
+  fqAuditResolved[id] = { decision: dec, at: new Date().toISOString() };
+  delete fqAuditResults[id];
+  fqSaveAuditCache();
+  fqReportRender();
+  fqToast(applied ? '✓ 담당자 결정을 답변에 반영했습니다 — 이후 AI 문의·초안에 참고됩니다' : '✓ 해결 처리 완료', 'success');
+}
+
+// 오류 해결 처리(답변이 정확한 경우 — 답변 변경 없이 초록 표시로 전환)
+function fqResolveAudit(id) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 처리할 수 있습니다', 'warn'); return; }
+  const decEl = document.getElementById('fqAdDec-' + id);
+  const dec = decEl && decEl.value.trim() ? decEl.value.trim() : '(답변 정확 — 오류 아님으로 확인)';
+  fqAuditResolved[id] = { decision: dec, at: new Date().toISOString() };
+  delete fqAuditResults[id];
+  fqSaveAuditCache();
+  fqReportRender();
+  fqToast('✓ 오류 해결 처리 완료 — "오류정리 완료"로 표시됩니다', 'success');
+}
+
+// 해결 처리 취소 — 다시 검토대상으로
+function fqReopenAudit(id) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 처리할 수 있습니다', 'warn'); return; }
+  delete fqAuditResolved[id];
+  if (fqAuditedSigs) delete fqAuditedSigs[id];   // 다음 검토 때 다시 검사
+  fqSaveAuditCache();
+  fqReportRender();
+  fqToast('검토대상으로 되돌렸습니다 — 다음 답변 검토 시 재검사됩니다', 'success');
 }
 function fqCopyAuditFix(id) {
   const txt = fqComposeFix(id);

@@ -5230,3 +5230,14 @@ body { top: 0 !important; position: static !important; }
 .dg-role-badge.admin { background: rgba(37,99,235,0.15); color: #2563eb; border: 1px solid rgba(37,99,235,0.45); }
 [data-theme="dark"] .dg-role-badge.admin { color: #93c5fd; }
 .fq-post-cat-plain { font-size: 11px; color: var(--fq-muted, #6b7280); white-space: nowrap; }
+
+/* 오류 정리 완료 (초록 알람) — 오류체크가 처리된 건 */
+.rpt-resolved {
+  flex: 0 0 auto; margin-left: 6px; white-space: nowrap; cursor: pointer;
+  border: 1px solid #6ee7b7; background: #d1fae5; color: #047857;
+  font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 12px;
+}
+.rpt-resolved:hover { background: #a7f3d0; }
+[data-theme="dark"] .rpt-resolved { background: rgba(16,185,129,0.18); color: #6ee7b7; border-color: rgba(16,185,129,0.5); }
+.rpt-ad-resolved-banner { font-size: 12px; font-weight: 700; color: #047857; background: #d1fae5; border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
+[data-theme="dark"] .rpt-ad-resolved-banner { background: rgba(16,185,129,0.15); color: #6ee7b7; }
