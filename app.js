@@ -2300,6 +2300,7 @@ function renderSdsAnalysisResult(payload) {
     if (!box) return;
 
     const result = payload.result || {};
+    fqLastSdsResult = result;   // 질문(fqSdsAsk)용 최근 판독 결과 저장
     const statusClass = getSdsStatusClass(result.dg_status);
     const statusLabel = getSdsStatusLabel(result.dg_status);
 
@@ -2350,7 +2351,59 @@ function renderSdsAnalysisResult(payload) {
         <div class="sds-disclaimer">
             ${escapeHtml(payload.disclaimer || 'AI 1차 판독 결과이며 최종 확인은 담당자가 수행해야 합니다.')}
         </div>
+
+        <div class="sds-ask-box">
+            <div class="sds-ask-title">🤖 이 자료(MSDS)에 대해 질문하기</div>
+            <div class="sds-ask-examples">예시: "이 아이템은 위험물인가요?" · "SKR/HAL 선박에 선적할 수 있나요?" · "비위험물로 취급될 수 있나요?"</div>
+            <div class="sds-ask-row">
+                <input type="text" id="sdsAskInput" placeholder="이 MSDS에 대해 궁금한 점을 입력하세요" onkeydown="if(event.key==='Enter')fqSdsAsk()">
+                <button type="button" class="btn" id="sdsAskBtn" onclick="fqSdsAsk()">질문하기</button>
+            </div>
+            <div class="sds-ask-answer" id="sdsAskAnswer"></div>
+        </div>
     `;
+}
+
+let fqLastSdsResult = null;
+// SDS 판독 결과 + 사내 FAQ·규정 + SKR/HAL 선적가부를 매칭해 질문에 답변 (AI 문의하기와 동일 로직: /api/faq-ai answer)
+async function fqSdsAsk() {
+    const inputEl = document.getElementById('sdsAskInput');
+    const ansEl = document.getElementById('sdsAskAnswer');
+    const q = (inputEl && inputEl.value || '').trim();
+    if (!q) { fqToast('질문을 입력하세요', 'warn'); return; }
+    if (!fqLastSdsResult) { fqToast('먼저 SDS/MSDS를 판독해 주세요', 'warn'); return; }
+    if (ansEl) ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 MSDS 정보와 사내 규정을 매칭해 답변을 만들고 있습니다…</div>';
+    try {
+        const r = fqLastSdsResult;
+        const sdsSummary = '[분석된 MSDS 정보]\n'
+            + '- 품명/물질: ' + (r.product_name || '-') + ' / ' + (r.substance_name || '-') + '\n'
+            + '- DG여부: ' + (r.dg_status || '?') + ', UN: ' + (r.unno || '-') + ', Class: ' + (r.class || '-') + ', 부위험성: ' + (r.subsidiary_risk || '-') + ', PG: ' + (r.packing_group || '-') + '\n'
+            + '- 특별규정: ' + (r.special_provisions || '-') + ', Watt-hour: ' + (r.watt_hour || '-') + ', 해양오염: ' + (r.marine_pollutant || '-') + '\n'
+            + '- 제조사: ' + (r.manufacturer || '-') + ' (승인여부=' + (r.manufacturer_status || 'N/A') + '; 승인 제조사=SAMSUNG SDI/LG ENERGY SOLUTION/SK ON)\n'
+            + '- 판정 근거: ' + String(r.basis || '').slice(0, 400);
+        const fullQ = q + '\n\n' + sdsSummary;
+        // 사내 FAQ·규정 컨텍스트 선별 (질문 + MSDS 키워드)
+        const items = FQ_FAQ_DATA.items || [];
+        const qWords = (q + ' ' + (r.product_name || '') + ' ' + (r.substance_name || '') + ' ' + (r.unno || '') + ' Class' + (r.class || '')).toLowerCase().split(/[\s,./]+/).filter(w => w.length > 1);
+        const scored = items.map(it => { const hay = (it.q + ' ' + (it.a || '') + ' ' + ((it.tags || []).join(' '))).toLowerCase(); let s = 0; qWords.forEach(w => { if (hay.includes(w)) s++; }); return { it, s }; }).sort((a, b) => b.s - a.s);
+        const top = scored.slice(0, 24).map(x => ({ q: x.it.q, a: (x.it.a || '').slice(0, 1500), cat: x.it.cat }));
+        // 분석된 UN으로 DG_TABLE 상세 + SKR/HAL 선적가부 조회
+        let dgData = [], skrCarrier = [];
+        const um = String(r.unno || '').match(/\d{3,4}/);
+        const unnos = um ? [um[0]] : [];
+        if (unnos.length) {
+            try { const dr = await fetch('/api/dg-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ unnos }) }); const dj = await dr.json().catch(() => ({})); if (dr.ok && dj.ok && Array.isArray(dj.data)) dgData = dj.data; } catch (_) {}
+            try { skrCarrier = await fqFetchSkrRules(unnos); } catch (_) {}
+        }
+        const res = await fetch('/api/faq-ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: fullQ, context: top, dgData, unnos, skrCarrier }) });
+        let j = {}; try { j = await res.json(); } catch (e) {}
+        if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
+        if (ansEl) ansEl.innerHTML =
+            '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
+            '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. MSDS 1차 판독 + 사내 규정 매칭 결과이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>';
+    } catch (e) {
+        if (ansEl) ansEl.innerHTML = '<div class="fq-ai-error">답변 생성 실패: ' + fqEsc(e.message) + '<br>잠시 후 다시 시도해 주세요.</div>';
+    }
 }
 
 async function analyzeSdsDocument() {

@@ -5250,3 +5250,13 @@ body { top: 0 !important; position: static !important; }
 /* 문의 내역 삭제 버튼 */
 .rpt-del { flex: 0 0 auto; margin-left: 6px; border: 1px solid var(--fq-border-s, #d1d5db); background: transparent; color: var(--fq-red, #dc2626); cursor: pointer; font-size: 12px; line-height: 1; padding: 3px 7px; border-radius: 8px; }
 .rpt-del:hover { background: var(--fq-red, #dc2626); color: #fff; border-color: var(--fq-red, #dc2626); }
+
+/* SDS/MSDS 판독 — 자료에 대해 질문하기 */
+.sds-ask-box { margin-top: 16px; padding: 16px; border-radius: 12px; border: 1px solid rgba(0,150,255,0.3); background: rgba(0,150,255,0.07); }
+.sds-ask-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.sds-ask-examples { font-size: 12px; opacity: 0.75; margin-bottom: 10px; line-height: 1.5; }
+.sds-ask-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.sds-ask-row input { flex: 1; min-width: 200px; padding: 10px 13px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.4); background: #fff; color: #1f2937; font-size: 14px; font-family: inherit; }
+.sds-ask-row input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+[data-theme="dark"] .sds-ask-row input { background: #161b22; color: #e6edf3; border-color: rgba(255,255,255,0.18); }
+.sds-ask-answer { margin-top: 12px; }
