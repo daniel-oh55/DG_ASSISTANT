@@ -2351,16 +2351,6 @@ function renderSdsAnalysisResult(payload) {
         <div class="sds-disclaimer">
             ${escapeHtml(payload.disclaimer || 'AI 1차 판독 결과이며 최종 확인은 담당자가 수행해야 합니다.')}
         </div>
-
-        <div class="sds-ask-box">
-            <div class="sds-ask-title">🤖 이 자료(MSDS)에 대해 질문하기</div>
-            <div class="sds-ask-examples">예시: "이 아이템은 위험물인가요?" · "SKR/HAL 선박에 선적할 수 있나요?" · "비위험물로 취급될 수 있나요?"</div>
-            <div class="sds-ask-row">
-                <input type="text" id="sdsAskInput" placeholder="이 MSDS에 대해 궁금한 점을 입력하세요" onkeydown="if(event.key==='Enter')fqSdsAsk()">
-                <button type="button" class="btn" id="sdsAskBtn" onclick="fqSdsAsk()">질문하기</button>
-            </div>
-            <div class="sds-ask-answer" id="sdsAskAnswer"></div>
-        </div>
     `;
 }
 
@@ -2436,6 +2426,9 @@ if (file.size > maxSize) {
     const originalText = analyzeBtn.innerText;
     analyzeBtn.innerText = 'AI 판독 중...';
 
+    const prevAns = document.getElementById('sdsAskAnswer');
+    if (prevAns) prevAns.innerHTML = '';
+
     resultBox.className = 'sds-result-loading';
     resultBox.innerHTML = renderLoadingState(
         'SDS/MSDS 문서를 판독하는 중입니다',
@@ -2465,6 +2458,12 @@ if (file.size > maxSize) {
         }
 
         renderSdsAnalysisResult(payload);
+
+        // 질문이 입력되어 있으면 판독과 동시에 답변
+        const askInput = document.getElementById('sdsAskInput');
+        if (askInput && askInput.value.trim()) {
+            fqSdsAsk();
+        }
     } catch (err) {
         console.error('SDS/MSDS 분석 오류:', err);
         resultBox.className = 'sds-result-output';

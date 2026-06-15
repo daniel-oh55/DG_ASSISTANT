@@ -505,6 +505,15 @@
                     AI 판독 시작
                 </button>
 
+                <div class="sds-ask-inline">
+                    <label class="sds-ask-label" for="sdsAskInput">🤖 함께 물어볼 질문 (선택)</label>
+                    <div class="sds-ask-row">
+                        <input type="text" id="sdsAskInput" placeholder='예: "이 아이템은 위험물인가요?" · "SKR/HAL 선박에 선적 가능?" · "비위험물 취급 가능?"' onkeydown="if(event.key==='Enter')document.getElementById('sdsAnalyzeBtn').click()">
+                        <button type="button" class="btn" id="sdsAskBtn" onclick="fqSdsAsk()">질문하기</button>
+                    </div>
+                    <div class="sds-ask-hint">PDF 업로드 후 <b>'AI 판독 시작'</b>을 누르면 판독과 <b>동시에</b> 이 질문에도 답합니다. (판독 후 다른 질문은 '질문하기' 버튼)</div>
+                </div>
+
                 <div class="sds-warning-box">
                     본 기능은 업로드된 문서 기반 AI 1차 판독 도구입니다. 최종 선적 가능 여부는 IMDG Code, 선사별 제한, 터미널 규정, POL/POD 국가 규정 및 최신 SDS 원본을 기준으로 담당자가 확인해야 합니다.
                 </div>
@@ -519,6 +528,7 @@
                 <div id="sdsAnalysisResult" class="sds-result-empty">
                     PDF를 업로드하고 AI 판독을 시작하세요.
                 </div>
+                <div id="sdsAskAnswer" class="sds-ask-answer"></div>
             </section>
         </div>
     </div>
