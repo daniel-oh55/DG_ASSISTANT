@@ -1902,6 +1902,7 @@ function renderCarrierResultFromApi(dgItem, results) {
         </div>` : ''}
 
         <div class="carrier-section-title">📍 포트별 선적가부</div>
+        <div class="carrier-port-note">ℹ️ 포트별 선적가부는 <b>SKR/HAL 선박에 선적되는 화물 기준</b>입니다. 타사 선박 선적가부는 해당 선사에 문의하시기 바랍니다.</div>
         <div class="carrier-port-result">${portHtml}</div>
 
         <div style="margin-top:18px; color:var(--text-muted); font-size:12px; line-height:1.6;">
