@@ -46,6 +46,37 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // ── 포트별 위험물 제한 조회 (장금상선 SVMS API 프록시) ──
+    //   GET /api/carrier-check?port=CNSHA&comp=SNKO  → 해당 포트의 제한 UN/CLASS 목록 반환
+    //   (선사별 조회와 한 함수에 통합 — Vercel Hobby 함수 12개 제한 대응)
+    if (req.query.port) {
+      const key = process.env.SVMS_API_KEY;
+      const base = process.env.SVMS_API_BASE || 'https://svmsapi.sinokor.co.kr';
+      if (!key) {
+        return res.status(200).json({ ok: false, code: 'NO_KEY', message: 'SVMS_API_KEY 미설정 — 포트별 자동판정을 사용하려면 환경변수를 등록하세요.' });
+      }
+      const port = String(req.query.port).trim().toUpperCase();
+      const comp = String(req.query.comp || 'SNKO').trim().toUpperCase();
+      if (!port) return res.status(400).json({ ok: false, message: 'port가 필요합니다.' });
+      try {
+        const r = await fetch(base + '/api/v1/internal', {
+          method: 'POST',
+          headers: { 'Ocp-Apim-Subscription-Key': key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_name: 'api', package_name: 'pkg_opms_etc', procedure_name: 'sp_getrestrictitem4port',
+            params: { P_COMP_CD: comp, P_PORT_CD: port }
+          })
+        });
+        const t = await r.text();
+        if (!r.ok) return res.status(502).json({ ok: false, message: 'SVMS 호출 실패 (status ' + r.status + ')', detail: t.slice(0, 300) });
+        let j; try { j = JSON.parse(t); } catch (e) { return res.status(502).json({ ok: false, message: 'SVMS 응답 파싱 실패' }); }
+        const data = Array.isArray(j.data) ? j.data : [];
+        return res.status(200).json({ ok: true, port, comp, count: data.length, data });
+      } catch (e) {
+        return res.status(502).json({ ok: false, code: 'UNREACHABLE', message: 'SVMS 서버에 연결할 수 없습니다(서버 환경에서 사내망 접근 불가일 수 있음): ' + (e.message || e) });
+      }
+    }
+
     const inputUnno = normalizeUNNO(req.query.unno);
 
     if (!inputUnno) {

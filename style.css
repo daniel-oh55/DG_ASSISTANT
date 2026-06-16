@@ -1815,7 +1815,11 @@ header span {
 .cpc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .cpc-role { font-size: 12px; font-weight: 700; color: #fff; background: #2f9bff; padding: 3px 10px; border-radius: 10px; }
 .cpc-port { font-size: 18px; font-weight: 800; color: var(--text); font-family: var(--font-mono); }
-.cpc-status { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin-bottom: 8px; }
+.cpc-status { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin-bottom: 8px; padding: 7px 10px; border-radius: 8px; background: rgba(128,128,128,0.1); }
+.cpc-status-ban { background: rgba(255,23,68,0.12); color: #ff4d6d; font-weight: 700; border: 1px solid rgba(255,23,68,0.3); }
+.cpc-status-ok { background: rgba(0,191,165,0.12); color: #00BFA5; font-weight: 600; border: 1px solid rgba(0,191,165,0.3); }
+.cpc-status-warn { background: rgba(255,143,0,0.12); color: #ff9e2c; font-weight: 600; border: 1px solid rgba(255,143,0,0.3); }
+[data-theme="bright"] .cpc-status-ok { color: #00897b; }
 .cpc-note { font-size: 12.5px; line-height: 1.5; color: var(--text); margin-bottom: 10px; }
 .cpc-note b { color: #ff7a33; }
 .cpc-pic-btn { font-size: 12.5px; padding: 7px 13px; background: #2f9bff; color: #fff !important; border: none; }

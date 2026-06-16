@@ -1810,7 +1810,7 @@ function renderCarrierResultFromApi(dgItem, results) {
                     <span class="cpc-role">${escapeHtml(p.role)}</span>
                     <span class="cpc-port">${escapeHtml(p.val)}</span>
                 </div>
-                <div class="cpc-status">⏳ 포트별 선적제한 <b>자동 판정</b>은 장금상선 데이터 연동 후 표시됩니다. 현재는 아래 담당자로 확인해 주세요.</div>
+                <div class="cpc-status" id="portStatus_${i}">⏳ 포트별 선적제한 자동판정 조회 중…</div>
                 <div class="cpc-note">📌 자세한 포트 규정에 대해서는 <b>LOCAL 담당자에게 문의주세요.</b></div>
                 <button type="button" class="btn cpc-pic-btn" onclick="fqShowPortPic('${escapeHtml(p.val)}','${picKey}')">📇 담당자 연락처</button>
                 <div class="cpc-pic" id="${picKey}"></div>
@@ -1928,6 +1928,65 @@ function renderCarrierResultFromApi(dgItem, results) {
             ※ 선사별 결과는 선사 DG 금지/제한 리스트 기준이며, 포트별 결과는 선적지/양하지/경유지 항구 제한 기준으로 <b>별도 제공</b>됩니다. 실제 선적 전에는 IMDG Code, 터미널 규정, POL/POD 국가 규정, 선박 운항 조건을 함께 확인해야 합니다.
         </div>
     `;
+
+    // 포트별 선적제한 자동판정 — 입력 포트별로 SVMS API 조회 후 카드 상태 갱신
+    fqRunPortChecks(portEntries, dgItem.UNNO, classNo);
+}
+
+// 입력 포트(POL/POD/VIA)별로 /api/carrier-check?port= 호출 → POSITION 기준 자동판정 표시
+async function fqRunPortChecks(entries, unno, classNo) {
+    if (!Array.isArray(entries) || !entries.length) return;
+    const u = String(unno || '').replace(/^0+/, '');
+    const cls = String(classNo || '').trim();
+    const mainCls = cls.split('.')[0];
+    for (let i = 0; i < entries.length; i++) {
+        const p = entries[i];
+        const el = document.getElementById('portStatus_' + i);
+        if (!el) continue;
+        const role = /POL/.test(p.role) ? 'POL' : /POD/.test(p.role) ? 'POD' : 'VIA';
+        const roleKr = role === 'POL' ? '선적(POL)' : role === 'POD' ? '양하(POD)' : '경유(VIA)';
+        try {
+            const r = await fetch(`/api/carrier-check?port=${encodeURIComponent(p.val)}&comp=SNKO`);
+            const j = await r.json().catch(() => ({}));
+            if (!j || !j.ok) {
+                if (j && j.code === 'NO_KEY') { el.className = 'cpc-status cpc-status-warn'; el.innerHTML = '⏳ 포트 자동판정 미설정(키 등록 전) — 아래 담당자로 확인'; }
+                else if (j && j.code === 'UNREACHABLE') { el.className = 'cpc-status cpc-status-warn'; el.innerHTML = '⚠️ 서버에서 포트DB 접근 불가 — 아래 담당자로 확인'; }
+                else { el.className = 'cpc-status cpc-status-warn'; el.innerHTML = '⚠️ 포트 제한 조회 실패 — 아래 담당자로 확인'; }
+                continue;
+            }
+            const data = Array.isArray(j.data) ? j.data : [];
+            const hits = data.filter(row => {
+                const ru = String(row.UNNO || '').replace(/^0+/, '').toUpperCase();
+                if (ru === u) return true;
+                if (String(row.UNNO || '').toUpperCase() === 'ALL') {
+                    const rc = String(row.CLASS || '').trim();
+                    return rc === cls || rc === mainCls;
+                }
+                return false;
+            });
+            if (!hits.length) {
+                el.className = 'cpc-status cpc-status-ok';
+                el.innerHTML = `✅ <b>${roleKr}</b> — 이 포트 제한목록에 미등재 (현재 기준 제한 없음)`;
+                continue;
+            }
+            const pos = new Set(hits.map(h => String(h.POSITION || '').toUpperCase().replace(/\s/g, '')));
+            const isAll = pos.has('A') || pos.has('ALL');
+            const banned = role === 'POL' ? (isAll || pos.has('L'))
+                : role === 'POD' ? (isAll || pos.has('D'))
+                : (isAll || pos.has('T') || pos.has('T/S') || pos.has('TS'));
+            const posLabel = [...pos].filter(Boolean).join('/') || '-';
+            if (banned) {
+                el.className = 'cpc-status cpc-status-ban';
+                el.innerHTML = `🚫 <b>${roleKr} 금지</b> — 포트 제한목록 등재 (POSITION ${escapeHtml(posLabel)})`;
+            } else {
+                el.className = 'cpc-status cpc-status-warn';
+                el.innerHTML = `⚠️ <b>제한 등재</b> (POSITION ${escapeHtml(posLabel)}) — ${roleKr} 해당 여부 담당자 확인 필요`;
+            }
+        } catch (e) {
+            el.className = 'cpc-status cpc-status-warn';
+            el.innerHTML = '⚠️ 포트 제한 조회 오류 — 아래 담당자로 확인';
+        }
+    }
 }
 
 function toggleCarrierOthers() {
