@@ -5796,10 +5796,11 @@ const FIRE_CARGO_DATA = [
     rule: '당사 — 3090·3091(리튬금속) 전면 선적 금지.'
   },
   {
-    id: 'fc-ev', cat: 'ev', level: 2,
-    name: '전기차 · 배터리 장착 차량', cls: 'Class 9',
-    un: ['3171'], queryUn: '3171',
+    id: 'fc-ev', cat: 'ev', level: 3,
+    name: '전기차 · 리튬배터리 장착 차량', cls: 'Class 9',
+    un: ['3556', '3557', '3558'], unMore: '구 UN3171에서 분리', queryUn: '3556', queryUn2: '3557',
     why: [
+      '【2026년 분류 변경】 배터리를 장착한 차량은 2026년부터 배터리 종류별로 별도 UN번호로 분리 지정 — UN3556(리튬이온 배터리 차량) / UN3557(리튬금속 배터리 차량) / UN3558(소듐이온 배터리 차량), 모두 Class 9. (기존에는 UN3171 단일 분류였음)',
       '차량 내장 리튬배터리의 열폭주 시 소화 곤란·재발화. 밀폐된 선창(車갑판)에서 대형 전손 위험.',
       '중고·침수·손상 차량은 배터리 결함 위험이 높음.'
     ],
@@ -5809,9 +5810,9 @@ const FIRE_CARGO_DATA = [
     ],
     manage: [
       '충전율(SOC) 50% 미만 유지, 배터리 분리/단자 보호, LOI(적재확인서) 확보.',
-      '중고·손상·침수 배터리 차량 금지, RFDG 조건·적재격리 준수.'
+      '중고·손상·침수 배터리 차량 금지, IMDG SP962 등 신규 분류 특별규정 확인.'
     ],
-    rule: '당사 — 제한적 허용(RESTRICTED): 배터리 분리·SOC 50% 미만·RFDG 조건, 제조사 승인 조건 준용.'
+    rule: '당사(SKR/HAL) — 신규 분류 UN3556·3557·3558 모두 전면 선적 금지(금지리스트 등재). ※ 구 UN3171(단일분류)은 배터리 분리·SOC 50% 미만·RFDG 조건의 제한 허용이었으나, 2026 재분류 차량은 금지. (다른 선사 — CKL·SITC·TSL 허용 / NSS·DYS: 3556 제한·3557 금지 / HMM·KMTC 금지)'
   },
   {
     id: 'fc-charcoal', cat: 'spontaneous', level: 3,
@@ -5987,6 +5988,7 @@ function fireCargoApply() {
         ${fireCargoImagesHtml(it.id)}
         <div class="fc-actions">
           <button type="button" class="btn accent2" onclick="fireCargoGoCarrier('${it.queryUn}')">▦ UN${escapeHtml(it.queryUn)} 선사별 선적가부 조회</button>
+          ${it.queryUn2 ? `<button type="button" class="btn accent2" onclick="fireCargoGoCarrier('${it.queryUn2}')">▦ UN${escapeHtml(it.queryUn2)} 선사별 선적가부 조회</button>` : ''}
         </div>
       </div>
     </div>`;
