@@ -5854,7 +5854,6 @@ const FIRE_CARGO_CATS = [
   { key: 'explosive',  label: '폭발성 1',        icon: '💣' },
   { key: 'flam-gas',   label: '인화성가스 2.1',  icon: '💨' },
   { key: 'gas22',      label: '비인화성가스 2.2', icon: '🟢' },
-  { key: 'gas23',      label: '독성가스 2.3',    icon: '☠️' },
   { key: 'flam-liquid',label: '인화성액체 3',    icon: '🛢' },
   { key: 'spontaneous',label: '자연발화 4.2',    icon: '🪵' },
   { key: 'oxidizer',   label: '산화성 5.1',      icon: '🧪' },
@@ -5881,7 +5880,11 @@ const FIRE_CARGO_DATA = [
       'Class 1 전용 신고·승인·전용 적재구역 격리, 점화원·충격·정전기 차단.',
       '정확한 등급(1.1~1.6)·적합성그룹 확인, 미신고·오신고(위장) 적발 시 즉시 반입 거부.'
     ],
-    rule: '당사(SKR/HAL) — Class 1 전 등급 사실상 전면 선적 금지. (타사 금지표 기준 KMTC·SM·ONE·완하이·에버그린·TSL·머스크·양밍 모두 금지, HMM은 자사부킹만 허용)'
+    rule: '당사(SKR/HAL) — Class 1 전 등급 사실상 전면 선적 금지. (타사 금지표 기준 KMTC·SM·ONE·완하이·에버그린·TSL·머스크·양밍 모두 금지, HMM은 자사부킹만 허용)',
+    refs: [
+      { type: 'scholar', label: '📚 폭발물 운송안전 논문', q: 'class 1 explosives maritime transport safety hazard' },
+      { type: 'news', label: '📰 위험물 폭발 사고뉴스', q: '위험물 폭발 사고 선박 항만' }
+    ]
   },
   {
     id: 'fc-peroxide', cat: 'peroxide', level: 3,
@@ -5903,7 +5906,11 @@ const FIRE_CARGO_DATA = [
       'DG 신고서(Declaration) 진위·등급(Type B~F)·SADT 검증, 직사광선·고온 노출 회피.',
       '점화원·가연물·산화제와 격리, 누출·이상 징후(냄새·연기) 즉시 보고.'
     ],
-    rule: '당사(장금/흥아) Class 5.2 전 품목 전면 선적 금지.'
+    rule: '당사(장금/흥아) Class 5.2 전 품목 전면 선적 금지.',
+    refs: [
+      { type: 'scholar', label: '📚 유기과산화물 자기분해 논문', q: 'organic peroxide self-accelerating decomposition temperature container fire' },
+      { type: 'news', label: "📰 'YM Mobility' 폭발 등 뉴스", q: 'YM Mobility 유기과산화물 컨테이너 폭발 닝보' }
+    ]
   },
   {
     id: 'fc-li-ion', cat: 'lithium', level: 3,
@@ -5923,7 +5930,11 @@ const FIRE_CARGO_DATA = [
       '신품/손상·중고품 구분(손상·결함·폐배터리 금지), 충전율(SOC) 관리, 포장·단락방지.',
       'RFDG(냉동위험물) 조건·적재위치 준수.'
     ],
-    rule: '당사 — 본사 승인 제조사(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON) 한정 RFDG 조건 선적 허용. SP188 비위험(9) 3480·3481만 DRY 컨테이너 예외.'
+    rule: '당사 — 본사 승인 제조사(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON) 한정 RFDG 조건 선적 허용. SP188 비위험(9) 3480·3481만 DRY 컨테이너 예외.',
+    refs: [
+      { type: 'scholar', label: '📚 리튬이온 열폭주 논문', q: 'lithium-ion battery thermal runaway transport safety' },
+      { type: 'news', label: '📰 리튬배터리 화재 뉴스', q: '리튬이온 배터리 보조배터리 화재' }
+    ]
   },
   {
     id: 'fc-li-metal', cat: 'lithium', level: 3,
@@ -5942,7 +5953,11 @@ const FIRE_CARGO_DATA = [
       '수분 차단·완충상태 취급 주의, SP388 분류 정확히 적용.',
       '제조사·시험성적서 검증, 손상·중고품 반입 금지.'
     ],
-    rule: '당사 — 3090·3091(리튬금속) 전면 선적 금지.'
+    rule: '당사 — 3090·3091(리튬금속) 전면 선적 금지.',
+    refs: [
+      { type: 'scholar', label: '📚 리튬금속전지 화재 논문', q: 'lithium metal primary battery fire thermal runaway hazard' },
+      { type: 'news', label: '📰 아리셀 화재 등 뉴스', q: '아리셀 리튬배터리 공장 화재 화성' }
+    ]
   },
   {
     id: 'fc-ev', cat: 'ev', level: 3,
@@ -5961,7 +5976,12 @@ const FIRE_CARGO_DATA = [
       '충전율(SOC) 50% 미만 유지, 배터리 분리/단자 보호, LOI(적재확인서) 확보.',
       '중고·손상·침수 배터리 차량 금지, IMDG SP962 등 신규 분류 특별규정 확인.'
     ],
-    rule: '당사(SKR/HAL) — 신규 분류 UN3556·3557·3558 모두 전면 선적 금지(금지리스트 등재). ※ 구 UN3171(단일분류)은 배터리 분리·SOC 50% 미만·RFDG 조건의 제한 허용이었으나, 2026 재분류 차량은 금지. (다른 선사 — CKL·SITC·TSL 허용 / NSS·DYS: 3556 제한·3557 금지 / HMM·KMTC 금지)'
+    rule: '당사(SKR/HAL) — 신규 분류 UN3556·3557·3558 모두 전면 선적 금지(금지리스트 등재). ※ 구 UN3171(단일분류)은 배터리 분리·SOC 50% 미만·RFDG 조건의 제한 허용이었으나, 2026 재분류 차량은 금지. (다른 선사 — CKL·SITC·TSL 허용 / NSS·DYS: 3556 제한·3557 금지 / HMM·KMTC 금지)',
+    refs: [
+      { type: 'scholar', label: '📚 전기차 배터리 화재 논문', q: 'electric vehicle battery fire car carrier ship thermal runaway' },
+      { type: 'news', label: '📰 전기차 화재 뉴스', q: '전기차 화재 자동차운반선 청라 아파트' },
+      { type: 'url', label: '📖 위키백과: Felicity Ace', url: 'https://en.wikipedia.org/wiki/Felicity_Ace' }
+    ]
   },
   {
     id: 'fc-charcoal', cat: 'spontaneous', level: 3,
@@ -5980,7 +6000,11 @@ const FIRE_CARGO_DATA = [
       '인증서·쿨링·포장조건(4G 박스) 현지 점검, 적재 전 온도 확인.',
       '습기·열원 회피, 의심 화물 운항팀(DG센터) 사전 확인.'
     ],
-    rule: '당사 — 모든 숯(CHARCOAL)·활성탄 전면 선적 금지. (KMTC·TSL·HMM·CKL·NSS/DYS 금지 / SITC 허용)'
+    rule: '당사 — 모든 숯(CHARCOAL)·활성탄 전면 선적 금지. (KMTC·TSL·HMM·CKL·NSS/DYS 금지 / SITC 허용)',
+    refs: [
+      { type: 'scholar', label: '📚 숯 자기발열 논문', q: 'charcoal self-heating spontaneous combustion shipping container' },
+      { type: 'news', label: '📰 숯 화물 화재 뉴스', q: '숯 목탄 컨테이너 선박 화재' }
+    ]
   },
   {
     id: 'fc-oxidizer', cat: 'oxidizer', level: 3,
@@ -6001,7 +6025,12 @@ const FIRE_CARGO_DATA = [
       '가연물·인화성 물질·열원과 철저히 격리, 수분 차단·건조·환기 유지, 대량·장기 보관 금지.',
       'IMDG 등급·포장기준 준수, 신고(품명·등급) 검증, 오신고 차단.'
     ],
-    rule: '당사(SKR/HAL) — 질산암모늄(UN1942)·질안비료(UN2067)·과탄산나트륨(UN3378) 등 선적 금지. 선적 전 운항팀(DG센터) 확인 필요. (산화성 5.1 ↔ 유기과산화물 5.2 혼동 주의)'
+    rule: '당사(SKR/HAL) — 질산암모늄(UN1942)·질안비료(UN2067)·과탄산나트륨(UN3378) 등 선적 금지. 선적 전 운항팀(DG센터) 확인 필요. (산화성 5.1 ↔ 유기과산화물 5.2 혼동 주의)',
+    refs: [
+      { type: 'scholar', label: '📚 질산암모늄 폭발위험 논문', q: 'ammonium nitrate explosion hazard storage decomposition' },
+      { type: 'news', label: '📰 질산암모늄 폭발 뉴스', q: '질산암모늄 폭발 사고' },
+      { type: 'url', label: '📖 위키백과: 2020 베이루트 폭발', url: 'https://en.wikipedia.org/wiki/2020_Beirut_explosion' }
+    ]
   },
   {
     id: 'fc-flam-liquid', cat: 'flam-liquid', level: 2,
@@ -6021,7 +6050,11 @@ const FIRE_CARGO_DATA = [
       '산화성 물질(5.1)·과산화물(5.2)·발화원과 격리, 포장등급(PG)·IMDG 기준 준수.',
       '인화점이 매우 낮은 품목은 선사·포트별 제한이 상이하므로 선적 전 확인.'
     ],
-    rule: '당사(SKR/HAL) — IMDG 기준 준수 선적이 원칙(페인트 UN1263 등 다수 허용, 아세톤 UN1090은 제한 조건). 일부 저인화점 품목은 신규 선적금지 검토 중(Q). 타사 — 에버그린·TSL·완하이는 저인화점 Class 3 다수 금지, 선사별 차이 큼.'
+    rule: '당사(SKR/HAL) — IMDG 기준 준수 선적이 원칙(페인트 UN1263 등 다수 허용, 아세톤 UN1090은 제한 조건). 일부 저인화점 품목은 신규 선적금지 검토 중(Q). 타사 — 에버그린·TSL·완하이는 저인화점 Class 3 다수 금지, 선사별 차이 큼.',
+    refs: [
+      { type: 'scholar', label: '📚 인화성 액체 화재 논문', q: 'flammable liquid container fire flash point marine transport' },
+      { type: 'news', label: '📰 인화성 액체 화재 뉴스', q: '인화성 액체 신너 컨테이너 화재' }
+    ]
   },
   {
     id: 'fc-flam-gas', cat: 'flam-gas', level: 3,
@@ -6039,7 +6072,11 @@ const FIRE_CARGO_DATA = [
       '밸브·용기 상태 점검, 직사광선·고온 회피, 점화원 차단, 환기·적재격리 확보.',
       '포장·표시(라벨) 기준 준수, 선사·포트 제한 확인.'
     ],
-    rule: '당사(SKR/HAL) — 일부 인화성 가스 UN 선적 금지(예: 프로판 UN1978, 디메틸아민 UN1032, 라이터 UN1057 등)하며, 추가 품목 신규금지 검토 중(Q). 타사 — 선사별 금지 품목 상이.'
+    rule: '당사(SKR/HAL) — 일부 인화성 가스 UN 선적 금지(예: 프로판 UN1978, 디메틸아민 UN1032, 라이터 UN1057 등)하며, 추가 품목 신규금지 검토 중(Q). 타사 — 선사별 금지 품목 상이.',
+    refs: [
+      { type: 'scholar', label: '📚 인화성 가스 BLEVE 논문', q: 'flammable gas LPG BLEVE container ship transport' },
+      { type: 'news', label: '📰 가스 폭발 사고뉴스', q: '가스 누출 폭발 BLEVE 에어로졸' }
+    ]
   },
   {
     id: 'fc-gas22', cat: 'gas22', level: 2,
@@ -6056,24 +6093,11 @@ const FIRE_CARGO_DATA = [
       '고압용기 상태·밸브 점검, 가열·충격 방지, 산화성 가스는 가연물·유증기와 격리.',
       '환기 확보, 포장·표시 기준 준수.'
     ],
-    rule: '당사(SKR/HAL) — 대부분 허용하나 일부 UN은 신규금지 검토(Q). 운송 금지 물질(예: 메틸 나이트라이트 UN2455)은 전 선사 금지. (KMTC는 다수 금지)'
-  },
-  {
-    id: 'fc-gas23', cat: 'gas23', level: 2,
-    name: '독성 가스 (Toxic Gases)', cls: 'Class 2.3',
-    un: ['1017', '1005', '1053', '1062', '1079'], unMore: '염소·암모니아·황화수소·이산화황 등', queryUn: '1017',
-    why: [
-      '흡입 시 치명적인 독성 — 누출 시 광범위한 인명피해. 밀폐된 선창·하역 현장에서 특히 위험.',
-      '일부는 인화성·부식성을 동반(암모니아 UN1005, 황화수소 UN1053 등)해 화재·중독이 복합적으로 발생.'
-    ],
-    accidents: [
-      '염소(UN1017)·암모니아 등 독성가스 누출에 의한 집단 중독·대피 사고. 선내 밀폐공간 누출은 인명사고로 직결.'
-    ],
-    manage: [
-      '밀폐·누출감지·갑판적(노출 적재)·격리, 방독 대비 및 비상대응 절차 확보.',
-      '오신고 차단, 선사·포트 제한 확인.'
-    ],
-    rule: '당사(SKR/HAL) — 독성가스 다수를 신규금지 검토(Q)하며 일부는 금지(예: 염소 UN1017). 타사 — 완하이·에버그린·TSL·양밍은 Class 2.3 전반 금지, KMTC도 다수 금지.'
+    rule: '당사(SKR/HAL) — 대부분 허용하나 일부 UN은 신규금지 검토(Q). 운송 금지 물질(예: 메틸 나이트라이트 UN2455)은 전 선사 금지. (KMTC는 다수 금지)',
+    refs: [
+      { type: 'scholar', label: '📚 산화성 가스 위험 논문', q: 'oxidizing gas oxygen cylinder fire hazard' },
+      { type: 'news', label: '📰 고압가스 사고뉴스', q: '산소 고압가스 용기 폭발 파열' }
+    ]
   }
 ];
 
@@ -6081,6 +6105,24 @@ let fireCargoCat = 'all';
 let fireCargoImages = {};      // { itemId: [ { src, caption, type, ts } ] } — Supabase 공유 저장
 let fireCargoImgLoaded = false;
 let fireCargoImgTarget = null; // 업로드 대상 itemId
+
+// 참고자료 링크 생성 — type: scholar(논문검색) / news(사고뉴스) / url(직접링크)
+function fireCargoRefUrl(r) {
+  if (r.type === 'scholar') return 'https://scholar.google.com/scholar?q=' + encodeURIComponent(r.q || '');
+  if (r.type === 'news') return 'https://news.google.com/search?q=' + encodeURIComponent(r.q || '') + '&hl=ko&gl=KR&ceid=KR:ko';
+  return r.url || '#';
+}
+function fireCargoRefsHtml(it) {
+  const refs = it.refs || [];
+  if (!refs.length) return '';
+  return `
+    <div class="fc-block fc-block-ref">
+      <div class="fc-block-title">📎 참고자료 · 논문 · 사고뉴스</div>
+      <div class="fc-refs">
+        ${refs.map(r => `<a class="fc-ref" href="${fireCargoRefUrl(r)}" target="_blank" rel="noopener">${escapeHtml(r.label)} ↗</a>`).join('')}
+      </div>
+    </div>`;
+}
 
 function fireCargoLevelInfo(level) {
   if (level >= 3) return { cls: 'lv3', label: '위험도 매우높음' };
@@ -6176,6 +6218,7 @@ function fireCargoApply() {
           <ul>${it.manage.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
         </div>
         <div class="fc-rule"><b>📌 당사(SKR/HAL) 규정</b> ${escapeHtml(it.rule)}</div>
+        ${fireCargoRefsHtml(it)}
         ${fireCargoImagesHtml(it.id)}
         ${(it.queryUn || it.queryUn2) ? `<div class="fc-actions">
           ${it.queryUn ? `<button type="button" class="btn accent2" onclick="fireCargoGoCarrier('${it.queryUn}')">▦ UN${escapeHtml(it.queryUn)} 선사별 선적가부 조회</button>` : ''}

@@ -5395,6 +5395,11 @@ body { top: 0 !important; position: static !important; }
 .fc-rule { margin-top: 14px; padding: 11px 14px; border-radius: 10px; background: rgba(0,150,255,0.08); border: 1px dashed rgba(0,150,255,0.4);
     font-size: 13px; line-height: 1.6; color: var(--text); }
 .fc-rule b { color: #2f9bff; }
+.fc-block-ref .fc-block-title { color: #6D5EF8; }
+.fc-refs { display: flex; flex-wrap: wrap; gap: 8px; }
+.fc-ref { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 6px 11px; border-radius: 16px;
+    border: 1px solid rgba(109,94,248,0.4); background: rgba(109,94,248,0.08); color: #6D5EF8; text-decoration: none; }
+.fc-ref:hover { background: rgba(109,94,248,0.16); }
 .fc-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* 툴바 (통계 + 인쇄/펼치기 버튼) */
