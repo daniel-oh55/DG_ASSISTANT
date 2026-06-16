@@ -1933,20 +1933,23 @@ function toggleCarrierOthers() {
 /* ── 상하이(CNSHA) CAS NUMBER 확인 ──
    중국 내하(內河) 금지/제한 위험화학품 목록(2019판, banned 228 + restricted 85)을
    CAS번호·UN번호·품명으로 조회. 데이터: window.SH_CAS_DATA (shanghai_cas.js) */
-function fqShanghaiNormCas(s) {
-  return String(s || '').replace(/[^0-9-]/g, '');   // CAS는 숫자/하이픈만
-}
 function fqShanghaiSearch(q) {
   const data = window.SH_CAS_DATA || [];
   const raw = String(q || '').trim();
   if (!raw) return [];
-  const cas = fqShanghaiNormCas(raw);
+  const casNorm = raw.replace(/[^0-9-]/g, '');   // 하이픈 포함 CAS 형태
+  const digits = raw.replace(/[^0-9]/g, '');      // 숫자만 (하이픈 제거)
   const low = raw.toLowerCase();
-  const unDigits = raw.replace(/[^0-9]/g, '');
   return data.filter(it => {
-    if (cas && it.cas && it.cas === cas) return true;                 // CAS 정확 일치
-    if (cas && cas.length >= 4 && it.cas && it.cas.includes(cas)) return true;
-    if (unDigits && unDigits.length >= 3 && it.un && it.un.includes(unDigits)) return true; // UN 포함(복합UN 대응)
+    const itCas = it.cas || '';
+    const itCasDigits = itCas.replace(/-/g, '');
+    // CAS — 하이픈 포함 정확/부분 일치
+    if (casNorm && itCas && (itCas === casNorm || (casNorm.length >= 4 && itCas.includes(casNorm)))) return true;
+    // CAS — 하이픈 없이 숫자만 입력해도 인식 (CAS는 최소 5자리)
+    if (digits.length >= 5 && itCasDigits && (itCasDigits === digits || itCasDigits.includes(digits))) return true;
+    // UN — 3~4자리 숫자 (복합 UN 포함)
+    if (digits.length >= 3 && it.un && it.un.includes(digits)) return true;
+    // 품명/별명
     if (low.length >= 2 && ((it.name && it.name.toLowerCase().includes(low)) || (it.alias && it.alias.toLowerCase().includes(low)))) return true;
     return false;
   });
@@ -1976,7 +1979,7 @@ function fqShanghaiCasBox(unno) {
       <div class="sh-cas-title">🇨🇳 상하이(CNSHA) 내하 위험화학품 — CAS NUMBER 확인</div>
       <div class="sh-cas-desc">상하이(상해)는 <b>UN번호만으로 판단할 수 없고 CAS NUMBER 기준</b>으로 금지/제한 여부를 확인해야 합니다. CAS번호(예: 75-86-5)·UN번호·품명을 입력해 조회하세요.</div>
       <div class="sh-cas-inputrow">
-        <input type="text" id="shCasInput" placeholder="CAS번호 / UN번호 / 품명 입력" onkeydown="if(event.key==='Enter')fqShanghaiCasCheck()">
+        <input type="text" id="shCasInput" placeholder="CAS번호(하이픈 없이도 가능: 75-86-5 또는 75865) / UN번호 / 품명" onkeydown="if(event.key==='Enter')fqShanghaiCasCheck()">
         <button type="button" class="btn accent2" onclick="fqShanghaiCasCheck()">확인</button>
       </div>
       <div id="shCasResult">${autoHtml}</div>
