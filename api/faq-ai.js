@@ -1,4 +1,4 @@
-// FAQ AI — 사내 FAQ·문의답변 DB를 근거로 LLM(Gemini)이 처리
+// FAQ AI — 사내 FAQ·문의답변 DB를 근거로 LLM(Anthropic 클로드)이 처리
 //   mode 'answer'(기본): FAQ 질문 답변
 //   mode 'reply': 이메일 회신 초안 (2단계: 초안 생성 → 검증·교정으로 일관성 확보)
 //   mode 'audit': 답변 오류·모순 검토
@@ -16,70 +16,57 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    const newsKeyRaw = process.env.GEMINI_NEWS_API_KEY;   // 뉴스 전용 키(있으면)
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    // ── AI 백엔드: Anthropic 클로드 (Gemini에서 전환) ──
+    //   ANTHROPIC_API_KEY 필수. 모델은 ANTHROPIC_MODEL(기본 claude-sonnet-4-6, opus 원하면 claude-opus-4-8).
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
     if (!apiKey) {
-      return res.status(500).json({ ok: false, message: 'GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다.' });
+      return res.status(500).json({ ok: false, message: 'ANTHROPIC_API_KEY 환경변수가 설정되어 있지 않습니다.' });
     }
-
-    // ── 키 우선순위 정책 ──
-    //  메인 기능(FAQ답변·회신초안·검토·SDS): 메인 키 먼저 쓰고, 토큰 소진(429)·과부하(503)로 막히면
-    //    뉴스 키를 '예비 연료'로 자동 전환해 끝까지 시도한다. → 메인 기능은 두 키를 모두 동원.
-    //  뉴스(비필수): 뉴스 키만 사용해 메인 키의 쿼터를 보호한다(= 메인이 우선, 남는 토큰으로 뉴스).
-    //    단, 뉴스 키가 설정돼 있지 않으면 어쩔 수 없이 메인 키로 폴백.
-    const MAIN_KEYS = (newsKeyRaw && newsKeyRaw !== apiKey) ? [apiKey, newsKeyRaw] : [apiKey];
-    const NEWS_KEYS = newsKeyRaw ? [newsKeyRaw] : [apiKey];
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-    // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로)
-    const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
-    // Gemini 호출 헬퍼 — 키 우선순위 목록(keys)을 받아: 각 키마다 모델 폴백을 시도하고,
-    //   한 키가 쿼터소진(429)·과부하(503)·키오류(401/403)로 막히면 다음 키(예비 키)로 자동 전환.
-    async function genWithKeys(promptText, temperature, keys) {
-      const keyList = (Array.isArray(keys) ? keys : [keys]).filter(Boolean);
+    // 클로드 Messages API 호출 헬퍼 — 과부하(429/529/503/500)면 백오프 재시도.
+    //   (세 번째 인자 keys는 구버전 호환용으로 무시 — 클로드는 단일 키)
+    async function genWithKeys(promptText, temperature, _keys) {
       let lastStatus = 0;
-      for (let k = 0; k < keyList.length; k++) {
-        const useKey = keyList[k];
-        let keyErr = false;   // 이 키 자체가 무효(401/403)면 모델 더 볼 필요 없이 다음 키로
-        for (const mdl of MODELS) {
-          const ep = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mdl)}:generateContent?key=${encodeURIComponent(useKey)}`;
-          for (let attempt = 0; attempt < 2; attempt++) {
-            if (attempt) await sleep(800);
-            const r = await fetch(ep, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: promptText }] }],
-                generationConfig: { temperature: temperature }
-              })
-            });
-            const t = await r.text();
-            if (r.ok) {
-              const j = JSON.parse(t);
-              return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('\n').trim();
-            }
-            lastStatus = r.status;
-            console.error('[api/faq-ai] Gemini error', `key#${k + 1}/${keyList.length}`, mdl, r.status, t.slice(0, 150));
-            if (r.status === 503) continue;                          // 과부하 → 같은 모델 1회 재시도
-            if (r.status === 429) break;                             // 쿼터 소진 → 같은 키의 다음 모델로(재시도 무의미)
-            if (r.status === 404 || r.status === 400) break;         // 모델 미지원 → 다음 모델
-            if (r.status === 401 || r.status === 403) { keyErr = true; break; } // 키 무효 → 다음 키
-            throw new Error('Gemini API 호출 실패');                  // 그 외 → 중단
-          }
-          if (keyErr) break;   // 키 자체가 무효 → 남은 모델 건너뛰고 다음 키로 폴백
+      for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt) await sleep(800 * attempt);
+        let r;
+        try {
+          r = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              model,
+              max_tokens: 8192,
+              temperature: typeof temperature === 'number' ? temperature : 0,
+              messages: [{ role: 'user', content: promptText }]
+            })
+          });
+        } catch (e) {
+          lastStatus = 0; console.error('[api/faq-ai] Claude fetch error', e.message); continue;
         }
-        if (k < keyList.length - 1) {
-          console.error('[api/faq-ai] 키 폴백:', `key#${k + 1} 소진(status ${lastStatus}) → 예비 key#${k + 2} 시도`);
+        const t = await r.text();
+        if (r.ok) {
+          const j = JSON.parse(t);
+          return (j.content || []).filter(c => c.type === 'text').map(c => c.text || '').join('\n').trim();
         }
+        lastStatus = r.status;
+        console.error('[api/faq-ai] Claude error', r.status, t.slice(0, 200));
+        if (r.status === 429 || r.status === 529 || r.status === 503 || r.status === 500) continue;   // 혼잡/과부하 → 재시도
+        if (r.status === 401 || r.status === 403) throw new Error('ANTHROPIC_API_KEY가 유효하지 않습니다.');
+        throw new Error('Claude API 호출 실패 (status ' + r.status + ')');
       }
-      if (lastStatus === 503 || lastStatus === 429) {
+      if (lastStatus === 429 || lastStatus === 529 || lastStatus === 503) {
         const e = new Error('AI 사용량 한도에 도달했거나 서버가 혼잡합니다(잠시 후 다시 시도해 주세요).'); e.code = 503; throw e;
       }
-      throw new Error('Gemini API 호출 실패');
+      throw new Error('Claude API 호출 실패');
     }
-    // 메인 기능 기본 호출 — 메인 키 우선, 막히면 뉴스 키로 보조
-    const gen = (promptText, temperature) => genWithKeys(promptText, temperature, MAIN_KEYS);
+    const gen = (promptText, temperature) => genWithKeys(promptText, temperature);
 
     const body = req.body || {};
     const mode = ['reply', 'audit', 'auditrows', 'news'].includes(body.mode) ? body.mode : 'answer';
@@ -202,7 +189,7 @@ module.exports = async function handler(req, res) {
 형식: [{"i":번호,"dg":"관련 위험물 추정(모르면 '미상')","hazard":"핵심 위험성 한 줄","opinion":"우리(선사)가 해당 화물 선적 금지/제한을 검토할 필요가 있는지 한 줄 의견","substance":"이 사건과 관련된 핵심 화학물질 1개의 한글 정식명칭(없거나 불명확하면 빈 문자열)","substance_en":"그 물질의 정확한 영문 정식명칭 — PubChem 검색용, IUPAC/관용명(없으면 빈 문자열)"}]
 - substance는 제목과 당신이 아는 실제 사건 정보로 판단하세요. 제목에 화합물명이 직접 없더라도, 특정 사업장·지역의 잘 알려진 사고여서 어떤 화학물질이 관련됐는지 **확신**할 수 있으면 그 정식명칭을 채우세요(예: "SK하이닉스 청주공장 화학물질 누출" → 수산화테트라메틸암모늄(TMAH), substance_en="Tetramethylammonium hydroxide"). 다만 일반어(가스·세척제·화학물질 등)만 있고 어떤 물질인지 확신이 없으면 빈 문자열로 두고 절대 지어내지 마세요.
 
-${list}`, 0.2, NEWS_KEYS);
+${list}`, 0.2);
           const jsonText = (op.match(/\[[\s\S]*\]/) || [op])[0];
           const arr = JSON.parse(jsonText);
           arr.forEach(o => {
