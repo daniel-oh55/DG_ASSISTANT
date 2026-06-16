@@ -425,8 +425,17 @@
             <div class="fc-chips" id="fireCargoChips"></div>
         </div>
 
-        <div class="fc-stats" id="fireCargoStats"></div>
+        <div class="fc-toolbar">
+            <div class="fc-stats" id="fireCargoStats"></div>
+            <div class="fc-toolbar-btns">
+                <button type="button" class="btn ghost fc-tool-btn" onclick="fireCargoExpandAll(true)">⊕ 모두 펼치기</button>
+                <button type="button" class="btn ghost fc-tool-btn" onclick="fireCargoExpandAll(false)">⊖ 모두 접기</button>
+                <button type="button" class="btn accent2 fc-tool-btn" onclick="fireCargoPrint()">🖨 인쇄 / PDF 저장</button>
+            </div>
+        </div>
+
         <div class="fc-list" id="fireCargoList"></div>
+        <input type="file" id="fireCargoImgInput" accept="image/*" hidden>
     </div>
 </section>
 

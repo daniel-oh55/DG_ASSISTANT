@@ -5886,6 +5886,9 @@ const FIRE_CARGO_DATA = [
 ];
 
 let fireCargoCat = 'all';
+let fireCargoImages = {};      // { itemId: [ { src, caption, type, ts } ] } — Supabase 공유 저장
+let fireCargoImgLoaded = false;
+let fireCargoImgTarget = null; // 업로드 대상 itemId
 
 function fireCargoLevelInfo(level) {
   if (level >= 3) return { cls: 'lv3', label: '위험도 매우높음' };
@@ -5902,6 +5905,20 @@ function renderFireCargo() {
     chips.dataset.ready = '1';
   }
   fireCargoApply();
+  fireCargoSyncImages();   // 공유 이미지 동기화 (최초 1회 + 갱신)
+}
+
+// Supabase(id='firecargo')에서 공유 이미지 로드 후 갤러리 갱신
+async function fireCargoSyncImages() {
+  try {
+    const data = await fqRemoteGet('firecargo');
+    fireCargoImages = (data && data.images) || {};
+    fireCargoImgLoaded = true;
+    // 현재 펼쳐진 카드 상태 유지하며 갤러리만 다시 그림
+    const openIds = [...document.querySelectorAll('#fireCargoList .fc-card.open')].map(c => c.id);
+    fireCargoApply();
+    openIds.forEach(id => { const c = document.getElementById(id); if (c) { c.classList.add('open'); const h = c.querySelector('.fc-card-head'); if (h) h.setAttribute('aria-expanded', 'true'); } });
+  } catch (_) { /* 네트워크 실패 시 무시 (로컬/오프라인) */ }
 }
 
 function fireCargoSetCat(key) {
@@ -5967,6 +5984,7 @@ function fireCargoApply() {
           <ul>${it.manage.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
         </div>
         <div class="fc-rule"><b>📌 당사(SKR/HAL) 규정</b> ${escapeHtml(it.rule)}</div>
+        ${fireCargoImagesHtml(it.id)}
         <div class="fc-actions">
           <button type="button" class="btn accent2" onclick="fireCargoGoCarrier('${it.queryUn}')">▦ UN${escapeHtml(it.queryUn)} 선사별 선적가부 조회</button>
         </div>
@@ -5990,3 +6008,157 @@ function fireCargoGoCarrier(un) {
   targetInput.value = un;
   if (typeof checkCarrierLoadingPossibility === 'function') checkCarrierLoadingPossibility();
 }
+
+/* ── 사진·도표 갤러리 ── */
+function fireCargoIsAdmin() {
+  return typeof dgIsAdmin === 'function' && dgIsAdmin();
+}
+
+function fireCargoImagesHtml(itemId) {
+  const imgs = fireCargoImages[itemId] || [];
+  const admin = fireCargoIsAdmin();
+  const thumbs = imgs.map((im, idx) => `
+    <figure class="fc-thumb">
+      <img src="${im.src}" alt="${escapeHtml(im.caption || '관련 이미지')}" loading="lazy" onclick="fireCargoViewImage('${itemId}',${idx})">
+      ${im.type ? `<span class="fc-thumb-type">${escapeHtml(im.type)}</span>` : ''}
+      ${im.caption ? `<figcaption>${escapeHtml(im.caption)}</figcaption>` : ''}
+      ${admin ? `<button type="button" class="fc-thumb-del" title="이미지 삭제" onclick="fireCargoDeleteImage(event,'${itemId}',${idx})">✕</button>` : ''}
+    </figure>`).join('');
+
+  if (!imgs.length && !admin) return '';   // 일반 회원에겐 빈 갤러리 숨김
+  return `
+    <div class="fc-block fc-block-img">
+      <div class="fc-block-title">📷 관련 사진·도표 ${imgs.length ? `<span class="fc-img-count">${imgs.length}</span>` : ''}</div>
+      <div class="fc-gallery">
+        ${thumbs || '<div class="fc-img-empty">등록된 이미지가 없습니다.</div>'}
+        ${admin ? `<button type="button" class="fc-img-add" onclick="fireCargoAddImage('${itemId}')">＋<span>사고사진·격리표·포장기준 등 추가</span></button>` : ''}
+      </div>
+      ${admin ? `<div class="fc-img-hint">관리자만 추가/삭제할 수 있으며, 등록 시 팀원 전체에게 공유됩니다. (이미지는 자동 압축되어 저장)</div>` : ''}
+    </div>`;
+}
+
+function fireCargoExpandAll(open) {
+  document.querySelectorAll('#fireCargoList .fc-card').forEach(c => {
+    c.classList.toggle('open', !!open);
+    const h = c.querySelector('.fc-card-head');
+    if (h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+
+function fireCargoPrint() {
+  fireCargoExpandAll(true);                 // 인쇄 전 전체 펼침
+  document.body.classList.add('fc-printing');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('fc-printing'), 300);
+  }, 120);
+}
+
+/* ── 이미지 업로드 (관리자) ── */
+function fireCargoAddImage(itemId) {
+  if (!fireCargoIsAdmin()) { fqToast('관리자만 이미지를 추가할 수 있습니다', 'warn'); return; }
+  fireCargoImgTarget = itemId;
+  const input = document.getElementById('fireCargoImgInput');
+  if (input) { input.value = ''; input.click(); }
+}
+
+// canvas 압축 → base64(JPEG). 최대 변 1280px, 품질 0.8
+function fireCargoCompress(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('파일 읽기 실패'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('이미지 로드 실패'));
+      img.onload = () => {
+        const MAX = 1280;
+        let { width: w, height: h } = img;
+        if (w > MAX || h > MAX) { const r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fireCargoHandleImgFile(file) {
+  const itemId = fireCargoImgTarget;
+  if (!itemId || !file) return;
+  if (!/^image\//.test(file.type)) { fqToast('이미지 파일만 첨부할 수 있습니다', 'warn'); return; }
+  const list = fireCargoImages[itemId] || [];
+  if (list.length >= 8) { fqToast('카드당 이미지는 최대 8장까지입니다', 'warn'); return; }
+  fqToast('이미지를 처리 중입니다…', 'info');
+  let src;
+  try { src = await fireCargoCompress(file); }
+  catch (e) { fqToast('이미지 처리 실패: ' + e.message, 'warn'); return; }
+  if (src.length > 700000) { fqToast('이미지 용량이 너무 큽니다(압축 후에도 큼). 더 작은 이미지를 사용해 주세요', 'warn'); return; }
+
+  const type = (prompt('이미지 종류를 입력하세요 (예: 사고사진 / 격리표 / 포장기준 / 기타)', '사고사진') || '').trim().slice(0, 12);
+  const caption = (prompt('이미지 설명(캡션)을 입력하세요 (선택)', '') || '').trim().slice(0, 80);
+
+  list.push({ src, type, caption, ts: Date.now() });
+  fireCargoImages[itemId] = list;
+  try {
+    await fqRemoteSet('firecargo', { images: fireCargoImages });
+    fqToast('이미지가 추가되어 팀원에게 공유되었습니다', 'success');
+  } catch (e) {
+    list.pop(); fqToast('저장 실패: ' + e.message, 'warn');
+  }
+  fireCargoApply();
+  const c = document.getElementById(itemId); if (c) c.classList.add('open');
+}
+
+async function fireCargoDeleteImage(ev, itemId, idx) {
+  if (ev) ev.stopPropagation();
+  if (!fireCargoIsAdmin()) return;
+  if (!confirm('이 이미지를 삭제할까요? (팀원 전체에서 제거됩니다)')) return;
+  const list = fireCargoImages[itemId] || [];
+  const removed = list.splice(idx, 1);
+  fireCargoImages[itemId] = list;
+  try {
+    await fqRemoteSet('firecargo', { images: fireCargoImages });
+    fqToast('이미지를 삭제했습니다', 'success');
+  } catch (e) {
+    if (removed[0]) list.splice(idx, 0, removed[0]); fqToast('삭제 실패: ' + e.message, 'warn');
+  }
+  fireCargoApply();
+  const c = document.getElementById(itemId); if (c) c.classList.add('open');
+}
+
+/* ── 라이트박스 (확대 보기) ── */
+function fireCargoViewImage(itemId, idx) {
+  const im = (fireCargoImages[itemId] || [])[idx];
+  if (!im) return;
+  let lb = document.getElementById('fcLightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'fcLightbox';
+    lb.className = 'fc-lightbox';
+    lb.onclick = () => { lb.classList.remove('open'); };
+    document.body.appendChild(lb);
+  }
+  lb.innerHTML = `
+    <div class="fc-lb-inner" onclick="event.stopPropagation()">
+      <button type="button" class="fc-lb-close" onclick="document.getElementById('fcLightbox').classList.remove('open')">✕</button>
+      <img src="${im.src}" alt="${escapeHtml(im.caption || '')}">
+      <div class="fc-lb-cap">${im.type ? `<b>[${escapeHtml(im.type)}]</b> ` : ''}${escapeHtml(im.caption || '')}</div>
+    </div>`;
+  lb.classList.add('open');
+}
+
+// 파일 입력 핸들러 바인딩
+(function bindFireCargoImgInput() {
+  const bind = () => {
+    const input = document.getElementById('fireCargoImgInput');
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = '1';
+      input.addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) fireCargoHandleImgFile(f); });
+    }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
