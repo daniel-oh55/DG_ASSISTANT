@@ -1796,14 +1796,30 @@ function renderCarrierResultFromApi(dgItem, results) {
     const pol = (document.getElementById('carrierPol')?.value || '').trim().toUpperCase();
     const pod = (document.getElementById('carrierPod')?.value || '').trim().toUpperCase();
     const via = (document.getElementById('carrierVia')?.value || '').trim().toUpperCase();
-    const routeParts = [];
-    if (pol) routeParts.push('선적지 <b>' + escapeHtml(pol) + '</b>');
-    if (pod) routeParts.push('양하지 <b>' + escapeHtml(pod) + '</b>');
-    if (via) routeParts.push('경유지 <b>' + escapeHtml(via) + '</b>');
-    const baseRoute = routeParts.length
-        ? `<div class="carrier-port-route">${routeParts.join(' &nbsp;→&nbsp; ')}</div>
-           <div class="carrier-port-pending">⏳ 입력한 항구의 포트별 선적제한 판정은 <b>장금상선 포트별 선적제한 데이터 연동 후</b> 자동 표시됩니다.</div>`
-        : `<div class="carrier-port-pending">선적지(POL)·양하지(POD)를 입력하면 <b>포트별 선적제한</b>도 함께 확인됩니다. (포트별 데이터 연동 예정)</div>`;
+    const portEntries = [
+        { role: '선적지 POL', val: pol },
+        { role: '양하지 POD', val: pod },
+        { role: '경유지 VIA', val: via }
+    ].filter(p => p.val);
+    let baseRoute;
+    if (portEntries.length) {
+        const cards = portEntries.map((p, i) => {
+            const picKey = 'portPic_' + i;
+            return `<div class="carrier-port-card">
+                <div class="cpc-head">
+                    <span class="cpc-role">${escapeHtml(p.role)}</span>
+                    <span class="cpc-port">${escapeHtml(p.val)}</span>
+                </div>
+                <div class="cpc-status">⏳ 포트별 선적제한 <b>자동 판정</b>은 장금상선 데이터 연동 후 표시됩니다. 현재는 아래 담당자로 확인해 주세요.</div>
+                <div class="cpc-note">📌 자세한 포트 규정에 대해서는 <b>LOCAL 담당자에게 문의주세요.</b></div>
+                <button type="button" class="btn cpc-pic-btn" onclick="fqShowPortPic('${escapeHtml(p.val)}','${picKey}')">📇 담당자 연락처</button>
+                <div class="cpc-pic" id="${picKey}"></div>
+            </div>`;
+        }).join('');
+        baseRoute = `<div class="carrier-port-grid">${cards}</div>`;
+    } else {
+        baseRoute = `<div class="carrier-port-pending">선적지(POL)·양하지(POD)·경유지(VIA)를 입력하면 <b>포트별 담당자·제한 확인</b>이 함께 표시됩니다.</div>`;
+    }
     // 상하이(CNSHA)는 CAS NUMBER 기준으로 금지/제한을 별도 확인해야 함
     const isCnsha = [pol, pod, via].some(v => /CNSHA|SHANGHAI|SHA\b|상하이|상해/i.test(v));
     const portHtml = baseRoute + (isCnsha ? fqShanghaiCasBox(unno) : '');
@@ -1993,6 +2009,48 @@ function fqShanghaiCasCheck() {
   const q = input.value.trim();
   if (!q) { result.innerHTML = `<div class="sh-cas-none">CAS번호·UN번호·품명을 입력하세요.</div>`; return; }
   result.innerHTML = fqShanghaiRenderRows(fqShanghaiSearch(q));
+}
+
+/* ── 포트별 LOCAL 담당자(PIC) 조회 ── (데이터: window.PORT_PIC_DATA / port_pic.js) */
+function fqFindPortPic(portInput) {
+  const data = window.PORT_PIC_DATA || [];
+  const inp = String(portInput || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!inp) return null;
+  for (const g of data) {
+    for (const code of (g.codes || [])) {
+      const c = String(code).toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!c) continue;
+      if (inp === c) return g;
+      if (c.length >= 3 && (inp.endsWith(c) || inp.includes(c))) return g;
+      if (c.length === 2 && (inp === c || inp.endsWith(c))) return g;
+    }
+  }
+  return null;
+}
+function fqShowPortPic(portInput, elemId) {
+  const el = document.getElementById(elemId);
+  if (!el) return;
+  if (el.dataset.open === '1') { el.innerHTML = ''; el.dataset.open = '0'; return; }   // 토글
+  const g = fqFindPortPic(portInput);
+  if (!g || !g.contacts || !g.contacts.length) {
+    el.innerHTML = `<div class="cpc-pic-none">해당 포트(<b>${escapeHtml(portInput)}</b>)의 등록된 LOCAL 담당자 정보가 없습니다. 운항팀(DG센터)에 문의해 주세요.</div>`;
+    el.dataset.open = '1';
+    return;
+  }
+  const emails = [...new Set(g.contacts.map(c => c.email).filter(Boolean))];
+  const rows = g.contacts.map(c => `
+    <div class="cpc-pic-row">
+      <span class="cpc-pic-role">${escapeHtml(c.role || '담당')}</span>
+      <span class="cpc-pic-name">${escapeHtml(c.name || '')}</span>
+      <a class="cpc-pic-mail" href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>
+    </div>`).join('');
+  el.innerHTML = `
+    <div class="cpc-pic-box">
+      <div class="cpc-pic-title">📇 ${escapeHtml((g.codes || []).join('/'))} LOCAL 담당자 (${escapeHtml(g.region || '')})</div>
+      ${rows}
+      <a class="btn cpc-pic-all" href="mailto:${emails.join(',')}">✉️ 담당자 전체에게 메일쓰기</a>
+    </div>`;
+  el.dataset.open = '1';
 }
 
 function openCarrierCommonModal(carrierKey) {

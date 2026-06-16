@@ -1808,6 +1808,30 @@ header span {
 .carrier-port-note { margin: 6px 0 10px; padding: 9px 13px; border-radius: 10px; border: 1px dashed rgba(0,150,255,0.45); background: rgba(0,150,255,0.07); color: var(--text-muted); font-size: 12.5px; font-weight: 600; line-height: 1.5; }
 .carrier-port-note b { color: #2f9bff; }
 
+/* 포트별 선적가부 — 카드형(선사별 결과처럼 눈에 띄게) */
+.carrier-port-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.carrier-port-card { padding: 14px 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-solid); border-left: 5px solid #2f9bff; }
+[data-theme="bright"] .carrier-port-card { background: #fff; }
+.cpc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.cpc-role { font-size: 12px; font-weight: 700; color: #fff; background: #2f9bff; padding: 3px 10px; border-radius: 10px; }
+.cpc-port { font-size: 18px; font-weight: 800; color: var(--text); font-family: var(--font-mono); }
+.cpc-status { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin-bottom: 8px; }
+.cpc-note { font-size: 12.5px; line-height: 1.5; color: var(--text); margin-bottom: 10px; }
+.cpc-note b { color: #ff7a33; }
+.cpc-pic-btn { font-size: 12.5px; padding: 7px 13px; background: #2f9bff; color: #fff !important; border: none; }
+.cpc-pic-btn:hover { filter: brightness(1.08); }
+.cpc-pic { margin-top: 10px; }
+.cpc-pic-box { padding: 11px 13px; border-radius: 10px; background: rgba(47,155,255,0.07); border: 1px solid rgba(47,155,255,0.3); }
+.cpc-pic-title { font-size: 12.5px; font-weight: 800; color: #2f9bff; margin-bottom: 8px; }
+.cpc-pic-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 5px 0; border-top: 1px dashed var(--border); }
+.cpc-pic-row:first-of-type { border-top: none; }
+.cpc-pic-role { font-size: 10.5px; font-weight: 700; color: #fff; background: #94a3b8; padding: 1px 7px; border-radius: 8px; white-space: nowrap; }
+.cpc-pic-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.cpc-pic-mail { font-size: 12px; color: #2f9bff; font-weight: 600; word-break: break-all; }
+.cpc-pic-all { display: inline-block; margin-top: 10px; font-size: 12px; padding: 6px 12px; background: #00BFA5; color: #fff !important; border: none; text-decoration: none; }
+.cpc-pic-all:hover { filter: brightness(1.08); }
+.cpc-pic-none { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); padding: 8px 2px; }
+
 /* 상하이(CNSHA) CAS 확인 박스 */
 .sh-cas-box { margin-top: 12px; padding: 14px 15px; border-radius: 12px; border: 1px solid rgba(255,92,0,0.35); background: rgba(255,92,0,0.06); }
 .sh-cas-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
