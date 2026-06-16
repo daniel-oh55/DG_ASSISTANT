@@ -1800,10 +1800,13 @@ function renderCarrierResultFromApi(dgItem, results) {
     if (pol) routeParts.push('선적지 <b>' + escapeHtml(pol) + '</b>');
     if (pod) routeParts.push('양하지 <b>' + escapeHtml(pod) + '</b>');
     if (via) routeParts.push('경유지 <b>' + escapeHtml(via) + '</b>');
-    const portHtml = routeParts.length
+    const baseRoute = routeParts.length
         ? `<div class="carrier-port-route">${routeParts.join(' &nbsp;→&nbsp; ')}</div>
            <div class="carrier-port-pending">⏳ 입력한 항구의 포트별 선적제한 판정은 <b>장금상선 포트별 선적제한 데이터 연동 후</b> 자동 표시됩니다.</div>`
         : `<div class="carrier-port-pending">선적지(POL)·양하지(POD)를 입력하면 <b>포트별 선적제한</b>도 함께 확인됩니다. (포트별 데이터 연동 예정)</div>`;
+    // 상하이(CNSHA)는 CAS NUMBER 기준으로 금지/제한을 별도 확인해야 함
+    const isCnsha = [pol, pod, via].some(v => /CNSHA|SHANGHAI|SHA\b|상하이|상해/i.test(v));
+    const portHtml = baseRoute + (isCnsha ? fqShanghaiCasBox(unno) : '');
 
     // 카드 1개 HTML 생성 (공통 주의사항 store 채우기 포함). detailed=true면 자사(SKR/HAL) 상세 카드.
     const buildCarrierCard = (result, detailed) => {
@@ -1925,6 +1928,68 @@ function toggleCarrierOthers() {
         btn.setAttribute('aria-expanded', 'false');
         btn.classList.remove('open');
     }
+}
+
+/* ── 상하이(CNSHA) CAS NUMBER 확인 ──
+   중국 내하(內河) 금지/제한 위험화학품 목록(2019판, banned 228 + restricted 85)을
+   CAS번호·UN번호·품명으로 조회. 데이터: window.SH_CAS_DATA (shanghai_cas.js) */
+function fqShanghaiNormCas(s) {
+  return String(s || '').replace(/[^0-9-]/g, '');   // CAS는 숫자/하이픈만
+}
+function fqShanghaiSearch(q) {
+  const data = window.SH_CAS_DATA || [];
+  const raw = String(q || '').trim();
+  if (!raw) return [];
+  const cas = fqShanghaiNormCas(raw);
+  const low = raw.toLowerCase();
+  const unDigits = raw.replace(/[^0-9]/g, '');
+  return data.filter(it => {
+    if (cas && it.cas && it.cas === cas) return true;                 // CAS 정확 일치
+    if (cas && cas.length >= 4 && it.cas && it.cas.includes(cas)) return true;
+    if (unDigits && unDigits.length >= 3 && it.un && it.un.includes(unDigits)) return true; // UN 포함(복합UN 대응)
+    if (low.length >= 2 && ((it.name && it.name.toLowerCase().includes(low)) || (it.alias && it.alias.toLowerCase().includes(low)))) return true;
+    return false;
+  });
+}
+function fqShanghaiRenderRows(rows) {
+  if (!rows.length) {
+    return `<div class="sh-cas-none">✅ 입력하신 내용은 상하이 내하 금지/제한 목록에서 <b>찾을 수 없습니다.</b> (단, 본 목록 외 항만·터미널 규정이 별도로 있을 수 있으니 최종 확인 필요)</div>`;
+  }
+  return `<div class="sh-cas-rows">` + rows.slice(0, 20).map(it => {
+    const banned = it.type === 'banned';
+    return `<div class="sh-cas-row ${banned ? 'banned' : 'restricted'}">
+      <span class="sh-cas-badge ${banned ? 'banned' : 'restricted'}">${banned ? '전면금지' : '제한'}</span>
+      <div class="sh-cas-info">
+        <div class="sh-cas-name">${escapeHtml(it.name || '-')}${it.alias ? ` <span class="sh-cas-alias">(${escapeHtml(it.alias)})</span>` : ''}</div>
+        <div class="sh-cas-meta">CAS <b>${escapeHtml(it.cas || '-')}</b> · UN ${escapeHtml(it.un || '-')}</div>
+      </div>
+    </div>`;
+  }).join('') + (rows.length > 20 ? `<div class="sh-cas-more">…외 ${rows.length - 20}건</div>` : '') + `</div>`;
+}
+function fqShanghaiCasBox(unno) {
+  const auto = fqShanghaiSearch(unno);
+  const autoHtml = (unno && auto.length)
+    ? `<div class="sh-cas-auto">⚠️ 현재 조회한 <b>UN${escapeHtml(unno)}</b> 관련 품목이 상하이 금지/제한 목록에 있습니다:</div>` + fqShanghaiRenderRows(auto)
+    : '';
+  return `
+    <div class="sh-cas-box">
+      <div class="sh-cas-title">🇨🇳 상하이(CNSHA) 내하 위험화학품 — CAS NUMBER 확인</div>
+      <div class="sh-cas-desc">상하이(상해)는 <b>UN번호만으로 판단할 수 없고 CAS NUMBER 기준</b>으로 금지/제한 여부를 확인해야 합니다. CAS번호(예: 75-86-5)·UN번호·품명을 입력해 조회하세요.</div>
+      <div class="sh-cas-inputrow">
+        <input type="text" id="shCasInput" placeholder="CAS번호 / UN번호 / 품명 입력" onkeydown="if(event.key==='Enter')fqShanghaiCasCheck()">
+        <button type="button" class="btn accent2" onclick="fqShanghaiCasCheck()">확인</button>
+      </div>
+      <div id="shCasResult">${autoHtml}</div>
+      <div class="sh-cas-note">※ 본 목록은 「내하 운송 금지/제한 위험화학품 목록(2019판)」 기준 참고자료이며, 변경될 수 있으니 최신 규정은 운항팀(DG센터)·현지에 확인하시기 바랍니다.</div>
+    </div>`;
+}
+function fqShanghaiCasCheck() {
+  const input = document.getElementById('shCasInput');
+  const result = document.getElementById('shCasResult');
+  if (!input || !result) return;
+  const q = input.value.trim();
+  if (!q) { result.innerHTML = `<div class="sh-cas-none">CAS번호·UN번호·품명을 입력하세요.</div>`; return; }
+  result.innerHTML = fqShanghaiRenderRows(fqShanghaiSearch(q));
 }
 
 function openCarrierCommonModal(carrierKey) {
