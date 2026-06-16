@@ -738,6 +738,9 @@ function activateTab(targetId) {
     if (targetId === 'tab-notes') {
         fetchNotes();
     }
+    if (targetId === 'tab-fire-cargo' && typeof renderFireCargo === 'function') {
+        renderFireCargo();
+    }
     if (targetId === 'tab-report' && typeof fqReportRender === 'function') {
         if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote();
         if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote();
@@ -5711,4 +5714,279 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', fqBootstrap);
 } else {
   fqBootstrap();
+}
+
+/* ============================================================
+   🔥 화재위험 화물 (Fire-Hazard Cargo) — 팀 학습 자료 모듈
+   화재·폭발 위험 화물 분류 / 위험성·위험도·사고사례·위험관리·당사규정
+   ============================================================ */
+
+// 위험도: 3=매우높음(red) / 2=높음(orange) / 1=주의(amber)
+const FIRE_CARGO_CATS = [
+  { key: 'all',        label: '전체',           icon: '🗂' },
+  { key: 'peroxide',   label: '유기과산화물 5.2', icon: '💥' },
+  { key: 'lithium',    label: '리튬배터리 9',    icon: '🔋' },
+  { key: 'ev',         label: '전기차·차량 9',   icon: '🚗' },
+  { key: 'spontaneous',label: '자연발화성 4.2',  icon: '🪵' },
+  { key: 'oxidizer',   label: '산화성 5.1',      icon: '🧪' },
+  { key: 'flam-liquid',label: '인화성 액체 3',   icon: '🛢' },
+  { key: 'flam-gas',   label: '인화성 가스 2.1', icon: '💨' }
+];
+
+const FIRE_CARGO_DATA = [
+  {
+    id: 'fc-peroxide', cat: 'peroxide', level: 3,
+    name: '유기과산화물 (Organic Peroxides)', cls: 'Class 5.2',
+    un: ['3101', '3102', '3103', '3104', '3105', '3106', '3107', '3108', '3109', '3110'],
+    unMore: 'UN3101~3120 계열', queryUn: '3101',
+    why: [
+      '열적으로 매우 불안정 — 일정 온도(자기가속분해온도, SADT)를 넘으면 스스로 분해하며 발열하는 자기반응성 물질.',
+      '가열·충격·마찰·오염에 민감하고, 산화성·인화성을 동반하는 경우가 많아 화재·폭발 위험이 큼.',
+      '온도 관리(제어온도/비상온도)가 필요할 만큼 분해 위험이 커, 해상운송 중 통제 실패 시 폭발로 직결.'
+    ],
+    accidents: [
+      "‘YM Mobility’호 폭발 (2024.8.9, 중국 닝보-저우산항 베일룬 3터미널) — 양밍해운 6,589TEU선의 유기과산화물 TBPB(tert-butyl perbenzoate)가, 냉동(리퍼) 컨테이너에 적재됐으나 전원 미연결로 방치되어 한여름 35℃ 환경에서 분해 임계온도 60℃를 초과 → 열폭주(Thermal Runaway).",
+      "13:31 자극적 냄새·백색 연기·황색 액체 누출 → 13:46 연쇄 폭발. 주변 컨테이너 6개가 바다로 튕겨나가고 3개 공중분해, 약 1km 밖 건물 유리 파손. 신속 대피로 인명피해는 없었음.",
+      "여파 — 선체 해치 코밍·커버 심각 손상, 베일룬 3터미널 폐쇄로 피크시즌 공급망 차질. HMM 등 대형선사가 중국산 유기과산화물 예약·선적 전면 금지/제한, 냉동 위험물(Reefer DG) 신고 검증·전원 모니터링 강화."
+    ],
+    manage: [
+      '제어온도/비상온도 유지 — 리퍼 컨테이너 전원 연결 상태를 선적 전·운송 중 반드시 확인.',
+      'DG 신고서(Declaration) 진위·등급(Type B~F)·SADT 검증, 직사광선·고온 노출 회피.',
+      '점화원·가연물·산화제와 격리, 누출·이상 징후(냄새·연기) 즉시 보고.'
+    ],
+    rule: '당사(장금/흥아) Class 5.2 전 품목 전면 선적 금지.'
+  },
+  {
+    id: 'fc-li-ion', cat: 'lithium', level: 3,
+    name: '리튬이온 배터리 (2차전지)', cls: 'Class 9',
+    un: ['3480', '3481'], queryUn: '3480',
+    why: [
+      '내부 단락·손상·과충전·과열 시 열폭주 → 고온·유독가스 분출, 일반 소화로 진압이 매우 어려움.',
+      '셀 하나의 발화가 인접 셀·화물로 연쇄 전이되며 대형화재로 확대.',
+      'SP188로 비위험(9) 처리되는 소형 배터리라도 물량·적재 상태에 따라 화재 위험 상존.'
+    ],
+    accidents: [
+      '2025.1 김해공항 에어부산 항공기 화재 — 기내 휴대 보조배터리(리튬이온) 발화 추정으로 항공기 전소·승객 대피 → 항공기 내 보조배터리 휴대·보관 규제 강화.',
+      '전동킥보드·노트북·보조배터리 등 생활 리튬이온 배터리 화재가 국내에서 빈발.'
+    ],
+    manage: [
+      'UN38.3 시험성적서·해상운송 감정서 확인, 본사 승인 제조사 여부 점검.',
+      '신품/손상·중고품 구분(손상·결함·폐배터리 금지), 충전율(SOC) 관리, 포장·단락방지.',
+      'RFDG(냉동위험물) 조건·적재위치 준수.'
+    ],
+    rule: '당사 — 본사 승인 제조사(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON) 한정 RFDG 조건 선적 허용. SP188 비위험(9) 3480·3481만 DRY 컨테이너 예외.'
+  },
+  {
+    id: 'fc-li-metal', cat: 'lithium', level: 3,
+    name: '리튬금속 배터리 (1차전지)', cls: 'Class 9',
+    un: ['3090', '3091'], queryUn: '3090',
+    why: [
+      '음극재인 리튬금속이 수분과 접촉 시 폭발 위험. 100% 완충 상태로 출고되어 2차전지보다 열폭주 위험이 높음.',
+      '충전 불가(1차전지)로 회수·재활용이 어렵고, 화재 시 소화 불가·유독가스 발생.',
+      'SP388 — 1차전지(3090)와 2차전지(3480)가 함께 장착된 기기는 위험도가 더 큰 1차전지 기준으로 3091로 분류.'
+    ],
+    accidents: [
+      '2024.6.24 화성 아리셀 리튬메탈 제조공장 화재 — 불량 배터리가 수분과 반응해 열폭주, 인접 배터리로 연쇄 전이되며 대형화재. 소화 불가·유독가스로 23명 사망의 대형 인명피해.',
+      '국내 화재를 계기로 국적선사(장금·흥아·HMM·고려·남성·동영·천경)가 3090/3091을 SP188 비위험 처리 건까지 포함해 전면 금지.'
+    ],
+    manage: [
+      '수분 차단·완충상태 취급 주의, SP388 분류 정확히 적용.',
+      '제조사·시험성적서 검증, 손상·중고품 반입 금지.'
+    ],
+    rule: '당사 — 3090·3091(리튬금속) 전면 선적 금지.'
+  },
+  {
+    id: 'fc-ev', cat: 'ev', level: 2,
+    name: '전기차 · 배터리 장착 차량', cls: 'Class 9',
+    un: ['3171'], queryUn: '3171',
+    why: [
+      '차량 내장 리튬배터리의 열폭주 시 소화 곤란·재발화. 밀폐된 선창(車갑판)에서 대형 전손 위험.',
+      '중고·침수·손상 차량은 배터리 결함 위험이 높음.'
+    ],
+    accidents: [
+      'Felicity Ace(2022, 약 4천 대 적재 후 화재·침몰), Fremantle Highway(2023), Morning Midas(2025) 등 자동차운반선(PCTC) 화재 다수.',
+      '2024.8 인천 청라 아파트 지하주차장 벤츠 전기차 화재 — 차량 140여 대 피해·주민 대피. 이후 전국 EV 화재 잇따라 정부 배터리 안전대책(인증·충전율 제한 등) 마련 계기.'
+    ],
+    manage: [
+      '충전율(SOC) 50% 미만 유지, 배터리 분리/단자 보호, LOI(적재확인서) 확보.',
+      '중고·손상·침수 배터리 차량 금지, RFDG 조건·적재격리 준수.'
+    ],
+    rule: '당사 — 제한적 허용(RESTRICTED): 배터리 분리·SOC 50% 미만·RFDG 조건, 제조사 승인 조건 준용.'
+  },
+  {
+    id: 'fc-charcoal', cat: 'spontaneous', level: 3,
+    name: '숯 · 활성탄 (Charcoal / Activated Carbon)', cls: 'Class 4.2',
+    un: ['1361', '1362'], queryUn: '1361',
+    why: [
+      '수분·온도에 의한 자기발열(Self-heating)로 컨테이너·선내 화재 유발(자연발화성).',
+      '항차당 다량(20~30대) 선적되어 현지 전수검사 불가, 화재 시 소화가 어려워 화물·선박 전손 위험.'
+    ],
+    accidents: [
+      '당사(장금/흥아) 2018년 CHARLIE호, 2022년 MANILA VOYAGER호 화재 — 인증서·포장사진을 받고 선적했으나 실제로는 쿨링·포장조건 위반으로 발화.',
+      '2026년 광양항에서 천경해운(CK Line) 숯 화물 관련 화재 발생 → 천경해운 숯·활성탄 DG·Non-DG 불문 전면 금지로 강화.',
+      'IMDG 2026.1 개정으로 용기규정 강화(낙하·겹침시험 통과 4G 골판지 의무, 진공포장 불인정). 국내 유통 숯의 약 98%가 수입품.'
+    ],
+    manage: [
+      '인증서·쿨링·포장조건(4G 박스) 현지 점검, 적재 전 온도 확인.',
+      '습기·열원 회피, 의심 화물 운항팀(DG센터) 사전 확인.'
+    ],
+    rule: '당사 — 모든 숯(CHARCOAL)·활성탄 전면 선적 금지. (KMTC·TSL·HMM·CKL·NSS/DYS 금지 / SITC 허용)'
+  },
+  {
+    id: 'fc-percarbonate', cat: 'oxidizer', level: 2,
+    name: '과탄산나트륨 등 산화성 물질', cls: 'Class 5.1',
+    un: ['3378', '1479'], queryUn: '3378',
+    why: [
+      '스스로 산소를 방출해 다른 물질의 연소를 촉진(산화성). 가연물 접촉·열·수분으로 발열·발화 위험.',
+      '수분과 반응해 분해가 가속될 수 있어 보관·격리가 중요.'
+    ],
+    accidents: [
+      '과탄산나트륨(세탁·표백제 원료) 컨테이너 발열·화재 사례 — 수분 유입·가연물 혼재 시 위험 (사내 「과탄산나트륨 사고 자료」 참조).'
+    ],
+    manage: [
+      '가연물·인화성 물질과 격리, 수분 차단·건조 유지, 고온 회피.',
+      'IMDG 등급·포장기준 준수, 신고 검증.'
+    ],
+    rule: '당사 — Class 5.1 별도 기준 적용. 선적 전 운항팀(DG센터) 확인 필요. (유기과산화물 5.2와 혼동 주의)'
+  },
+  {
+    id: 'fc-flam-liquid', cat: 'flam-liquid', level: 2,
+    name: '인화성 액체 (Flammable Liquids)', cls: 'Class 3',
+    un: ['1263', '1170', '1993'], queryUn: '1263',
+    why: [
+      '낮은 인화점 — 상온에서도 인화성 증기를 발생, 점화원과 만나면 즉시 발화.',
+      '증기가 공기와 폭발성 혼합기를 형성하고, 정전기로도 발화 가능.'
+    ],
+    accidents: [
+      '컨테이너 내 인화성 액체(페인트·신너·알코올) 누출·증기 축적에 의한 화재가 일반적으로 다수 보고됨.'
+    ],
+    manage: [
+      '용기 밀폐·누출 점검, 점화원 차단, 환기·온도관리.',
+      '산화성 물질(5.1)·발화원과 격리, 포장기준(PG) 준수.'
+    ],
+    rule: '당사 — IMDG 기준 준수 선적(품목별 선사·포트 규정 확인 필요).'
+  },
+  {
+    id: 'fc-flam-gas', cat: 'flam-gas', level: 2,
+    name: '인화성 가스 · 에어로졸', cls: 'Class 2.1',
+    un: ['1950', '1075', '1011'], queryUn: '1950',
+    why: [
+      '누출 시 폭발성 혼합기를 형성, 점화 시 폭발. 고압·가열 시 용기 파열(BLEVE) 위험.',
+      '에어로졸은 다량 적재 시 연쇄 파열·화재로 확대.'
+    ],
+    accidents: [
+      '에어로졸·LPG 등 인화성 가스 용기의 가열·누출에 의한 컨테이너 폭발·화재 사례 다수.'
+    ],
+    manage: [
+      '밸브·용기 상태 점검, 직사광선·고온 회피, 점화원 차단.',
+      '적재격리·환기 확보, 포장·표시 기준 준수.'
+    ],
+    rule: '당사 — IMDG 기준 준수 선적(선사·포트 규정 확인 필요).'
+  }
+];
+
+let fireCargoCat = 'all';
+
+function fireCargoLevelInfo(level) {
+  if (level >= 3) return { cls: 'lv3', label: '위험도 매우높음' };
+  if (level === 2) return { cls: 'lv2', label: '위험도 높음' };
+  return { cls: 'lv1', label: '위험도 주의' };
+}
+
+function renderFireCargo() {
+  const chips = document.getElementById('fireCargoChips');
+  if (chips && !chips.dataset.ready) {
+    chips.innerHTML = FIRE_CARGO_CATS.map(c =>
+      `<button type="button" class="fc-chip${c.key === fireCargoCat ? ' active' : ''}" data-cat="${c.key}" onclick="fireCargoSetCat('${c.key}')">${c.icon} ${escapeHtml(c.label)}</button>`
+    ).join('');
+    chips.dataset.ready = '1';
+  }
+  fireCargoApply();
+}
+
+function fireCargoSetCat(key) {
+  fireCargoCat = key;
+  document.querySelectorAll('#fireCargoChips .fc-chip').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === key));
+  fireCargoApply();
+}
+
+function fireCargoApply() {
+  const listEl = document.getElementById('fireCargoList');
+  const statsEl = document.getElementById('fireCargoStats');
+  if (!listEl) return;
+  const q = (document.getElementById('fireCargoSearch')?.value || '').trim().toLowerCase();
+
+  const items = FIRE_CARGO_DATA.filter(it => {
+    if (fireCargoCat !== 'all' && it.cat !== fireCargoCat) return false;
+    if (!q) return true;
+    const hay = (it.name + ' ' + it.cls + ' ' + it.un.join(' ') + ' ' + (it.unMore || '') + ' '
+      + it.why.join(' ') + ' ' + it.accidents.join(' ') + ' ' + (it.rule || '')).toLowerCase();
+    return hay.includes(q);
+  });
+
+  if (statsEl) {
+    const catLabel = (FIRE_CARGO_CATS.find(c => c.key === fireCargoCat) || {}).label || '전체';
+    statsEl.innerHTML = `<span class="fc-stat-badge">📂 ${escapeHtml(catLabel)}</span>`
+      + `<span class="fc-stat-count">${items.length}개 화물군</span>`
+      + (q ? `<span class="fc-stat-q">검색: "${escapeHtml(q)}"</span>` : '');
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = `<div class="fc-empty">조건에 맞는 화물이 없습니다. 검색어나 분류를 바꿔보세요.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = items.map(it => {
+    const lv = fireCargoLevelInfo(it.level);
+    const unBadges = it.un.map(u => `<span class="fc-un">UN${escapeHtml(u)}</span>`).join('')
+      + (it.unMore ? `<span class="fc-un fc-un-more">${escapeHtml(it.unMore)}</span>` : '');
+    return `
+    <div class="fc-card ${lv.cls}" id="${it.id}">
+      <button type="button" class="fc-card-head" onclick="fireCargoToggle('${it.id}')" aria-expanded="false">
+        <div class="fc-card-headmain">
+          <div class="fc-card-title">${escapeHtml(it.name)}</div>
+          <div class="fc-card-meta"><span class="fc-cls">${escapeHtml(it.cls)}</span> ${unBadges}</div>
+        </div>
+        <div class="fc-card-right">
+          <span class="fc-level ${lv.cls}">${lv.label}</span>
+          <span class="fc-caret">▾</span>
+        </div>
+      </button>
+      <div class="fc-card-body">
+        <div class="fc-block">
+          <div class="fc-block-title">⚠️ 위험성 (왜 위험한가)</div>
+          <ul>${it.why.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="fc-block fc-block-accident">
+          <div class="fc-block-title">🔥 주요 사고사례</div>
+          <ul>${it.accidents.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="fc-block">
+          <div class="fc-block-title">🛡️ 위험관리 방법</div>
+          <ul>${it.manage.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="fc-rule"><b>📌 당사(SKR/HAL) 규정</b> ${escapeHtml(it.rule)}</div>
+        <div class="fc-actions">
+          <button type="button" class="btn accent2" onclick="fireCargoGoCarrier('${it.queryUn}')">▦ UN${escapeHtml(it.queryUn)} 선사별 선적가부 조회</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fireCargoToggle(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const open = card.classList.toggle('open');
+  const head = card.querySelector('.fc-card-head');
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function fireCargoGoCarrier(un) {
+  const targetInput = document.getElementById('carrierCheckInput');
+  if (!targetInput) return;
+  activateTab('tab-carrier-check');
+  targetInput.value = un;
+  if (typeof checkCarrierLoadingPossibility === 'function') checkCarrierLoadingPossibility();
 }

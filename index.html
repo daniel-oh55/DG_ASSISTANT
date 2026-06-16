@@ -94,6 +94,11 @@
         <span class="menu-text">격리규정 확인</span>
     </li>
 
+    <li class="menu-item" data-target="tab-fire-cargo">
+        <span class="menu-icon">🔥</span>
+        <span class="menu-text">화재위험 화물</span>
+    </li>
+
     <li class="menu-item" data-target="tab-sds-analyzer">
     <span class="menu-icon">▤</span>
     <span class="menu-text">SDS/MSDS DG 판독</span>
@@ -216,6 +221,21 @@
                         <input type="text" id="homeSegQuickInput" placeholder="예: 1993 3082">
                         <button type="button" id="homeSegQuickBtn">빠른조회</button>
                     </div>
+                </article>
+
+                <article class="home-bento-card card-rose" data-target="tab-fire-cargo">
+                    <div class="home-card-top">
+                        <div class="home-card-icon-wrap">
+                            <div class="home-card-icon">🔥</div>
+                        </div>
+
+                        <div class="home-card-title">화재위험 화물</div>
+                        <div class="home-card-desc">
+                            화재·폭발 위험화물 분류 · 사고사례 · 위험관리 학습 자료
+                        </div>
+                    </div>
+
+                    <div class="home-card-btn">학습자료 열기</div>
                 </article>
 
                 <article class="home-bento-card card-purple" data-target="tab-notes">
@@ -384,6 +404,31 @@
     </div>
 </section>
 
+
+<section id="tab-fire-cargo" class="tab-content">
+    <div class="container">
+        <header>
+            <h1>🔥 화재위험 화물 <span>Fire-Hazard Cargo Guide</span></h1>
+            <p class="subtitle">화재·폭발 위험이 있는 위험화물을 분류하고, 위험 이유·위험도·사고사례·관리방안을 정리한 팀 학습 자료입니다.</p>
+        </header>
+
+        <div class="fc-intro">
+            <div class="fc-intro-icon">📚</div>
+            <div class="fc-intro-text">
+                <b>이 자료의 활용</b> — 각 화물의 <b>위험성·위험도·실제 사고사례·위험관리 방법·당사(SKR/HAL) 규정</b>을 한눈에 확인하세요.
+                카드를 클릭하면 상세 내용이 펼쳐지며, <b>'선사별 선적가부 조회'</b> 버튼으로 해당 UN의 선사 규정을 바로 확인할 수 있습니다.
+            </div>
+        </div>
+
+        <div class="fc-controls">
+            <input type="text" id="fireCargoSearch" class="fc-search" placeholder="🔍 품목명 · UN번호 · 키워드 검색 (예: 리튬, 3480, 유기과산화물)" oninput="fireCargoApply()">
+            <div class="fc-chips" id="fireCargoChips"></div>
+        </div>
+
+        <div class="fc-stats" id="fireCargoStats"></div>
+        <div class="fc-list" id="fireCargoList"></div>
+    </div>
+</section>
 
 <section id="tab-notes" class="tab-content">
     <div class="container note-page-container">
