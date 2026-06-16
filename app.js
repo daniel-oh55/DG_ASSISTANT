@@ -1897,7 +1897,7 @@ function renderCarrierResultFromApi(dgItem, results) {
                 <div class="carrier-result-grid">
                     ${othersHtml}
                 </div>
-                <div class="carrier-others-notice">ℹ️ 자세한 규정은 해당 선사에 문의하시기 바랍니다.</div>
+                <div class="carrier-others-notice">ℹ️ 타사(다른 선사) 규정은 변경될 수 있어 <b>참고용</b>입니다. 자세한·최신 규정은 해당 선사에 문의하시기 바랍니다.</div>
             </div>
         </div>` : ''}
 

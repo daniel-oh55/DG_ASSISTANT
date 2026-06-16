@@ -5288,6 +5288,10 @@ body { top: 0 !important; position: static !important; }
 .fc-intro-text { font-size: 13px; line-height: 1.6; color: var(--text); }
 .fc-intro-text b { color: #ff7a33; }
 
+.fc-disclaimer { margin: 0 0 16px; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.55;
+    border: 1px solid rgba(255,143,0,0.4); background: rgba(255,143,0,0.09); color: var(--text); }
+.fc-disclaimer b { color: #ff9e2c; }
+
 .fc-controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
 .fc-search { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-solid); color: var(--text); font-size: 14px; font-family: inherit; }
 .fc-search:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(255,92,0,0.15); }
