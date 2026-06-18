@@ -108,7 +108,7 @@ module.exports = async function handler(req, res) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     const newsKeyRaw = process.env.GEMINI_NEWS_API_KEY;   // 뉴스 전용 키(있으면) — SDS의 예비 키로 빌려 씀
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
     if (!apiKey) {
       return res.status(500).json({
@@ -120,8 +120,8 @@ module.exports = async function handler(req, res) {
     // SDS/MSDS 판독은 메인 기능 — 메인 키 우선, 토큰 소진(429)·과부하(503)로 막히면
     // 뉴스 키를 예비 연료로 자동 전환해 끝까지 시도한다. (뉴스는 비필수이므로 메인 기능을 우선 보호)
     const KEYS = (newsKeyRaw && newsKeyRaw !== apiKey) ? [apiKey, newsKeyRaw] : [apiKey];
-    // 과부하(503) 대비 모델 폴백 목록 (설정 모델 우선, 막히면 대체 모델로) — 모두 PDF inlineData + JSON 출력 지원
-    const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
+    // 모델 폴백 순서(사용자 지정): 3.5 Flash → (한도소진/과부하 시) 3.1 Flash Lite → 3 Flash
+    const MODELS = [...new Set([model, 'gemini-3.1-flash-lite', 'gemini-3-flash'])];
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     const { file_name, file_type, file_base64 } = req.body || {};
