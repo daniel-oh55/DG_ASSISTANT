@@ -2809,8 +2809,8 @@ const FQ_EMAIL_FAQ_CAT = '📧 이메일 문의';
 // ───── DG 관련 시드 FAQ (사이트 분석 기반) ─────
 let FQ_FAQ_DATA = {
   "categories": [
-    "🧭 위험물 판정 기준",
     "🚫 전면 금지 화물",
+    "🧭 위험물 판정 기준",
     "🔋 리튬 배터리",
     "🚗 차량 / EV",
     "🔥 인화성 (Cl.3)",
@@ -5182,6 +5182,14 @@ function fqRenderFaq() {
       scored.push({ i, score });
     }
     items = scored.sort((a, b) => b.score - a.score).map(s => s.i);
+  } else {
+    // 검색이 아닐 때: 카테고리 칩 순서대로 그룹 정렬 (전면 금지 화물 등 상위 카테고리가 리스트 맨 위)
+    const catOrder = FQ_FAQ_DATA.categories || [];
+    const catIdx = c => { const k = catOrder.indexOf(c); return k < 0 ? 999 : k; };
+    items = items
+      .map((it, n) => ({ it, n }))
+      .sort((a, b) => (catIdx(a.it.cat) - catIdx(b.it.cat)) || (a.n - b.n))
+      .map(s => s.it);
   }
   const fqListEl = document.getElementById('fqList');
   if (items.length === 0) {
