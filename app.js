@@ -4512,13 +4512,14 @@ function fqRfdgConflictHtml(seg) {
   return '<div class="fq-seg-panel fq-rfdg-panel" style="border-left:4px solid #b02020">' +
     '<div class="fq-seg-head" style="color:#b02020">🚫 SKR/HAL 규정 — 혼적 불가 (RFDG 분리 선적)</div>' +
     '<div style="font-size:13px;line-height:1.6;margin-top:6px">' +
+'<b>SKR/HAL 사내 규정</b>에 따라, ' +
     '<b>' + rfdg + '</b>(리튬이온 배터리)은(는) 위험물(DG)로 선적 시 <b>RFDG(Reefer) 컨테이너 필수</b>이며, ' +
     'RFDG 화물은 <b>같은 UNNO가 아닌 다른 화물과 같은 컨테이너 혼적이 금지</b>됩니다(단 UN3480·UN3481끼리는 허가).' +
     '<ul style="margin:6px 0 0 18px;padding:0">' +
     '<li><b>' + rfdg + '</b> → 별도 <b>RFDG 컨테이너에 단독</b> 선적</li>' +
     '<li><b>' + dry + '</b> → 그들끼리 <b>별도 DRY DG 컨테이너</b>에 혼적 (IMDG 격리표 기준, 아래 참고)</li>' +
     '</ul>' +
-    '<div style="font-size:12px;color:#888;margin-top:6px">※ IMDG 일반 격리표상 같은 컨테이너 적재(X)가 가능해도, 자사 RFDG 규정이 우선하여 <b>혼적 불가</b>가 최종 결론입니다. ' +
+    '<div style="font-size:12px;color:#888;margin-top:6px">※ 이 RFDG 혼적 금지는 IMDG 국제규정이 아닌 <b>SKR/HAL 사내 규정</b>입니다. IMDG 일반 격리표상으로는 같은 컨테이너 적재(X)가 가능해도, 사내 규정이 우선하여 <b>혼적 불가</b>가 최종 결론입니다. ' +
     '(예외: 해당 리튬배터리가 SP188로 비위험물(NON-DG)로 분류되는 경우에 한해 DRY 혼적 가능)</div>' +
     '</div></div>';
 }
