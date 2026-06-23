@@ -1820,6 +1820,14 @@ header span {
 .cpc-status-ok { background: rgba(0,191,165,0.12); color: #00BFA5; font-weight: 600; border: 1px solid rgba(0,191,165,0.3); }
 .cpc-status-warn { background: rgba(255,143,0,0.12); color: #ff9e2c; font-weight: 600; border: 1px solid rgba(255,143,0,0.3); }
 [data-theme="bright"] .cpc-status-ok { color: #00897b; }
+/* 포트별 선적가부 — 선적가능/금지 결과를 크고 잘 보이게 (배지 + 상세) */
+.cpc-status-plain { background: transparent; border: none; padding: 2px 0; color: var(--text); }
+.cpc-verdict { display: inline-block; font-size: 17px; font-weight: 800; padding: 9px 18px; border-radius: 10px; letter-spacing: 0.3px; line-height: 1.2; }
+.cpc-verdict-ban { background: rgba(255,23,68,0.14); color: #ff4d6d; border: 2px solid rgba(255,23,68,0.45); }
+.cpc-verdict-ok { background: rgba(0,191,165,0.14); color: #00BFA5; border: 2px solid rgba(0,191,165,0.45); }
+.cpc-verdict-sub { font-size: 12.5px; line-height: 1.55; color: var(--text-muted); margin-top: 8px; }
+[data-theme="bright"] .cpc-verdict-ban { background: #ffe9ed; color: #d61f3f; border-color: #f4a9b6; }
+[data-theme="bright"] .cpc-verdict-ok { background: #e2f7f3; color: #00897b; border-color: #98ddd2; }
 .cpc-note { font-size: 12.5px; line-height: 1.5; color: var(--text); margin-bottom: 10px; }
 .cpc-note b { color: #ff7a33; }
 .cpc-pic-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; line-height: 1.2; min-height: 0; padding: 6px 12px; border-radius: 8px; background: #2f9bff; color: #fff !important; border: none; text-shadow: none; }

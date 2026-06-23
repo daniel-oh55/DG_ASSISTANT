@@ -1799,7 +1799,7 @@ function renderCarrierResultFromApi(dgItem, results) {
     const portEntries = [
         { role: '선적지 POL', val: pol },
         { role: '양하지 POD', val: pod },
-        { role: '경유지 VIA', val: via }
+        { role: '환적지 T/S', val: via }
     ].filter(p => p.val);
     let baseRoute;
     if (portEntries.length) {
@@ -1818,7 +1818,7 @@ function renderCarrierResultFromApi(dgItem, results) {
         }).join('');
         baseRoute = `<div class="carrier-port-grid">${cards}</div>`;
     } else {
-        baseRoute = `<div class="carrier-port-pending">선적지(POL)·양하지(POD)·경유지(VIA)를 입력하면 <b>포트별 담당자·제한 확인</b>이 함께 표시됩니다.</div>`;
+        baseRoute = `<div class="carrier-port-pending">선적지(POL)·양하지(POD)·환적지(T/S)를 입력하면 <b>포트별 담당자·제한 확인</b>이 함께 표시됩니다.</div>`;
     }
     // 상하이(CNSHA)는 CAS NUMBER 기준으로 금지/제한을 별도 확인해야 함
     const isCnsha = [pol, pod, via].some(v => /CNSHA|SHANGHAI|SHA\b|상하이|상해/i.test(v));
@@ -1933,7 +1933,17 @@ function renderCarrierResultFromApi(dgItem, results) {
     fqRunPortChecks(portEntries, dgItem.UNNO, classNo);
 }
 
-// 입력 포트(POL/POD/VIA)별로 /api/carrier-check?port= 호출 → POSITION 기준 자동판정 표시
+// POSITION 코드 → 한글 설명. A=양하·선적·환적 모두 금지, L=선적(POL) 금지, D=양하(POD) 금지, T·T/S=환적(T/S) 금지
+function fqPosDesc(pos) {
+  if (pos.has('A') || pos.has('ALL')) return '양하·선적·환적 모두 금지';
+  const out = [];
+  if (pos.has('L')) out.push('선적(POL) 금지');
+  if (pos.has('D')) out.push('양하(POD) 금지');
+  if (pos.has('T') || pos.has('T/S') || pos.has('TS')) out.push('환적(T/S) 금지');
+  return out.length ? out.join(' · ') : '제한 등재';
+}
+
+// 입력 포트(POL/POD/T·S)별로 /api/carrier-check?port= 호출 → POSITION 기준 자동판정 표시
 async function fqRunPortChecks(entries, unno, classNo) {
     if (!Array.isArray(entries) || !entries.length) return;
     const u = String(unno || '').replace(/^0+/, '');
@@ -1943,8 +1953,8 @@ async function fqRunPortChecks(entries, unno, classNo) {
         const p = entries[i];
         const el = document.getElementById('portStatus_' + i);
         if (!el) continue;
-        const role = /POL/.test(p.role) ? 'POL' : /POD/.test(p.role) ? 'POD' : 'VIA';
-        const roleKr = role === 'POL' ? '선적(POL)' : role === 'POD' ? '양하(POD)' : '경유(VIA)';
+        const role = /POL/.test(p.role) ? 'POL' : /POD/.test(p.role) ? 'POD' : 'TS';
+        const roleKr = role === 'POL' ? '선적(POL)' : role === 'POD' ? '양하(POD)' : '환적(T/S)';
         try {
             const r = await fetch(`/api/carrier-check?port=${encodeURIComponent(p.val)}&comp=SNKO`);
             const j = await r.json().catch(() => ({}));
@@ -1965,22 +1975,28 @@ async function fqRunPortChecks(entries, unno, classNo) {
                 return false;
             });
             if (!hits.length) {
-                el.className = 'cpc-status cpc-status-ok';
-                el.innerHTML = `✅ <b>${roleKr}</b> — 이 포트 제한목록에 미등재 (현재 기준 제한 없음)`;
+                el.className = 'cpc-status cpc-status-plain';
+                el.innerHTML = `<div class="cpc-verdict cpc-verdict-ok">✅ 선적 가능</div>`
+                    + `<div class="cpc-verdict-sub"><b>${roleKr}</b> — 이 포트 제한목록에 미등재 (현재 기준 제한 없음)</div>`;
                 continue;
             }
+            // POSITION × 역할로 확정 판정: A=모두금지, L=선적(POL)금지, D=양하(POD)금지, T·T/S=환적(T/S)금지
             const pos = new Set(hits.map(h => String(h.POSITION || '').toUpperCase().replace(/\s/g, '')));
             const isAll = pos.has('A') || pos.has('ALL');
             const banned = role === 'POL' ? (isAll || pos.has('L'))
                 : role === 'POD' ? (isAll || pos.has('D'))
                 : (isAll || pos.has('T') || pos.has('T/S') || pos.has('TS'));
-            const posLabel = [...pos].filter(Boolean).join('/') || '-';
+            const posLabel = [...pos].filter(Boolean).join(', ') || '-';
+            const posDesc = fqPosDesc(pos);
             if (banned) {
-                el.className = 'cpc-status cpc-status-ban';
-                el.innerHTML = `🚫 <b>${roleKr} 금지</b> — 포트 제한목록 등재 (POSITION ${escapeHtml(posLabel)})`;
+                el.className = 'cpc-status cpc-status-plain';
+                el.innerHTML = `<div class="cpc-verdict cpc-verdict-ban">🚫 선적 금지</div>`
+                    + `<div class="cpc-verdict-sub"><b>${roleKr} 금지</b> — 이 포트 제한목록 등재<br>POSITION <b>${escapeHtml(posLabel)}</b> · ${escapeHtml(posDesc)}</div>`;
             } else {
-                el.className = 'cpc-status cpc-status-warn';
-                el.innerHTML = `⚠️ <b>제한 등재</b> (POSITION ${escapeHtml(posLabel)}) — ${roleKr} 해당 여부 담당자 확인 필요`;
+                // 이 위험물이 제한목록에 있으나, 해당 POSITION이 이 역할(이동)에는 적용되지 않음 → 이 역할 기준 선적 가능
+                el.className = 'cpc-status cpc-status-plain';
+                el.innerHTML = `<div class="cpc-verdict cpc-verdict-ok">✅ 선적 가능</div>`
+                    + `<div class="cpc-verdict-sub"><b>${roleKr}</b> 기준 제한 없음 · 이 위험물은 POSITION <b>${escapeHtml(posLabel)}</b>(${escapeHtml(posDesc)}) 제한 등재 — 해당 이동에만 적용됩니다.</div>`;
             }
         } catch (e) {
             el.className = 'cpc-status cpc-status-warn';
@@ -2083,6 +2099,14 @@ function fqFindPortPic(portInput) {
       if (c.length >= 3 && (inp.endsWith(c) || inp.includes(c))) return g;
       if (c.length === 2 && (inp === c || inp.endsWith(c))) return g;
     }
+  }
+  // 국내(한국) 포트는 운항팀(DG센터)가 직접 담당 — 부산(KRPUS) 등 KR 포트는 dgcenter@sinokor.co.kr
+  if (/^KR/.test(inp) || /^(PUS|BUSAN)/.test(inp)) {
+    return {
+      codes: [String(portInput || '').toUpperCase()],
+      region: 'KOREA (운항팀 DG센터)',
+      contacts: [{ role: 'DG CENTER', name: '장금상선 운항팀 (DG센터)', email: 'dgcenter@sinokor.co.kr' }]
+    };
   }
   return null;
 }
