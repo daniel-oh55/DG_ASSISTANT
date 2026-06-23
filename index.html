@@ -630,6 +630,10 @@
           <input type="text" id="fqAiInput" placeholder="궁금한 점을 자유롭게 입력하세요 (예: 리튬배터리 100Wh 초과는 어떻게 보내나요?)">
           <button class="fq-btn primary" id="fqAiAskBtn">질문하기</button>
         </div>
+        <!-- 첨부파일 (이미지·PDF·텍스트) — 드래그앤드롭 가능. 첨부 내용과 질문을 종합해 답변 -->
+        <div id="fqAiDrop" class="fq-drop fq-ai-drop">📎 참고할 파일(이미지·PDF·txt)을 여기로 <b>끌어다 놓기</b><br><span>또는 클릭해서 선택 · 첨부한 자료와 질문을 종합해 답변합니다 (최대 4개)</span></div>
+        <input type="file" id="fqAiFile" accept="image/*,application/pdf,.pdf,.txt,.csv,.md,text/plain" multiple hidden>
+        <div id="fqAiAttachList" class="fq-ai-att-list"></div>
         <div class="fq-ai-answer" id="fqAiAnswer"></div>
       </div>
 

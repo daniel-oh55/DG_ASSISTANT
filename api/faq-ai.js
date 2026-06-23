@@ -4,7 +4,7 @@
 //   mode 'audit': 답변 오류·모순 검토
 //   (Vercel Hobby 함수 12개 제한 때문에 단일 함수에 통합)
 module.exports.config = {
-  api: { bodyParser: { sizeLimit: '2mb' } },
+  api: { bodyParser: { sizeLimit: '6mb' } },   // AI 문의 첨부파일(이미지·PDF base64) 수용
   maxDuration: 60   // 뉴스 모드: 본문 수집 + PubChem 조회로 시간이 걸릴 수 있어 상향
 };
 
@@ -36,8 +36,11 @@ module.exports = async function handler(req, res) {
     const MODELS = [...new Set([model, 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-1.5-flash'])];
     // Gemini 호출 헬퍼 — 키 우선순위 목록(keys)을 받아: 각 키마다 모델 폴백을 시도하고,
     //   한 키가 쿼터소진(429)·과부하(503)·키오류(401/403)로 막히면 다음 키(예비 키)로 자동 전환.
-    async function genWithKeys(promptText, temperature, keys) {
+    async function genWithKeys(promptText, temperature, keys, extraParts) {
       const keyList = (Array.isArray(keys) ? keys : [keys]).filter(Boolean);
+      // 텍스트 프롬프트 + (선택) 첨부 inlineData(이미지/PDF/텍스트) 파트
+      const parts = [{ text: promptText }];
+      if (Array.isArray(extraParts) && extraParts.length) parts.push(...extraParts);
       let lastStatus = 0;
       for (let k = 0; k < keyList.length; k++) {
         const useKey = keyList[k];
@@ -50,7 +53,7 @@ module.exports = async function handler(req, res) {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: promptText }] }],
+                contents: [{ role: 'user', parts }],
                 generationConfig: { temperature: temperature }
               })
             });
@@ -79,7 +82,7 @@ module.exports = async function handler(req, res) {
       throw new Error('Gemini API 호출 실패');
     }
     // 메인 기능 기본 호출 — 메인 키 우선, 막히면 뉴스 키로 보조
-    const gen = (promptText, temperature) => genWithKeys(promptText, temperature, MAIN_KEYS);
+    const gen = (promptText, temperature, extraParts) => genWithKeys(promptText, temperature, MAIN_KEYS, extraParts);
 
     const body = req.body || {};
     const mode = ['reply', 'audit', 'auditrows', 'news'].includes(body.mode) ? body.mode : 'answer';
@@ -463,6 +466,27 @@ ${listText}`;
     }
     const ansDgRows = Array.isArray(dgData) ? dgData : [];
     const ansDgText = ansDgRows.length ? ansDgRows.map((r, i) => `[DG ${i + 1}] ` + JSON.stringify(r)).join('\n').slice(0, 8000) : '';
+
+    // 첨부파일(이미지·PDF·텍스트) — Gemini에 inlineData로 직접 전달해 질문과 종합 판독
+    const ansAtt = Array.isArray(body.attachments) ? body.attachments : [];
+    const ansAttParts = []; const ansAttNames = [];
+    ansAtt.forEach(a => {
+      const mime = a.mime || a.mimeType || '';
+      const data = a.data || a.b64 || '';
+      if (!data) return;
+      if (/^image\//.test(mime) || mime === 'application/pdf' || /^text\//.test(mime)) {
+        ansAttParts.push({ inlineData: { mimeType: mime, data } });
+        ansAttNames.push(a.name || '(파일)');
+      }
+    });
+    const attBlock = ansAttParts.length
+      ? `\n[첨부파일 — 사용자가 함께 올린 자료]
+사용자가 다음 파일을 첨부했습니다: ${ansAttNames.join(', ')}. 첨부한 이미지/문서의 내용을 직접 읽고, 질문과 **종합**해 답하세요.
+- 첨부에서 UN번호·Class·정식운송명(PSN)·품명·제조사·Wh(와트시)·포장등급(PG)·해양오염 여부 등 위험물 정보가 보이면 근거로 인용하세요.
+- 단, 자사 선적 가부는 위 [SKR/HAL(자사) 선적 금지·제한 조회 결과]를, 혼적·격리는 위 [IMDG 격리표 판정 결과]를 우선 근거로 삼으세요(첨부 내용이 이들과 충돌하면 권위 자료 우선).
+- 첨부에 근거가 없는 내용은 지어내지 말고, 첨부에서 읽은 내용과 읽지 못한(불명확한) 부분을 구분해 안내하세요.
+`
+      : '';
     const answerPrompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 상담 보조 AI입니다.
 아래 [사내 DG FAQ·문의답변 데이터베이스]를 최우선 근거로 사용자 질문에 한국어로 답하세요.
 
@@ -484,10 +508,10 @@ ${ansSegText}
 ${ansDgText ? '\n[조회된 위험물 상세 — DG_TABLE]\n' + ansDgText + '\n' : ''}${skrText ? '\n[SKR/HAL(자사) 선적 금지·제한 조회 결과 — 선적 가부 근거, 타 선사 제외]\n' + skrText + '\n' : ''}
 [사내 DG FAQ·문의답변 데이터베이스]
 ${ctxText || '(제공된 자료 없음)'}
-
+${attBlock}
 [사용자 질문]
 ${String(question).trim()}`;
-    const answer = await gen(answerPrompt, 0.3);
+    const answer = await gen(answerPrompt, 0.3, ansAttParts);
     if (!answer) return res.status(500).json({ ok: false, message: 'AI가 답변을 반환하지 않았습니다.' });
     return res.status(200).json({ ok: true, model, answer, used: ctx.length });
   } catch (err) {

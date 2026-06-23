@@ -5010,6 +5010,17 @@ body { top: 0 !important; position: static !important; }
 .fq-drop span { font-size: 12px; color: #94a3b8; }
 .fq-drop:hover { border-color: #94a3b8; }
 .fq-drop.drag { border-color: #2563eb; background: #eff6ff; color: #1e3a5f; }
+.fq-ai-drop { margin-top: 8px; padding: 13px; }
+/* AI 문의 첨부 칩 목록 */
+.fq-ai-att-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.fq-ai-att-list:empty { display: none; }
+.fq-ai-att { display: inline-flex; align-items: center; gap: 6px; max-width: 260px; padding: 5px 8px 5px 6px; background: #fff; border: 1px solid var(--fq-border-s, #e2e8f0); border-radius: 999px; font-size: 12px; color: var(--fq-text, #334155); }
+.fq-ai-att-thumb { width: 22px; height: 22px; object-fit: cover; border-radius: 5px; flex: none; }
+.fq-ai-att-ic { font-size: 15px; line-height: 1; flex: none; }
+.fq-ai-att-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fq-ai-att-size { color: var(--fq-muted, #94a3b8); font-size: 11px; flex: none; }
+.fq-ai-att-x { cursor: pointer; border: none; background: none; color: #ef4444; font-size: 15px; font-weight: 700; line-height: 1; padding: 0 2px; flex: none; }
+.fq-ai-att-x:hover { color: #b91c1c; }
 /* SDS/MSDS 드롭존 드래그오버 하이라이트 */
 .sds-drop-box.drag { border-color: var(--accent); background: rgba(0, 242, 255, 0.10); box-shadow: inset 0 0 0 2px rgba(0, 242, 255, 0.25); }
 
@@ -5184,6 +5195,10 @@ body { top: 0 !important; position: static !important; }
 [data-theme="dark"] .rpt-bar { background: rgba(255, 255, 255, 0.08); }
 [data-theme="dark"] .rpt-bar-label { color: var(--fq-text); }
 [data-theme="dark"] .rpt-bar-val { color: var(--fq-muted); }
+/* 드롭존·첨부 칩 — 라이트 하드코딩 표면이 다크에서 흰색으로 뜸 → 다크 톤 */
+[data-theme="dark"] .fq-drop { background: var(--fq-card); border-color: rgba(255, 255, 255, 0.18); color: var(--fq-muted); }
+[data-theme="dark"] .fq-drop.drag { border-color: #4a86c9; background: rgba(74, 134, 201, 0.15); color: var(--fq-text); }
+[data-theme="dark"] .fq-ai-att { background: var(--fq-card); border-color: var(--fq-border-s); color: var(--fq-text); }
 
 /* ═══════════════════════════════════════════════════════════════
    홈 화면 3열 배치 — 한 화면에 카드가 모두 보이도록 (양 테마 공통)

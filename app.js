@@ -4194,6 +4194,20 @@ function fqBindFaq(scope) {
   if (aiAsk) aiAsk.addEventListener('click', fqAskAi);
   const aiInput = scope.querySelector('#fqAiInput');
   if (aiInput) aiInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fqAskAi(); } });
+  // AI 문의 첨부파일 — 드래그앤드롭 + 클릭 선택
+  const aiDrop = scope.querySelector('#fqAiDrop');
+  const aiFile = scope.querySelector('#fqAiFile');
+  if (aiDrop && aiFile) {
+    ['dragenter', 'dragover'].forEach(ev => aiDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); aiDrop.classList.add('drag'); }));
+    ['dragleave', 'dragend'].forEach(ev => aiDrop.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); aiDrop.classList.remove('drag'); }));
+    aiDrop.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation(); aiDrop.classList.remove('drag');
+      const fs = e.dataTransfer && e.dataTransfer.files;
+      if (fs && fs.length) fqAiAddFiles(fs);
+    });
+    aiDrop.addEventListener('click', () => aiFile.click());
+    aiFile.addEventListener('change', () => { if (aiFile.files && aiFile.files.length) fqAiAddFiles(aiFile.files); aiFile.value = ''; });
+  }
   // 이메일 업로드 → FAQ
   const emBtn = scope.querySelector('#fqEmailUploadBtn');
   if (emBtn) emBtn.addEventListener('click', fqToggleEmailForm);
@@ -4322,12 +4336,69 @@ async function fqFetchSkrRules(unnos) {
 }
 
 let fqLastAiInquiry = null;   // 직전 AI 문의/답변 (저장 버튼에서 사용)
+
+// ── AI 문의 첨부파일 ── 이미지/PDF/텍스트를 base64로 보관해 질문과 함께 faq-ai로 전송(Gemini가 직접 판독)
+let fqAiAttachments = [];                        // [{ name, mime, data(base64), size, thumb }]
+const FQ_AI_ATT_MAX = 4;                         // 첨부 개수 상한
+const FQ_AI_ATT_TOTAL = 3.4 * 1024 * 1024;       // base64 합계 상한(요청 본문 4.5MB 한도 보호)
+function fqAiAttTotalBytes() { return fqAiAttachments.reduce((s, a) => s + (a.data ? a.data.length : 0), 0); }
+// File → base64(접두어 제거)
+function fqFileToBase64Raw(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read fail'));
+    reader.onload = () => { const r = reader.result || ''; resolve(r.includes(',') ? r.split(',')[1] : r); };
+    reader.readAsDataURL(file);
+  });
+}
+function fqFmtSize(n) { return n < 1024 ? n + 'B' : (n < 1048576 ? (n / 1024).toFixed(0) + 'KB' : (n / 1048576).toFixed(1) + 'MB'); }
+// 드롭/선택한 파일들을 검증·인코딩해 첨부 목록에 추가
+async function fqAiAddFiles(fileList) {
+  const files = Array.from(fileList || []);
+  for (const f of files) {
+    if (fqAiAttachments.length >= FQ_AI_ATT_MAX) { fqToast('첨부는 최대 ' + FQ_AI_ATT_MAX + '개까지 가능합니다', 'warn'); break; }
+    const isImg = /^image\//.test(f.type);
+    const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    const isTxt = /^text\//.test(f.type) || /\.(txt|csv|md)$/i.test(f.name);
+    if (!isImg && !isPdf && !isTxt) { fqToast('이미지·PDF·텍스트(.txt) 파일만 첨부할 수 있습니다. 그 외 문서(엑셀·워드 등)는 PDF로 변환해 첨부해 주세요.', 'warn'); continue; }
+    if (f.size > 8 * 1024 * 1024) { fqToast('"' + f.name + '"이(가) 너무 큽니다(8MB 초과)', 'warn'); continue; }
+    try {
+      let mime, data, thumb = '';
+      if (isImg) {
+        const durl = await fireCargoCompress(f);   // 1280px/JPEG 압축(기존 헬퍼 재사용) → 용량 절감
+        mime = 'image/jpeg'; data = durl.split(',')[1]; thumb = durl;
+      } else {
+        data = await fqFileToBase64Raw(f);
+        mime = isPdf ? 'application/pdf' : 'text/plain';
+      }
+      if (fqAiAttTotalBytes() + data.length > FQ_AI_ATT_TOTAL) { fqToast('첨부 용량 합계가 너무 큽니다. 파일을 줄이거나 일부를 제거해 주세요.', 'warn'); break; }
+      fqAiAttachments.push({ name: f.name, mime, data, size: f.size, thumb });
+    } catch (e) { fqToast('"' + f.name + '" 읽기에 실패했습니다', 'warn'); }
+  }
+  fqAiRenderAtts();
+}
+// 첨부 칩 목록 렌더
+function fqAiRenderAtts() {
+  const box = document.getElementById('fqAiAttachList');
+  if (!box) return;
+  box.innerHTML = fqAiAttachments.map((a, i) => {
+    const ic = a.thumb ? '<img class="fq-ai-att-thumb" src="' + a.thumb + '" alt="">' : (a.mime === 'application/pdf' ? '<span class="fq-ai-att-ic">📄</span>' : '<span class="fq-ai-att-ic">📃</span>');
+    return '<span class="fq-ai-att">' + ic +
+      '<span class="fq-ai-att-name" title="' + fqEsc(a.name) + '">' + fqEsc(a.name) + '</span>' +
+      '<span class="fq-ai-att-size">' + fqFmtSize(a.size) + '</span>' +
+      '<button class="fq-ai-att-x" onclick="fqAiRemoveAtt(' + i + ')" title="첨부 제거">×</button></span>';
+  }).join('');
+}
+function fqAiRemoveAtt(i) { fqAiAttachments.splice(i, 1); fqAiRenderAtts(); }
+
 async function fqAskAi() {
   const inputEl = document.getElementById('fqAiInput');
   const ansEl = document.getElementById('fqAiAnswer');
   const q = (inputEl.value || '').trim();
   if (!q) { fqToast('질문을 입력하세요', 'warn'); return; }
-  ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 사내 FAQ·문의답변을 정리해 답변을 만들고 있습니다…</div>';
+  ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 ' +
+    (fqAiAttachments.length ? '첨부파일과 사내 FAQ·문의답변을 함께 분석해' : '사내 FAQ·문의답변을 정리해') +
+    ' 답변을 만들고 있습니다…</div>';
   // 질문과 관련도 높은 자료 우선 선별 (키워드 겹침)
   const items = FQ_FAQ_DATA.items || [];
   const qWords = q.toLowerCase().split(/[\s,./]+/).filter(w => w.length > 1);
@@ -4382,7 +4453,8 @@ async function fqAskAi() {
     }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q, context: top, dgData, unnos, segInfo, skrCarrier })
+      body: JSON.stringify({ question: q, context: top, dgData, unnos, segInfo, skrCarrier,
+        attachments: fqAiAttachments.map(a => ({ name: a.name, mime: a.mime, data: a.data })) })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
@@ -4416,6 +4488,7 @@ async function fqSaveAiInquiry() {
   fqLastAiInquiry = null;
   const inp = document.getElementById('fqAiInput'); if (inp) { inp.value = ''; inp.focus(); }
   const ans = document.getElementById('fqAiAnswer'); if (ans) ans.innerHTML = '';
+  fqAiAttachments = []; fqAiRenderAtts();   // 첨부도 초기화
   if (typeof fqReportRender === 'function') fqReportRender();   // 통계 즉시 반영
 }
 
