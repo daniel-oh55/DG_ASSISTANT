@@ -4412,7 +4412,7 @@ async function fqAskAi() {
   try {
     // 질문에 UN번호가 2개 이상이면 IMDG 7.2.4 격리표로 결정론적 판정 → 화면에 권위 결과로 직접 표시 + AI에 근거로 전달
     let segInfo = null, segChk = null, dgData = [];
-    const isSegQ = /혼적|격리|segregat|함께[^\n]{0,8}(적재|컨테이너|선적)|같은[^\n]{0,4}컨테이너/i.test(q);
+    const isSegQ = /혼적|격리|segregat|함께[^\n]{0,8}(적재|컨테이너|선적)|같은[^\n]{0,4}컨테이너|같이[^\n]{0,6}(싣|선적|적재)|co-?load|stow(ed)?\s+together|same\s+container|load(ed)?\s+together|together\s+in/i.test(q);
     const baseUn = fqExtractUnnos(q);
     const parsed = isSegQ ? fqParseSegCargos(q) : { rows: baseUn.map(u => ({ unno: u, class: null })), lookup: baseUn };
     let unnos = parsed.lookup;
@@ -4446,6 +4446,18 @@ async function fqAskAi() {
       if (isSegQ && finalRows.length >= 2) {
         segChk = fqSegregationCheck(finalRows);
         segInfo = { verdict: segChk.verdict, allow: segChk.allow, worst: segChk.worst, detail: segChk.detail, anyAmbiguous: segChk.anyAmbiguous, cargos: segChk.cargos };
+        // ── SKR/HAL RFDG 혼적 금지 규칙 (IMDG 일반 격리표보다 우선) ──
+        //   UN3480·3481(리튬이온)을 위험물(DG)로 선적하면 RFDG(Reefer) 필수이고,
+        //   RFDG 화물은 '같은 UNNO가 아닌 다른 화물과 같은 컨테이너 혼적 불가'(단 3480·3481끼리는 허가).
+        //   → 다른 UNNO 화물과 함께 묻는 혼적이면 IMDG 표가 '가능'이라도 자사 규정상 혼적 불가.
+        const isRfdgUn = u => /^0*(3480|3481)$/.test(String(u || ''));
+        const rfdgRows = finalRows.filter(r => isRfdgUn(r.unno));
+        const otherRows = finalRows.filter(r => !isRfdgUn(r.unno));
+        if (rfdgRows.length && otherRows.length) {
+          segInfo.rfdgConflict = true;
+          segInfo.rfdgUns = rfdgRows.map(r => 'UN' + String(r.unno).replace(/^0+/, ''));
+          segInfo.dryCargos = otherRows.map(r => r.unno ? ('UN' + String(r.unno).replace(/^0+/, '')) : ('Class ' + r.class));
+        }
       } else if (isSegQ) {
         // 혼적 질문인데 화물 2개를 인식하지 못함 → 결정론적 입력 안내(AI 추정 대신)
         segInfo = { guide: true };
@@ -4460,6 +4472,7 @@ async function fqAskAi() {
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
     fqLastAiInquiry = { q: q, a: (j.answer || '').trim() };   // 저장 버튼용 캡처
     ansEl.innerHTML =
+      ((segInfo && segInfo.rfdgConflict) ? fqRfdgConflictHtml(segInfo) : '') +
       (segChk ? fqSegPanelHtml(segChk) : (segInfo && segInfo.guide ? fqSegGuideHtml() : '')) +
       '<div class="fq-ai-result">' + fqRenderText(j.answer || '(빈 응답)') + '</div>' +
       '<div class="fq-ai-disclaimer">⚠️ AI 보조 답변입니다. 혼적·격리 코드는 위 [IMDG 격리표 판정]이 기준이며, 최종 판단은 IMDG Code·선사/터미널/국가 규정과 담당자 확인이 필요합니다.</div>' +
@@ -4490,6 +4503,24 @@ async function fqSaveAiInquiry() {
   const ans = document.getElementById('fqAiAnswer'); if (ans) ans.innerHTML = '';
   fqAiAttachments = []; fqAiRenderAtts();   // 첨부도 초기화
   if (typeof fqReportRender === 'function') fqReportRender();   // 통계 즉시 반영
+}
+
+// SKR/HAL RFDG 혼적 금지 — 자사 규정 권위 패널 (IMDG 일반 격리표보다 우선). 리튬배터리(3480/3481) DG 혼적 시.
+function fqRfdgConflictHtml(seg) {
+  const rfdg = (seg.rfdgUns || []).map(fqEsc).join(' · ') || 'UN3480/3481';
+  const dry = (seg.dryCargos || []).map(fqEsc).join(', ') || '나머지 DRY DG 화물';
+  return '<div class="fq-seg-panel fq-rfdg-panel" style="border-left:4px solid #b02020">' +
+    '<div class="fq-seg-head" style="color:#b02020">🚫 SKR/HAL 규정 — 혼적 불가 (RFDG 분리 선적)</div>' +
+    '<div style="font-size:13px;line-height:1.6;margin-top:6px">' +
+    '<b>' + rfdg + '</b>(리튬이온 배터리)은(는) 위험물(DG)로 선적 시 <b>RFDG(Reefer) 컨테이너 필수</b>이며, ' +
+    'RFDG 화물은 <b>같은 UNNO가 아닌 다른 화물과 같은 컨테이너 혼적이 금지</b>됩니다(단 UN3480·UN3481끼리는 허가).' +
+    '<ul style="margin:6px 0 0 18px;padding:0">' +
+    '<li><b>' + rfdg + '</b> → 별도 <b>RFDG 컨테이너에 단독</b> 선적</li>' +
+    '<li><b>' + dry + '</b> → 그들끼리 <b>별도 DRY DG 컨테이너</b>에 혼적 (IMDG 격리표 기준, 아래 참고)</li>' +
+    '</ul>' +
+    '<div style="font-size:12px;color:#888;margin-top:6px">※ IMDG 일반 격리표상 같은 컨테이너 적재(X)가 가능해도, 자사 RFDG 규정이 우선하여 <b>혼적 불가</b>가 최종 결론입니다. ' +
+    '(예외: 해당 리튬배터리가 SP188로 비위험물(NON-DG)로 분류되는 경우에 한해 DRY 혼적 가능)</div>' +
+    '</div></div>';
 }
 
 // IMDG 격리표 결정론적 판정 결과를 화면에 권위 패널로 렌더 (AI 답변과 독립). 세부분류 미상이면 분류별 안내.
@@ -4692,6 +4723,15 @@ async function fqDraftReply() {
       const chk = fqSegregationCheck(rows);
       segInfo = { verdict: chk.verdict, allow: chk.allow, worst: chk.worst, detail: chk.detail,
         cargos: rows.map(r => `UN${r.unno} ${r.name || ''} (Class ${r.class}${r.sub ? ', 부위험성 ' + r.sub : ''})`) };
+      // SKR/HAL RFDG 혼적 금지 규칙 (IMDG 일반 격리표보다 우선) — 리튬배터리(3480/3481) DG 혼적 시 분리 선적
+      const isRfdgUn = u => /^0*(3480|3481)$/.test(String(u || ''));
+      const rfdgRows = rows.filter(r => isRfdgUn(r.unno));
+      const otherRows = rows.filter(r => !isRfdgUn(r.unno));
+      if (rfdgRows.length && otherRows.length) {
+        segInfo.rfdgConflict = true;
+        segInfo.rfdgUns = rfdgRows.map(r => 'UN' + String(r.unno).replace(/^0+/, ''));
+        segInfo.dryCargos = otherRows.map(r => 'UN' + String(r.unno).replace(/^0+/, ''));
+      }
     }
     // SKR/HAL(자사) 선적 금지·제한 리스트 조회 — 선적 가부 근거 (타 선사 제외)
     let skrCarrier = [];
