@@ -304,11 +304,20 @@ ${list}`, 0.2, NEWS_KEYS);
       const attText = attRows.length
         ? attRows.map((a, i) => `[첨부 MSDS ${i + 1}] ${a.name || ''}
  - 판독: DG여부=${a.dg_status || '?'}, UN=${a.unno || '-'}, Class=${a.class || '-'}, 부위험성=${a.subsidiary_risk || '-'}, PG=${a.packing_group || '-'}, 해양오염=${a.marine_pollutant || '-'}
- - 제조사: ${a.manufacturer || '-'} (승인여부=${a.manufacturer_status || 'N/A'}; 승인 제조사=SAMSUNG SDI/LG ENERGY SOLUTION/SK ON, 그 외·미상이면 "운항팀에 가능 제조사 확인" 안내)
+ - 제조사: ${a.manufacturer || '-'} (승인여부=${a.manufacturer_status || 'N/A'}; 승인 제조사=SAMSUNG SDI/LG ENERGY SOLUTION(LG 합작 PT.HLI GREEN POWER 포함)/SK ON, 그 외·미상이면 "운항팀에 가능 제조사 확인" 안내)
  - 품명/물질: ${a.product_name || '-'} / ${a.substance_name || '-'}
  - 정식운송명(PSN): ${a.proper_shipping_name || '-'}
  - 근거: ${String(a.basis || '').slice(0, 300)}`).join('\n\n').slice(0, 8000)
         : '(첨부 MSDS 없음)';
+      // 자동 분석되지 않은 첨부(용량초과·실패 등) — 제조사 미확인이라 단정 금지의 근거
+      const attUnread = Array.isArray(body.attachUnread) ? body.attachUnread : [];
+      const attUnreadBlock = attUnread.length
+        ? `[자동 분석되지 않은 첨부 — 제조사 미확인]
+${attUnread.map((a, i) => ` ${i + 1}) ${a.name || '(파일)'} — ${a.reason || '자동 분석되지 않음'}`).join('\n')}
+※ 위 자료는 제조사를 확인하지 못했습니다. 리튬배터리 제조사 승인 판단 시 분석된 자료만으로 '선적 가능'을 단정하지 말고, 이 자료(특히 TEST REPORT/성적서)의 제조사 확인을 요청할 것.
+
+`
+        : '';
 
       // 문의가 전부 영문이면 영문으로 회신 (lang='en')
       const lang = body.lang === 'en' ? 'en' : 'ko';
@@ -328,7 +337,7 @@ ${skrText}
 
 `
         : '';
-      const sources = `${rfdgBlock}${segBlock}${skrBlock}[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
+      const sources = `${rfdgBlock}${segBlock}${skrBlock}${attUnreadBlock}[첨부 MSDS/SDS 판독 결과 — 첨부파일을 AI가 분석한 1차 결과]
 ${attText}
 
 [사내 DG FAQ·문의답변 데이터베이스]
@@ -346,6 +355,10 @@ Decision rules (important):
 - If it asks whether a SINGLE item can be SHIPPED (on a given route/vessel, RF/RFDG feasibility, etc.) -> answer only its shippability (company prohibited list + route/vessel/temperature conditions). Do NOT bring up segregation.
 - Address COMPATIBILITY (segregation) ONLY when the inquiry asks whether two or more cargoes can be loaded together / in the same container. Only then use the [Segregation table verdict] as the sole basis (do not override it by physical properties alone), and express "no segregation" as IMDG-standard "X (may be stowed in the same container)", never "code 0". If no [Segregation table verdict] is provided above, do not mention segregation at all.
 - If the attached MSDS/SDS readout provides UN number / class / packing group, use it as the basis; do not invent values. If MSDS is needed for an accurate decision, say so.
+- LITHIUM BATTERIES (UN3480/3481) shipped AS DG must be carried in an RFDG (Reefer) container per SKR/HAL internal policy. RFDG co-loading is prohibited only BETWEEN dangerous goods (one RFDG DG item may still be co-loaded with NON-dangerous / general cargo). State that this RFDG rule is an SKR/HAL internal rule, not an IMDG international rule.
+- MANUFACTURER restriction applies ONLY when the lithium battery is shipped as DG. Approved makers: SAMSUNG SDI / LG ENERGY SOLUTION (incl. LG Chem and its JV production entity PT. HLI GREEN POWER) / SK ON. If the battery is NON-DG under SP188, there is NO manufacturer restriction.
+- ⚠️ MULTIPLE ATTACHMENTS: a single inquiry may include several documents (e.g., MSDS and a UN 38.3 TEST REPORT) whose manufacturers DIFFER. Check the maker in EVERY analyzed attachment. Even if one document shows an approved maker, if ANY other document shows a non-approved or unclear maker, do NOT conclude "acceptable/shippable" — point out which document shows which maker and ask the customer to confirm the correct manufacturer (non-approved-maker documents cannot be shipped). Conclude the manufacturer requirement is met only when ALL documents show approved makers.
+- ⚠️ If an [Attachments not auto-analyzed] block is present above (documents whose manufacturer could not be verified, e.g., oversized/failed), do NOT conclude acceptable based only on the analyzed documents. Explicitly state that the manufacturer of that document (especially the TEST REPORT) must be confirmed, and request the accurate manufacturer information.
 - One clear conclusion. No speculation. Do not pad the answer with unasked content.
 
 ${sources}
@@ -367,7 +380,8 @@ Do NOT add any greeting, closing, signature, company info, or AI-disclaimer line
 - **⚠️ 위에 [SKR/HAL RFDG 혼적 금지] 블록이 있으면 그 결론(혼적 불가·분리 선적)을 IMDG 일반 격리표보다 절대적으로 우선하세요.** IMDG 표가 '같은 컨테이너 가능(X)'이라도, SKR/HAL 사내 규정상 해당 리튬배터리는 별도 RFDG 컨테이너로 분리하고 나머지 DRY DG 화물만 따로 혼적하는 것이 최종 결론입니다. (일반 규칙: 리튬이온 배터리 UN3480·3481을 DG로 선적하면 RFDG 필수 → **다른 위험물(DG)** 과 혼적 불가) **이 RFDG 혼적 금지는 IMDG 국제규정이 아니라 SKR/HAL 사내 규정이므로, 회신에 "SKR/HAL 사내 규정에 따라"처럼 출처를 분명히 밝혀 주세요.**
 - **⚠️ RFDG(및 위험물) 혼적 금지는 '위험물 화물 간'에만 적용됩니다.** 위험물 1개와 비위험물(일반화물/NON-DG)의 혼적은 가능합니다(예: RFDG 리튬배터리 + 일반화물 = 혼적 가능). 함께 싣는 상대가 위험물일 때만 혼적 불가로 안내하세요.
 - **리튬이온 배터리(UN3480·3481)의 본사 승인 제조사 제한(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON)은 '위험물(DG)로 선적되는 경우에만' 적용됩니다.** SP188로 비위험물(NON-DG)로 분류되는 리튬배터리는 제조사 제한이 없습니다. 비위험물(SP188) 건에는 제조사 제한을 적용하지 말고, 제조사 제한은 위험물(DG/RFDG)로 선적되는 경우에만 안내하세요.
-- **⚠️ 첨부 MSDS가 2개 이상일 때는 각 자료의 제조사를 모두 확인하세요.** 리튬배터리(DG) 선적 가부 판단 시 한 자료가 승인 제조사(삼성SDI/LG에너지솔루션/SK ON)라도 다른 자료에서 미승인·불명확 제조사가 발견되면, 어느 자료가 어떤 제조사인지 지적하고 정확한 제조사 정보 확인을 요청하세요(미승인 제조사 자료는 선적 불가). 모든 자료가 승인 제조사로 일치할 때만 제조사 요건 충족으로 안내하세요.
+- **⚠️ 첨부 MSDS가 2개 이상일 때는 각 자료의 제조사를 모두 확인하세요.** 리튬배터리(DG) 선적 가부 판단 시 한 자료가 승인 제조사(삼성SDI/LG에너지솔루션(LG 합작 PT.HLI GREEN POWER 포함)/SK ON)라도 다른 자료(특히 UN38.3 TEST REPORT/성적서)에서 미승인·불명확 제조사가 발견되면, 어느 자료가 어떤 제조사인지 지적하고 정확한 제조사 정보 확인을 요청하세요(미승인 제조사 자료는 선적 불가). 모든 자료가 승인 제조사로 일치할 때만 제조사 요건 충족으로 안내하세요.
+- **⚠️ 위 [자동 분석되지 않은 첨부] 목록이 있으면**(용량 초과·분석 실패 등으로 제조사를 확인 못 한 자료), 분석된 자료만으로 '선적 가능/제조사 요건 충족'을 단정하지 마세요. 해당 미확인 자료(특히 TEST REPORT/성적서)의 제조사를 반드시 확인해야 한다고 명시하고, 정확한 제조사 정보를 회신으로 요청하세요.
 - 첨부 MSDS 판독 결과에 UN번호·Class·PG가 있으면 그 값을 근거로 활용하세요(값을 지어내지 마세요). 정확한 판단에 MSDS가 필요하면 그 점을 안내하세요.
 - 결론은 하나로 명확히. 추측 금지. **묻지 않은 내용으로 답을 늘리지 마세요.**
 
@@ -505,7 +519,7 @@ ${listText}`;
 - 첨부에서 UN번호·Class·정식운송명(PSN)·품명·제조사·Wh(와트시)·포장등급(PG)·해양오염 여부 등 위험물 정보가 보이면 근거로 인용하세요.
 - 단, 자사 선적 가부는 위 [SKR/HAL(자사) 선적 금지·제한 조회 결과]를, 혼적·격리는 위 [IMDG 격리표 판정 결과]를 우선 근거로 삼으세요(첨부 내용이 이들과 충돌하면 권위 자료 우선).
 - 첨부에 근거가 없는 내용은 지어내지 말고, 첨부에서 읽은 내용과 읽지 못한(불명확한) 부분을 구분해 안내하세요.
-- **⚠️ 첨부파일이 2개 이상이고 리튬이온 배터리(UN3480·3481) 선적 가부를 판단할 때는, 각 첨부 자료의 제조사(maker)를 모두 추출해 교차 확인하세요.** 위험물(DG)로 선적되는 리튬배터리의 승인 제조사는 SAMSUNG SDI / LG ENERGY SOLUTION(LG Chem 포함) / SK ON 뿐입니다. **자료마다 제조사가 다를 수 있으니, 한 자료가 승인 제조사라도 다른 자료에서 미승인(또는 불명확) 제조사가 발견되면 "선적 가능"으로 단정하지 말고, 어느 자료의 제조사가 무엇인지(예: 자료A=삼성SDI, 자료B=CATL) 구체적으로 지적하고 "정확한 제조사 정보 확인이 필요하다 / 미승인 제조사 자료는 선적 불가"라고 안내하세요.** 모든 자료의 제조사가 승인 제조사로 일치할 때만 제조사 요건 충족으로 답하세요. (단, 해당 배터리가 SP188 비위험물(NON-DG)이면 제조사 제한 자체가 없습니다.)
+- **⚠️ 첨부파일이 2개 이상이고 리튬이온 배터리(UN3480·3481) 선적 가부를 판단할 때는, 각 첨부 자료의 제조사(maker)를 모두 추출해 교차 확인하세요.** 위험물(DG)로 선적되는 리튬배터리의 승인 제조사는 SAMSUNG SDI / LG ENERGY SOLUTION(LG Chem 및 LG 합작 생산법인 PT. HLI GREEN POWER 포함) / SK ON 뿐입니다. **자료마다 제조사가 다를 수 있으니(예: MSDS와 UN38.3 TEST REPORT의 제조사가 다른 경우), 모든 자료의 제조사를 각각 확인하고, 한 자료가 승인 제조사라도 다른 자료에서 미승인(또는 불명확) 제조사가 발견되면 "선적 가능"으로 단정하지 말고, 어느 자료의 제조사가 무엇인지(예: MSDS=PT.HLI GREEN POWER(승인), TEST REPORT=○○(미승인)) 구체적으로 지적하고 "정확한 제조사 정보 확인이 필요하다 / 미승인 제조사 자료는 선적 불가"라고 안내하세요.** 모든 자료의 제조사가 승인 제조사로 일치할 때만 제조사 요건 충족으로 답하세요. (단, 해당 배터리가 SP188 비위험물(NON-DG)이면 제조사 제한 자체가 없습니다.)
 `
       : '';
     const answerPrompt = `당신은 장금상선/흥아라인 운항팀의 위험물(DG) 상담 보조 AI입니다.

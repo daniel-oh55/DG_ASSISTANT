@@ -1774,7 +1774,7 @@ const CARRIER_DOCS = {
 const SKR_RFDG_REMARK = `<div class="carrier-rfdg-remark">
     <b>📌 LITHIUM ION BATTERIES — RFDG 선적 조건 (SKR/HAL)</b>
     <div>- ALL LITHIUM ION BATTERIES are <b>RFDG</b>. *SP188로 <b>비위험물(NON-DG)로 분류되는 9/3480·3481만</b> 예외적으로 <b>DRY 컨테이너</b>(DRY CNTR) 선적 가능.</div>
-    <div>- <b>위험물(DG/RFDG)로 선적</b>되는 리튬이온 배터리는 <b>SKR/HAS 본사 승인 제조사</b>(SAMSUNG SDI / LG ENERGY SOLUTION / SK ON)만 선적 가능. <b>SP188로 비위험물(NON-DG)로 분류되는 경우 제조사 제한 없음.</b></div>
+    <div>- <b>위험물(DG/RFDG)로 선적</b>되는 리튬이온 배터리는 <b>SKR/HAS 본사 승인 제조사</b>(SAMSUNG SDI / LG ENERGY SOLUTION〔LG Chem·LG 합작 PT. HLI GREEN POWER 포함〕 / SK ON)만 선적 가능. <b>SP188로 비위험물(NON-DG)로 분류되는 경우 제조사 제한 없음.</b></div>
 </div>`;
 
 function renderCarrierResultFromApi(dgItem, results) {
@@ -3028,7 +3028,7 @@ let FQ_FAQ_DATA = {
       "id": "li-ev-cell",
       "cat": "🔋 리튬 배터리",
       "q": "리튬이온 배터리 선적 시 승인 제조사는?",
-      "a": "리튬이온 배터리(EV 셀 포함) 중 위험물 취급 건은 안전 검증을 거친 승인 제조사 제품에 한해 선적이 가능합니다.\n\n**🟢 SP188 비위험물(NON-DG)은 제조사 제한 없음**\n- 리튬이온 셀 ≤20Wh·배터리 ≤100Wh 등 SP188 조건을 충족해 **비위험물(NON-DG)로 분류**되는 리튬배터리는 제조사(삼성·LG·SK) 제한이 **적용되지 않습니다.**\n- 제조사 제한은 **위험물(DG)로 선적되는 경우에만** 적용됩니다.\n\n**✅ 승인 제조사 (위험물 DG 선적 시 · MSDS 'Manufacture' 정보 기준)**\n- 삼성 SDI\n- LG 에너지솔루션 (LG Chem 포함)\n- SK On\n\n**❌ 거절 안내**\n- 중국·기타 해외 제조사(BYD, CATL, EVE, Gotion 등)는 현재 선적이 어려운 점 양해 부탁드립니다.\n- 신규 거래 시 제조사 정보를 사전에 확인해 주시면 신속한 검토가 가능합니다.\n\n**제조사 확인 방법**\n1. MSDS 1번(제품 식별) — 제조사명, 주소 확인\n2. 배터리 본체 라벨 사진 첨부 부탁드립니다.\n3. UN 38.3 시험성적서 발행처도 함께 확인 부탁드립니다.\n\n**모든 위험물 건 RFDG 필수**\n- DRY DG로는 진행이 어려운 점 양해 바랍니다 (예외 없음).\n- 닝보 입항 시 6시간 간격 온도 모니터링이 요구되니 사전 안내 드립니다.\n\n신규 제조사 추가는 별도 협의가 필요합니다 (사고 발생 시 책임 및 제품 신뢰성 검증 후 진행).",
+      "a": "리튬이온 배터리(EV 셀 포함) 중 위험물 취급 건은 안전 검증을 거친 승인 제조사 제품에 한해 선적이 가능합니다.\n\n**🟢 SP188 비위험물(NON-DG)은 제조사 제한 없음**\n- 리튬이온 셀 ≤20Wh·배터리 ≤100Wh 등 SP188 조건을 충족해 **비위험물(NON-DG)로 분류**되는 리튬배터리는 제조사(삼성·LG·SK) 제한이 **적용되지 않습니다.**\n- 제조사 제한은 **위험물(DG)로 선적되는 경우에만** 적용됩니다.\n\n**✅ 승인 제조사 (위험물 DG 선적 시 · MSDS 'Manufacture' 정보 기준)**\n- 삼성 SDI\n- LG 에너지솔루션 (LG Chem 포함, LG 합작 생산법인 **PT. HLI GREEN POWER**〔현대글로비스×LG에너지솔루션 합작, 실제 제조 LG에너지솔루션〕 포함)\n- SK On\n\n**⚠️ 첨부가 여러 개면 자료별 제조사 확인**\n- MSDS와 UN38.3 TEST REPORT(성적서)의 제조사가 다를 수 있습니다. 한 자료가 승인 제조사라도 다른 자료(특히 성적서)에 미승인 제조사가 있으면 선적 불가이니, 모든 자료의 제조사를 확인해 주세요.\n\n**❌ 거절 안내**\n- 중국·기타 해외 제조사(BYD, CATL, EVE, Gotion 등)는 현재 선적이 어려운 점 양해 부탁드립니다.\n- 신규 거래 시 제조사 정보를 사전에 확인해 주시면 신속한 검토가 가능합니다.\n\n**제조사 확인 방법**\n1. MSDS 1번(제품 식별) — 제조사명, 주소 확인\n2. 배터리 본체 라벨 사진 첨부 부탁드립니다.\n3. UN 38.3 시험성적서 발행처도 함께 확인 부탁드립니다.\n\n**모든 위험물 건 RFDG 필수**\n- DRY DG로는 진행이 어려운 점 양해 바랍니다 (예외 없음).\n- 닝보 입항 시 6시간 간격 온도 모니터링이 요구되니 사전 안내 드립니다.\n\n신규 제조사 추가는 별도 협의가 필요합니다 (사고 발생 시 책임 및 제품 신뢰성 검증 후 진행).",
       "tags": [
         "리튬이온 배터리",
         "리튬배터리",
@@ -4708,9 +4708,14 @@ async function fqDraftReply() {
     let unnos = fqExtractUnnos(q);
     // 첨부 MSDS(PDF) 분석 → 회신 근거로 활용 + 발견한 UN번호를 격리 판정에 합류
     let attachAnalyses = [];
+    let attachUnread = [];   // 자동 분석 못한 첨부(용량초과·실패) — 제조사 미확인 → 회신서 경고
     if (fqEmailAttachments.length) {
-      replyEl.value = `📎 첨부 MSDS ${fqEmailAttachments.length}건 분석 중… (잠시 걸릴 수 있습니다)`;
+      replyEl.value = `📎 첨부 ${fqEmailAttachments.length}건 분석 중… (잠시 걸릴 수 있습니다)`;
       for (const att of fqEmailAttachments) {
+        if (att.tooBig || !att.b64) {   // 용량 초과(서버 4.5MB 한도) → 분석 불가, 미확인으로 기록
+          attachUnread.push({ name: att.name, reason: '용량이 커서 자동 분석 불가(서버 한도 초과) — 제조사 직접 확인 필요' });
+          continue;
+        }
         try {
           const ar = await fetch('/api/analyze-sds', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -4718,7 +4723,8 @@ async function fqDraftReply() {
           });
           const aj = await ar.json().catch(() => ({}));
           if (ar.ok && aj.ok && aj.result) attachAnalyses.push(Object.assign({ name: att.name }, aj.result));
-        } catch (_) { /* 첨부 분석 실패 시 무시하고 진행 */ }
+          else attachUnread.push({ name: att.name, reason: (aj && aj.message) ? String(aj.message).slice(0, 80) : ('분석 실패(HTTP ' + ar.status + ')') });
+        } catch (_) { attachUnread.push({ name: att.name, reason: '분석 중 오류' }); }
       }
       attachAnalyses.forEach(a => { const u = String(a.unno || '').replace(/^0+/, ''); if (/^\d{3,4}$/.test(u)) unnos.push(u); });
       unnos = [...new Set(unnos)];
@@ -4763,7 +4769,7 @@ async function fqDraftReply() {
     if (unnos.length) { try { skrCarrier = await fqFetchSkrRules(unnos); } catch (_) {} }
     const res = await fetch('/api/faq-ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo, skrCarrier, attachments: attachAnalyses, lang: (!/[가-힣]/.test(q) && /[A-Za-z]/.test(q)) ? 'en' : 'ko' })
+      body: JSON.stringify({ mode: 'reply', subject, inquiry, context: top, dgData, unnos, segInfo, skrCarrier, attachments: attachAnalyses, attachUnread, lang: (!/[가-힣]/.test(q) && /[A-Za-z]/.test(q)) ? 'en' : 'ko' })
     });
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
@@ -4820,17 +4826,22 @@ function __fqEmlAtt(raw) {
   } catch (_) {}
   return out;
 }
-// 첨부 목록에서 PDF(MSDS)만 골라 base64로 (최대 3개, 4MB 이하)
+// 첨부 목록에서 PDF(MSDS·성적서)만 골라 base64로 (최대 4개). 용량이 커서 서버 한도(요청 4.5MB)
+//   를 넘는 PDF는 조용히 버리지 않고 tooBig 플래그로 표시 → 회신에서 '제조사 미확인'으로 경고한다.
 function fqCollectPdfAttachments(atts) {
   const out = [];
+  const RAW_MAX = 3.0 * 1024 * 1024;   // base64(×~1.37)+JSON 여유 → 서버 4.5MB 한도 내 안전치
   (atts || []).forEach(a => {
     const b = a.bytes; if (!b || b.length < 5) return;
     const head = String.fromCharCode(b[0], b[1], b[2], b[3]);
     const isPdf = head === '%PDF' || /\.pdf$/i.test(a.name || '');
-    if (!isPdf || b.length > 4 * 1024 * 1024) return;
-    out.push({ name: a.name || 'MSDS.pdf', mimeType: 'application/pdf', b64: fqU8ToBase64(b) });
+    if (!isPdf) return;
+    const item = { name: a.name || 'MSDS.pdf', mimeType: 'application/pdf', size: b.length };
+    if (b.length > RAW_MAX) { item.tooBig = true; }   // 용량 초과 → 분석 불가(자동판독 제외, 경고만)
+    else { item.b64 = fqU8ToBase64(b); }
+    out.push(item);
   });
-  return out.slice(0, 3);
+  return out.slice(0, 4);
 }
 function fqToggleEmailForm() {
   const f = document.getElementById('fqEmailForm');
