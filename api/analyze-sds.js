@@ -133,10 +133,12 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (file_type !== 'application/pdf') {
+    // PDF 또는 이미지(대용량 스캔 PDF의 페이지를 클라이언트가 JPEG로 렌더해 보내는 경우) 허용
+    const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file_type)) {
       return res.status(400).json({
         ok: false,
-        message: 'PDF 파일만 분석할 수 있습니다.'
+        message: 'PDF 또는 이미지(JPEG/PNG) 파일만 분석할 수 있습니다.'
       });
     }
 

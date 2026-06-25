@@ -4712,8 +4712,20 @@ async function fqDraftReply() {
     if (fqEmailAttachments.length) {
       replyEl.value = `📎 첨부 ${fqEmailAttachments.length}건 분석 중… (잠시 걸릴 수 있습니다)`;
       for (const att of fqEmailAttachments) {
-        if (att.tooBig || !att.b64) {   // 용량 초과(서버 4.5MB 한도) → 분석 불가, 미확인으로 기록
-          attachUnread.push({ name: att.name, reason: '용량이 커서 자동 분석 불가(서버 한도 초과) — 제조사 직접 확인 필요' });
+        if (att.tooBig || !att.b64) {   // 용량 초과(서버 4.5MB 한도) → 첫 페이지 이미지로 렌더해 분석 재시도
+          let done = false;
+          if (att.bytes && window.pdfjsLib) {
+            try {
+              const jpg = await fqPdfToJpeg(att.bytes, 2, 1500);
+              const ar = await fetch('/api/analyze-sds', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_name: att.name, file_type: 'image/jpeg', file_base64: jpg })
+              });
+              const aj = await ar.json().catch(() => ({}));
+              if (ar.ok && aj.ok && aj.result) { attachAnalyses.push(Object.assign({ name: att.name, from_image: true }, aj.result)); done = true; }
+            } catch (_) { /* 렌더/분석 실패 시 미확인으로 폴백 */ }
+          }
+          if (!done) attachUnread.push({ name: att.name, reason: '용량이 커서 자동 분석 불가 — 제조사 직접 확인 필요' });
           continue;
         }
         try {
@@ -4837,11 +4849,34 @@ function fqCollectPdfAttachments(atts) {
     const isPdf = head === '%PDF' || /\.pdf$/i.test(a.name || '');
     if (!isPdf) return;
     const item = { name: a.name || 'MSDS.pdf', mimeType: 'application/pdf', size: b.length };
-    if (b.length > RAW_MAX) { item.tooBig = true; }   // 용량 초과 → 분석 불가(자동판독 제외, 경고만)
+    if (b.length > RAW_MAX) { item.tooBig = true; item.bytes = b; }   // 용량 초과 → 첫 페이지 이미지 렌더로 재시도
     else { item.b64 = fqU8ToBase64(b); }
     out.push(item);
   });
   return out.slice(0, 4);
+}
+// 대용량/이미지 PDF를 pdf.js로 앞 N페이지를 1장의 JPEG(base64, 접두어 제외)로 렌더 — 제조사 판독용
+async function fqPdfToJpeg(bytes, maxPages, maxW) {
+  if (!window.pdfjsLib) throw new Error('pdfjs 미로드');
+  try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; } catch (_) {}
+  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  const np = Math.min(maxPages || 2, pdf.numPages);
+  const canvases = []; let totalH = 0, W = 0;
+  for (let i = 1; i <= np; i++) {
+    const page = await pdf.getPage(i);
+    let vp = page.getViewport({ scale: 1 });
+    const scale = Math.min(2, (maxW || 1500) / vp.width);
+    vp = page.getViewport({ scale });
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    canvases.push(c); totalH += c.height; W = Math.max(W, c.width);
+  }
+  const out = document.createElement('canvas');
+  out.width = W; out.height = totalH;
+  const ctx = out.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, totalH);
+  let y = 0; for (const c of canvases) { ctx.drawImage(c, 0, y); y += c.height; }
+  return out.toDataURL('image/jpeg', 0.72).split(',')[1];
 }
 function fqToggleEmailForm() {
   const f = document.getElementById('fqEmailForm');
