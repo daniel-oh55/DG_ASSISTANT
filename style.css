@@ -5280,6 +5280,15 @@ body { top: 0 !important; position: static !important; }
 /* 이름 옆 AI 문의 사용횟수 배지 (계정칸에서 잘리지 않도록 별도 플렉스 아이템) */
 .dg-ai-usage { flex: 0 0 auto; white-space: nowrap; font-size: 11.5px; font-weight: 800; padding: 2px 9px; border-radius: 11px; background: rgba(120,170,255,0.32); color: #eaf2ff; border: 1px solid rgba(160,195,255,0.5); }
 [data-theme="bright"] .dg-ai-usage { background: rgba(31,78,121,0.12); color: #14457a; border-color: rgba(31,78,121,0.35); }
+/* 사용자 메뉴얼 — 가이드 영상 + 회원가입 안내 */
+.manual-video-wrap { position: relative; width: 100%; max-width: 900px; margin: 10px auto 20px; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.20); background: #000; }
+.manual-video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.manual-cta { max-width: 900px; margin: 0 auto; padding: 16px 20px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: linear-gradient(135deg, rgba(0,166,184,.14), rgba(31,78,121,.14)); border: 1px solid rgba(31,78,121,.28); }
+.manual-cta-text { flex: 1 1 320px; font-size: 14px; line-height: 1.65; color: var(--text, #1f2937); }
+.manual-cta-text b { color: var(--bright-navy, #1f6feb); }
+.manual-cta-btn { flex: 0 0 auto; padding: 11px 22px; border: none; border-radius: 10px; background: linear-gradient(135deg, #1f6feb, #00a37a); color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(31,111,235,.35); }
+.manual-cta-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+[data-theme="dark"] .manual-cta-text b { color: #6cb6ff; }
 .dg-ai-usage.dg-ai-over { background: rgba(220,38,38,0.92); color: #fff; border-color: rgba(255,120,120,0.7); }
 .dg-auth-logout { flex: 0 0 auto; }
 

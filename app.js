@@ -722,7 +722,7 @@ function activateTab(targetId) {
 
     // 로그인 게이트 — 미로그인 시 HOME 외 메뉴 사용 차단(로그인 필요 안내).
     //   관리자 ID(wtlee 등)는 가입 시 자동 승인+관리자라 첫 로그인 후 회원관리 접근 가능(부트스트랩 OK).
-    if (typeof dgIsAuthed === 'function' && !dgIsAuthed() && targetId !== 'tab-home') {
+    if (typeof dgIsAuthed === 'function' && !dgIsAuthed() && targetId !== 'tab-home' && targetId !== 'tab-manual') {
         dgShowLoginRequired();
         return;
     }
@@ -6049,7 +6049,7 @@ async function dgDeleteMember(id) {
 
 // ── UI ──
 // ═══ 회원별 AI 문의 일일 횟수 제한 (토큰 절약) ═══
-const DG_AI_LIMIT = 10;                       // 일반 회원 하루 AI 문의 허용 횟수
+const DG_AI_LIMIT = 20;                       // 일반 회원 하루 AI 문의 허용 횟수
 const DG_AI_ADMIN_LIMIT = 20;                 // 관리자 하루 AI 문의 허용 횟수
 const DG_AI_USAGE_KEY = 'dg_ai_usage_v1';
 function dgAiLimitForCurrent() { return ((typeof dgIsAdmin === 'function') && dgIsAdmin()) ? DG_AI_ADMIN_LIMIT : DG_AI_LIMIT; }
