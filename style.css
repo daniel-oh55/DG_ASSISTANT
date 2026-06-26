@@ -4719,6 +4719,13 @@ header span {
 /* 문의 내역 — 문의내용 클릭 시 답변 펼침 */
 .rpt-li-q-click { cursor: pointer; }
 .rpt-li-q-click:hover { text-decoration: underline; color: var(--fq-primary); }
+/* 답변 직접수정 버튼 + 편집창 (오류체크와 무관하게 모든 문의에서 사용) */
+.rpt-edit { flex: 0 0 auto; margin-left: 6px; border: 1px solid var(--fq-border-s, #d1d5db); background: transparent; color: var(--fq-primary, #1f6feb); cursor: pointer; font-size: 12px; line-height: 1; padding: 3px 7px; border-radius: 8px; white-space: nowrap; }
+.rpt-edit:hover { background: var(--fq-primary, #1f6feb); color: #fff; border-color: var(--fq-primary, #1f6feb); }
+.rpt-edit-box { padding: 12px 14px; border-left: 4px solid var(--fq-primary, #1f6feb); background: var(--fq-card); border-bottom: 1px solid var(--fq-border); }
+.rpt-edit-label { display: block; font-size: 12px; font-weight: 700; color: var(--fq-primary); margin: 2px 0 5px; }
+.rpt-edit-box textarea { width: 100%; min-height: 130px; padding: 8px 10px; border: 1px solid var(--fq-border-s); border-radius: var(--fq-radius-sm); font-family: inherit; font-size: 12.5px; line-height: 1.6; resize: vertical; background: var(--fq-card); color: var(--fq-text); }
+.rpt-edit-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .rpt-ans { padding: 10px 14px 12px; background: var(--fq-bg); border-bottom: 1px solid var(--fq-border); font-size: 12.5px; line-height: 1.65; }
 .rpt-ans-q { color: var(--fq-muted); margin-bottom: 6px; }
 .rpt-ans-a { color: var(--fq-text); }
@@ -5267,6 +5274,9 @@ body { top: 0 !important; position: static !important; }
 }
 @media (prefers-reduced-motion: reduce) { .dg-auth-login, .dg-auth-signup { animation: none; } }
 .dg-auth-user { flex: 1; min-width: 0; padding: 7px 8px; font-size: 12px; font-weight: 700; color: #e6edf3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 이름 옆 AI 문의 사용횟수 배지 */
+.dg-ai-usage { display: inline-block; margin-left: 7px; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,0.16); color: #cfe3ff; vertical-align: middle; }
+.dg-ai-usage.dg-ai-over { background: rgba(220,38,38,0.9); color: #fff; }
 .dg-auth-logout { flex: 0 0 auto; }
 
 /* 모달 오버레이 */

@@ -3765,8 +3765,10 @@ function fqReportRender() {
           : fqEsc(x.cat || '-')) + '</span>' +
         '<span class="rpt-li-q rpt-li-q-click" title="클릭 시 답변 펼치기" onclick="fqToggleRptAnswer(\'' + x.id + '\')">' + fqEsc((x.q || '(제목 없음)').slice(0, 90)) + '</span>' +
         flag +
+        (_adm ? '<button class="rpt-edit" onclick="fqEditAnswer(\'' + x.id + '\')" title="이 문의의 답변을 직접 수정">✏️ 답변수정</button>' : '') +
         (_adm ? '<button class="rpt-del" onclick="fqDeleteInquiry(\'' + x.id + '\',\'' + fqEsc(x.src) + '\')" title="이 문의 내역 삭제(유사 문의 재등록용)">🗑</button>' : '') +
         '</div>' + detail +
+        (_adm ? '<div class="rpt-edit-box" id="fqEditBox-' + x.id + '" hidden></div>' : '') +
         '<div class="rpt-ans" id="fqRptAns-' + x.id + '" hidden></div>';
     }).join('');
     listEl.innerHTML = (withDate.length || undated)
@@ -4076,6 +4078,68 @@ async function fqAiFixAnswer(id) {
   } catch (e) {
     if (resEl) resEl.innerHTML = '<div class="fq-ai-error">수정안 작성 실패: ' + fqEsc(e.message) + '</div>';
   }
+}
+
+// ═══ 답변 직접 수정 (오류체크 알람과 무관하게 모든 문의에서 사용) ═══
+// 문의내역의 어떤 항목이든 ✏️ 답변수정 버튼으로 현재 답변을 직접 고쳐 저장한다.
+function fqEditAnswer(id) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 답변을 수정할 수 있습니다', 'warn'); return; }
+  const box = document.getElementById('fqEditBox-' + id);
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; box.innerHTML = ''; return; }   // 토글 닫기
+  // 현재 답변 찾기 (AI문의·이메일 = FQ_FAQ_DATA.items / 게시판 = fqPosts)
+  let cur = '', found = false;
+  const fi = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (fi) { cur = fi.a || ''; found = true; }
+  else {
+    const p = (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).find(x => x.id === id);
+    if (p) { cur = p.answer || ''; found = true; }
+  }
+  if (!found) { fqToast('이 문의 항목을 찾을 수 없습니다', 'warn'); return; }
+  box.innerHTML =
+    '<label class="rpt-edit-label">답변 수정 (현재 답변을 직접 고쳐 저장합니다)</label>' +
+    '<textarea id="fqEdAns-' + id + '" placeholder="이 문의에 대한 답변을 입력/수정하세요">' + fqEsc(cur) + '</textarea>' +
+    '<div class="rpt-edit-actions">' +
+      '<button class="fq-btn accent" onclick="fqSaveAnswerEdit(\'' + id + '\')">💾 답변 저장</button>' +
+      '<button class="fq-btn ghost" onclick="fqEditAnswer(\'' + id + '\')">✖ 닫기</button>' +
+    '</div>';
+  box.hidden = false;
+  const ta = document.getElementById('fqEdAns-' + id);
+  if (ta) ta.focus();
+}
+// 수정한 답변 저장 → 항목(FAQ item / 게시판 글)에 반영 + 공용 DB 동기화
+async function fqSaveAnswerEdit(id) {
+  if (!(typeof dgIsAdmin === 'function' && dgIsAdmin())) { fqToast('관리자만 답변을 수정할 수 있습니다', 'warn'); return; }
+  const ta = document.getElementById('fqEdAns-' + id);
+  if (!ta) return;
+  const val = ta.value.trim();
+  let saved = false;
+  const fi = (FQ_FAQ_DATA.items || []).find(i => i.id === id);
+  if (fi) {
+    fi.a = val;
+    fqSaveFaq();
+    try { await fqPushFaqRemote(); } catch (e) { fqToast('공용 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
+    saved = true;
+  } else {
+    const p = (typeof fqPosts !== 'undefined' && Array.isArray(fqPosts) ? fqPosts : []).find(x => x.id === id);
+    if (p) {
+      p.answer = val;
+      if (val && p.status !== 'answered') p.status = 'answered';
+      fqSavePosts();
+      try { await fqPushPostsRemote(); } catch (e) { fqToast('공용 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
+      if (typeof fqRenderPosts === 'function') fqRenderPosts();
+      saved = true;
+    }
+  }
+  if (!saved) { fqToast('항목을 찾을 수 없어 저장하지 못했습니다', 'warn'); return; }
+  // 답변이 바뀌었으니 기존 오류체크 플래그는 정리(다음 검토 때 새 답변으로 재검사)
+  if (fqAuditResults[id]) delete fqAuditResults[id];
+  if (fqAuditedSigs && fqAuditedSigs[id]) delete fqAuditedSigs[id];
+  fqSaveAuditCache();
+  const box = document.getElementById('fqEditBox-' + id);
+  if (box) { box.hidden = true; box.innerHTML = ''; }
+  fqReportRender();
+  fqToast('✓ 답변을 수정·저장했습니다 — 이후 AI 문의·초안에도 반영됩니다', 'success');
 }
 
 // ── 위험물 사고 뉴스 (하루 1회 조회, 헤드라인+위험물/선적금지 의견) ──
@@ -4420,6 +4484,13 @@ async function fqAskAi() {
   const ansEl = document.getElementById('fqAiAnswer');
   const q = (inputEl.value || '').trim();
   if (!q) { fqToast('질문을 입력하세요', 'warn'); return; }
+  // 회원 1인당 하루 AI 문의 횟수 제한 (토큰 절약)
+  const _aiUser = (typeof dgCurrentUser !== 'undefined' && dgCurrentUser) ? dgCurrentUser : null;
+  if (_aiUser && _aiUser.id && !dgAiCanUse(_aiUser.id)) {
+    ansEl.innerHTML = '<div class="fq-ai-error">오늘 AI 문의 한도(' + DG_AI_LIMIT + '회)를 모두 사용하셨습니다.<br>토큰 절약을 위해 회원 1인당 하루 ' + DG_AI_LIMIT + '회로 제한됩니다. 내일 다시 이용해 주세요.</div>';
+    fqToast('오늘 AI 문의 한도(' + DG_AI_LIMIT + '회)를 모두 사용했습니다', 'warn');
+    return;
+  }
   ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 ' +
     (fqAiAttachments.length ? '첨부파일과 사내 FAQ·문의답변을 함께 분석해' : '사내 FAQ·문의답변을 정리해') +
     ' 답변을 만들고 있습니다…</div>';
@@ -4495,6 +4566,7 @@ async function fqAskAi() {
     let j = {}; try { j = await res.json(); } catch (e) {}
     if (!res.ok || !j.ok) throw new Error((j && j.message) || ('HTTP ' + res.status));
     fqLastAiInquiry = { q: q, a: (j.answer || '').trim() };   // 저장 버튼용 캡처
+    if (_aiUser && _aiUser.id) dgAiIncUsage(_aiUser.id);   // AI 문의 1회 사용 기록(횟수 차감)
     ansEl.innerHTML =
       ((segInfo && segInfo.rfdgConflict) ? fqRfdgConflictHtml(segInfo) : '') +
       (segChk ? fqSegPanelHtml(segChk) : (segInfo && segInfo.guide ? fqSegGuideHtml() : '')) +
@@ -5975,6 +6047,37 @@ async function dgDeleteMember(id) {
 }
 
 // ── UI ──
+// ═══ 회원별 AI 문의 일일 횟수 제한 (토큰 절약) ═══
+const DG_AI_LIMIT = 10;                       // 회원 1인당 하루 AI 문의 허용 횟수
+const DG_AI_USAGE_KEY = 'dg_ai_usage_v1';
+function dgAiUsageData() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(DG_AI_USAGE_KEY) || '{}'); } catch (e) {}
+  const today = (typeof fqTodayStr === 'function') ? fqTodayStr() : new Date().toISOString().slice(0, 10);
+  if (!d || d.date !== today) d = { date: today, counts: {} };   // 날짜 바뀌면 자동 초기화
+  if (!d.counts) d.counts = {};
+  return d;
+}
+function dgAiUsedCount(userId) { return dgAiUsageData().counts[userId] || 0; }
+function dgAiCanUse(userId) { return dgAiUsedCount(userId) < DG_AI_LIMIT; }
+function dgAiIncUsage(userId) {
+  const d = dgAiUsageData();
+  d.counts[userId] = (d.counts[userId] || 0) + 1;
+  try { localStorage.setItem(DG_AI_USAGE_KEY, JSON.stringify(d)); } catch (e) {}
+  dgUpdateAiUsageUI();
+}
+// 사이드바 계정정보 — 이름 옆 'AI n/10' 표시 갱신
+function dgUpdateAiUsageUI() {
+  const el = document.getElementById('dgAiUsage');
+  if (!el) return;
+  const u = (typeof dgCurrentUser !== 'undefined' && dgCurrentUser) ? dgCurrentUser : null;
+  if (!u || !u.id) { el.textContent = ''; el.hidden = true; return; }
+  const used = dgAiUsedCount(u.id);
+  el.hidden = false;
+  el.textContent = 'AI ' + used + '/' + DG_AI_LIMIT;
+  el.classList.toggle('dg-ai-over', used >= DG_AI_LIMIT);
+  el.title = '오늘 사용한 AI 문의 ' + used + '회 / 하루 한도 ' + DG_AI_LIMIT + '회';
+}
 function dgUpdateAuthUI() {
   // 우측상단(언어 버튼 옆) 로그인 표시
   const top = document.getElementById('dgTopUser');
@@ -5986,13 +6089,14 @@ function dgUpdateAuthUI() {
   if (!box) return;
   if (dgCurrentUser) {
     box.innerHTML =
-      '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 ' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '</div>' +
+      '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 ' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '<span class="dg-ai-usage" id="dgAiUsage" hidden></span></div>' +
       '<button type="button" class="dg-auth-btn dg-auth-logout" onclick="dgLogout()">로그아웃</button>';
   } else {
     box.innerHTML =
       '<button type="button" class="dg-auth-btn dg-auth-login" onclick="dgShowLogin()">🔐 로그인</button>' +
       '<button type="button" class="dg-auth-btn dg-auth-signup" onclick="dgShowSignup()">회원가입</button>';
   }
+  dgUpdateAiUsageUI();   // 이름 옆 AI 사용횟수 표시 갱신
 }
 function dgCloseModals() { document.querySelectorAll('.dg-modal').forEach(m => m.hidden = true); }
 function dgShowModal(id) { dgCloseModals(); const m = document.getElementById(id); if (m) m.hidden = false; }
