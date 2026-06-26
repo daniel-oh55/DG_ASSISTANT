@@ -5275,8 +5275,10 @@ body { top: 0 !important; position: static !important; }
 @media (prefers-reduced-motion: reduce) { .dg-auth-login, .dg-auth-signup { animation: none; } }
 .dg-auth-user { flex: 1 1 auto; min-width: 0; padding: 7px 8px; font-size: 13.5px; font-weight: 800; color: #e6edf3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dg-auth-name { color: inherit; }
-/* 밝은(bright) 테마 = 흰 사이드바 → 계정 글씨를 진한 남색으로(흰색 배경에서 잘 보이게) */
+/* 밝은(bright) 테마 = 흰 사이드바 → 계정 글씨/로그아웃 버튼을 진한 남색으로(흰색 배경에서 잘 보이게) */
 [data-theme="bright"] .dg-auth-user, [data-theme="bright"] .dg-auth-name { color: var(--bright-navy, #14457a); }
+[data-theme="bright"] .dg-auth-logout { color: var(--bright-navy, #14457a); background: rgba(31,78,121,0.08); border-color: rgba(31,78,121,0.32); }
+[data-theme="bright"] .dg-auth-logout:hover { background: rgba(31,78,121,0.16); }
 /* 이름 옆 AI 문의 사용횟수 배지 (계정칸에서 잘리지 않도록 별도 플렉스 아이템) */
 .dg-ai-usage { flex: 0 0 auto; white-space: nowrap; font-size: 11.5px; font-weight: 800; padding: 2px 9px; border-radius: 11px; background: rgba(120,170,255,0.32); color: #eaf2ff; border: 1px solid rgba(160,195,255,0.5); }
 [data-theme="bright"] .dg-ai-usage { background: rgba(31,78,121,0.12); color: #14457a; border-color: rgba(31,78,121,0.35); }
