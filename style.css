@@ -5252,7 +5252,7 @@ body { top: 0 !important; position: static !important; }
    로그인 / 회원가입 / 회원관리 (소프트 인증)
    ═══════════════════════════════════════════════════════════════ */
 /* 사이드바 배지 아래 버튼 — 사이드바는 두 테마 모두 어두운 톤이라 공통 스타일 */
-.sidebar-auth { display: flex; gap: 6px; padding: 0 14px; margin: 2px 0 12px; }
+.sidebar-auth { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 0 14px; margin: 2px 0 12px; }
 .dg-auth-btn {
   flex: 1; padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
   cursor: pointer; border: 1px solid rgba(255,255,255,0.20);
@@ -5273,10 +5273,11 @@ body { top: 0 !important; position: static !important; }
   50%      { box-shadow: 0 0 0 2px rgba(90,175,255,0.20), 0 0 12px rgba(90,175,255,0.55); }
 }
 @media (prefers-reduced-motion: reduce) { .dg-auth-login, .dg-auth-signup { animation: none; } }
-.dg-auth-user { flex: 1; min-width: 0; padding: 7px 8px; font-size: 12px; font-weight: 700; color: #e6edf3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* 이름 옆 AI 문의 사용횟수 배지 */
-.dg-ai-usage { display: inline-block; margin-left: 7px; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,0.16); color: #cfe3ff; vertical-align: middle; }
-.dg-ai-usage.dg-ai-over { background: rgba(220,38,38,0.9); color: #fff; }
+.dg-auth-user { flex: 1 1 auto; min-width: 0; padding: 7px 8px; font-size: 13.5px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dg-auth-name { color: #ffffff; }
+/* 이름 옆 AI 문의 사용횟수 배지 (계정칸에서 잘리지 않도록 별도 플렉스 아이템 + 밝게) */
+.dg-ai-usage { flex: 0 0 auto; white-space: nowrap; font-size: 11.5px; font-weight: 800; padding: 2px 9px; border-radius: 11px; background: rgba(120,170,255,0.32); color: #eaf2ff; border: 1px solid rgba(160,195,255,0.5); }
+.dg-ai-usage.dg-ai-over { background: rgba(220,38,38,0.92); color: #fff; border-color: rgba(255,120,120,0.7); }
 .dg-auth-logout { flex: 0 0 auto; }
 
 /* 모달 오버레이 */

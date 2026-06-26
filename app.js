@@ -4487,8 +4487,9 @@ async function fqAskAi() {
   // 회원 1인당 하루 AI 문의 횟수 제한 (토큰 절약)
   const _aiUser = (typeof dgCurrentUser !== 'undefined' && dgCurrentUser) ? dgCurrentUser : null;
   if (_aiUser && _aiUser.id && !dgAiCanUse(_aiUser.id)) {
-    ansEl.innerHTML = '<div class="fq-ai-error">오늘 AI 문의 한도(' + DG_AI_LIMIT + '회)를 모두 사용하셨습니다.<br>토큰 절약을 위해 회원 1인당 하루 ' + DG_AI_LIMIT + '회로 제한됩니다. 내일 다시 이용해 주세요.</div>';
-    fqToast('오늘 AI 문의 한도(' + DG_AI_LIMIT + '회)를 모두 사용했습니다', 'warn');
+    const _lim = dgAiLimitForCurrent();
+    ansEl.innerHTML = '<div class="fq-ai-error">오늘 AI 문의 한도(' + _lim + '회)를 모두 사용하셨습니다.<br>토큰 절약을 위해 하루 ' + _lim + '회로 제한됩니다. 내일 다시 이용해 주세요.</div>';
+    fqToast('오늘 AI 문의 한도(' + _lim + '회)를 모두 사용했습니다', 'warn');
     return;
   }
   ansEl.innerHTML = '<div class="fq-ai-loading"><span class="fq-spin" aria-hidden="true"></span>🤖 ' +
@@ -6048,8 +6049,10 @@ async function dgDeleteMember(id) {
 
 // ── UI ──
 // ═══ 회원별 AI 문의 일일 횟수 제한 (토큰 절약) ═══
-const DG_AI_LIMIT = 10;                       // 회원 1인당 하루 AI 문의 허용 횟수
+const DG_AI_LIMIT = 10;                       // 일반 회원 하루 AI 문의 허용 횟수
+const DG_AI_ADMIN_LIMIT = 20;                 // 관리자 하루 AI 문의 허용 횟수
 const DG_AI_USAGE_KEY = 'dg_ai_usage_v1';
+function dgAiLimitForCurrent() { return ((typeof dgIsAdmin === 'function') && dgIsAdmin()) ? DG_AI_ADMIN_LIMIT : DG_AI_LIMIT; }
 function dgAiUsageData() {
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DG_AI_USAGE_KEY) || '{}'); } catch (e) {}
@@ -6059,7 +6062,7 @@ function dgAiUsageData() {
   return d;
 }
 function dgAiUsedCount(userId) { return dgAiUsageData().counts[userId] || 0; }
-function dgAiCanUse(userId) { return dgAiUsedCount(userId) < DG_AI_LIMIT; }
+function dgAiCanUse(userId) { return dgAiUsedCount(userId) < dgAiLimitForCurrent(); }
 function dgAiIncUsage(userId) {
   const d = dgAiUsageData();
   d.counts[userId] = (d.counts[userId] || 0) + 1;
@@ -6073,10 +6076,11 @@ function dgUpdateAiUsageUI() {
   const u = (typeof dgCurrentUser !== 'undefined' && dgCurrentUser) ? dgCurrentUser : null;
   if (!u || !u.id) { el.textContent = ''; el.hidden = true; return; }
   const used = dgAiUsedCount(u.id);
+  const lim = dgAiLimitForCurrent();
   el.hidden = false;
-  el.textContent = 'AI ' + used + '/' + DG_AI_LIMIT;
-  el.classList.toggle('dg-ai-over', used >= DG_AI_LIMIT);
-  el.title = '오늘 사용한 AI 문의 ' + used + '회 / 하루 한도 ' + DG_AI_LIMIT + '회';
+  el.textContent = 'AI ' + used + '/' + lim;
+  el.classList.toggle('dg-ai-over', used >= lim);
+  el.title = '오늘 사용한 AI 문의 ' + used + '회 / 하루 한도 ' + lim + '회';
 }
 function dgUpdateAuthUI() {
   // 우측상단(언어 버튼 옆) 로그인 표시
@@ -6089,7 +6093,8 @@ function dgUpdateAuthUI() {
   if (!box) return;
   if (dgCurrentUser) {
     box.innerHTML =
-      '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 ' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '<span class="dg-ai-usage" id="dgAiUsage" hidden></span></div>' +
+      '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 <span class="dg-auth-name">' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '</span></div>' +
+      '<span class="dg-ai-usage" id="dgAiUsage" hidden></span>' +
       '<button type="button" class="dg-auth-btn dg-auth-logout" onclick="dgLogout()">로그아웃</button>';
   } else {
     box.innerHTML =
