@@ -3052,6 +3052,11 @@ header span {
 [data-theme="dark"] .pack-table td { border-color: #30363d; color: #e6edf3; }
 [data-theme="dark"] .pack-table tr.pack-grp td { background: rgba(255,255,255,.07); color: #8ab4ff; }
 [data-theme="dark"] .pack-note, [data-theme="dark"] .pack-foot { color: #9aa4b2; }
+/* 결합용기 병렬표: 내장용기 2열은 상단 정렬로 그림처럼 좌측 배치 */
+.pack-combo .pack-inner { vertical-align: top; background: #f7fafc; font-weight: 600; line-height: 1.9; }
+[data-theme="dark"] .pack-combo .pack-inner { background: rgba(255,255,255,.05); }
+/* 패킹표가 있을 때 팝업 폭 확대(그림처럼) */
+.sp-modal-window.has-packtable { max-width: 960px; }
 
 .sidebar-logo-box {
     cursor: pointer;

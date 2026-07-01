@@ -1184,13 +1184,22 @@ function renderPackTableHtml(code) {
   };
   let h = `<div class="pack-table-wrap"><div class="pack-table-title">📦 ${e(t.caption)}</div>`;
   if (t.note) h += `<div class="pack-note">${e(t.note)}</div>`;
-  if (t.innerRows) {
-    h += `<div class="pack-sec">결합용기 (Combination) — 내장용기</div>`;
-    h += `<table class="pack-table"><tr><th>내장용기</th><th>최대용량</th></tr>`;
-    t.innerRows.forEach(r => h += `<tr><td>${e(r[0])}</td><td>${e(r[1])}</td></tr>`);
+  if (t.innerRows && t.outer) {
+    // 그림처럼 내장용기(좌) + 외장용기(우) 병렬 배치 — 내장용기 2열은 전체 행에 rowspan
+    const seq = [];
+    t.outer.forEach(gr => { seq.push({ grp: gr.g }); gr.rows.forEach(r => seq.push({ row: r })); });
+    const N = seq.length;
+    const inNames = t.innerRows.map(r => e(r[0])).join('<br>');
+    const inCaps = t.innerRows.map(r => e(r[1])).join('<br>');
+    h += `<div class="pack-sec">결합용기 (Combination packaging)</div>`;
+    h += `<table class="pack-table pack-combo"><tr><th colspan="2">내장용기</th><th>외장용기</th><th>PG I</th><th>PG II</th><th>PG III</th></tr>`;
+    seq.forEach((it, i) => {
+      const left = i === 0 ? `<td class="pack-inner" rowspan="${N}">${inNames}</td><td class="pack-inner" rowspan="${N}">${inCaps}</td>` : '';
+      if (it.grp) h += `<tr>${left}<td class="pack-grp" colspan="4">${e(it.grp)}</td></tr>`;
+      else { const r = it.row; h += `<tr>${left}<td>${e(r[0])}</td><td>${e(r[1])}</td><td>${e(r[2])}</td><td>${e(r[3])}</td></tr>`; }
+    });
     h += `</table>`;
   }
-  if (t.outer) { h += `<div class="pack-sec">결합용기 — 외장용기</div>` + grpTable('외장용기', t.outer); }
   if (t.single) { h += `<div class="pack-sec">단일용기 (Single)</div>` + grpTable('단일용기', t.single); }
   if (t.foot) h += `<div class="pack-foot">${e(t.foot)}</div>`;
   return h + '</div>';
@@ -1324,6 +1333,9 @@ function openImdgCodeModal(prefix, code) {
         </div>
         ${info.tableHtml || ''}
     `;
+
+    const win = modal.querySelector('.modal-window');
+    if (win) win.classList.toggle('has-packtable', !!(info.tableHtml));
 
     modal.style.display = 'flex';
 }
