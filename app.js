@@ -1154,6 +1154,48 @@ function renderPackingCodeLinks(text) {
     return result || escapeHtml(clean);
 }
 
+// 포장지침 상세 표 (IMDG 4.1.4.1). 코드별로 추가 가능. 현재 P001(액체) 수록.
+const PACKTABLE = {
+  P001: {
+    caption: 'P001 포장지침 (액체) — 소형용기(IBC·대형용기 제외)',
+    note: '다음 포장용기는 4.1.1절·4.1.3절의 일반규정을 충족하는 경우 허용. 수치=최대용량/순질량(제4.1.3.3항).',
+    innerRows: [['유리', '10 L'], ['플라스틱', '30 L'], ['금속', '40 L']],
+    outer: [
+      { g: '드럼', rows: [['강재 (1A1, 1A2)', '75 kg', '400 kg', '400 kg'], ['알루미늄 (1B1, 1B2)', '75 kg', '400 kg', '400 kg'], ['기타 금속 (1N1, 1N2)', '75 kg', '400 kg', '400 kg'], ['플라스틱 (1H1, 1H2)', '75 kg', '400 kg', '400 kg'], ['합판 (1D)', '75 kg', '400 kg', '400 kg'], ['파이버 (1G)', '75 kg', '400 kg', '400 kg']] },
+      { g: '상자', rows: [['강재 (4A)', '75 kg', '400 kg', '400 kg'], ['알루미늄 (4B)', '75 kg', '400 kg', '400 kg'], ['기타 금속 (4N)', '75 kg', '400 kg', '400 kg'], ['천연목재 (4C1, 4C2)', '75 kg', '400 kg', '400 kg'], ['합판 (4D)', '75 kg', '400 kg', '400 kg'], ['재생목재 (4F)', '75 kg', '400 kg', '400 kg'], ['파이버보드 (4G)', '75 kg', '400 kg', '400 kg'], ['발포 플라스틱 (4H1)', '40 kg', '60 kg', '60 kg'], ['경질 플라스틱 (4H2)', '75 kg', '400 kg', '400 kg']] },
+      { g: '제리캔', rows: [['강재 (3A1, 3A2)', '60 kg', '120 kg', '120 kg'], ['알루미늄 (3B1, 3B2)', '60 kg', '120 kg', '120 kg'], ['플라스틱 (3H1, 3H2)', '30 kg', '120 kg', '120 kg']] }
+    ],
+    single: [
+      { g: '드럼', rows: [['강재, 상판 고정식 (1A1)', '250 L', '450 L', '450 L'], ['강재, 상판 분리식 (1A2)', '사용금지', '250 L', '250 L'], ['알루미늄, 상판 고정식 (1B1)', '250 L', '450 L', '450 L'], ['알루미늄, 상판 분리식 (1B2)', '사용금지', '250 L', '250 L'], ['기타 금속, 상판 고정식 (1N1)', '250 L', '450 L', '450 L'], ['기타 금속, 상판 분리식 (1N2)', '사용금지', '250 L', '250 L'], ['플라스틱, 상판 고정식 (1H1)', '250 L', '450 L', '450 L'], ['플라스틱, 상판 분리식 (1H2)', '사용금지', '250 L', '250 L']] }
+    ],
+    foot: '※ 제리캔·복합용기 등 단일용기 세부와 특별포장규정(PP)은 IMDG Code 4.1.4.1 P001 원문을 참조하세요.'
+  }
+};
+function renderPackTableHtml(code) {
+  const t = PACKTABLE[code]; if (!t) return '';
+  const e = escapeHtml;
+  const grpTable = (head, groups) => {
+    let h = `<table class="pack-table"><tr><th>${e(head)}</th><th>PG I</th><th>PG II</th><th>PG III</th></tr>`;
+    groups.forEach(gr => {
+      h += `<tr class="pack-grp"><td colspan="4">${e(gr.g)}</td></tr>`;
+      gr.rows.forEach(r => h += `<tr><td>${e(r[0])}</td><td>${e(r[1])}</td><td>${e(r[2])}</td><td>${e(r[3])}</td></tr>`);
+    });
+    return h + '</table>';
+  };
+  let h = `<div class="pack-table-wrap"><div class="pack-table-title">📦 ${e(t.caption)}</div>`;
+  if (t.note) h += `<div class="pack-note">${e(t.note)}</div>`;
+  if (t.innerRows) {
+    h += `<div class="pack-sec">결합용기 (Combination) — 내장용기</div>`;
+    h += `<table class="pack-table"><tr><th>내장용기</th><th>최대용량</th></tr>`;
+    t.innerRows.forEach(r => h += `<tr><td>${e(r[0])}</td><td>${e(r[1])}</td></tr>`);
+    h += `</table>`;
+  }
+  if (t.outer) { h += `<div class="pack-sec">결합용기 — 외장용기</div>` + grpTable('외장용기', t.outer); }
+  if (t.single) { h += `<div class="pack-sec">단일용기 (Single)</div>` + grpTable('단일용기', t.single); }
+  if (t.foot) h += `<div class="pack-foot">${e(t.foot)}</div>`;
+  return h + '</div>';
+}
+
 function getImdgCodeInfo(prefix, code) {
     const normalizedPrefix = String(prefix || '').toUpperCase();
     const normalizedCode = String(code || '').toUpperCase();
@@ -1232,7 +1274,7 @@ function getImdgCodeInfo(prefix, code) {
             else content = `${c} 코드 설명이 아직 등록되어 있지 않습니다.`;
             content += ' ※ 정확한 조건은 IMDG Code 원문 대조가 필요합니다.';
         }
-        return { title: c, group: 'Packing / Tank Code', subtitle: 'IMDG 포장·탱크 지침', content };
+        return { title: c, group: 'Packing / Tank Code', subtitle: 'IMDG 포장·탱크 지침', content, tableHtml: renderPackTableHtml(c) };
     }
 
     return {
@@ -1280,6 +1322,7 @@ function openImdgCodeModal(prefix, code) {
         <div class="sp-content-text">
             ${formatSpecialProvisionContent(info.content)}
         </div>
+        ${info.tableHtml || ''}
     `;
 
     modal.style.display = 'flex';

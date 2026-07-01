@@ -3038,6 +3038,21 @@ header span {
     color: #6ee7a8;
 }
 
+/* 패킹표 (IMDG 4.1.4.1 포장지침 표) — 코드 팝업 내 표시 */
+.pack-table-wrap { margin-top: 14px; }
+.pack-table-title { font-weight: 800; color: #1f6feb; margin-bottom: 4px; font-size: 13px; }
+.pack-note { font-size: 11.5px; color: #6b7280; margin-bottom: 8px; line-height: 1.5; }
+.pack-sec { font-weight: 700; margin: 10px 0 4px; font-size: 12.5px; }
+.pack-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 6px; }
+.pack-table th { background: #1f4e79; color: #fff; padding: 4px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; }
+.pack-table td { padding: 3px 6px; border: 1px solid #d7dde5; text-align: center; }
+.pack-table td:first-child { text-align: left; }
+.pack-table tr.pack-grp td { background: #eef2f7; font-weight: 700; text-align: left; color: #1f4e79; }
+.pack-foot { font-size: 11px; color: #6b7280; margin-top: 6px; line-height: 1.5; }
+[data-theme="dark"] .pack-table td { border-color: #30363d; color: #e6edf3; }
+[data-theme="dark"] .pack-table tr.pack-grp td { background: rgba(255,255,255,.07); color: #8ab4ff; }
+[data-theme="dark"] .pack-note, [data-theme="dark"] .pack-foot { color: #9aa4b2; }
+
 .sidebar-logo-box {
     cursor: pointer;
 }
