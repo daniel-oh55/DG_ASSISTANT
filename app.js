@@ -1187,16 +1187,80 @@ const PACKTABLE = {
       { g: '복합용기', rows: [['플라스틱 내용기 드럼 (6HA1·6HB1·6HG1·6HD1·6HH1)', '400 kg', '400 kg', '400 kg'], ['플라스틱 내용기 크레이트/상자 (6HA2·6HB2·6HC·6HD2·6HG2·6HH2)', '75 kg', '75 kg', '75 kg'], ['유리 내용기 드럼/상자 (6PA1·6PB1·6PD1·6PG1·6PA2·6PB2·6PC·6PG2·6PD2·6PH2·6PH1)', '75 kg', '75 kg', '75 kg']] }
     ],
     foot: '압력용기(제4.1.3.6항 충족 시)도 허용. 각주·특별포장규정(PP7·PP8·PP9 등)은 IMDG 4.1.4.1 P002 원문 참조. (IMDG amdt 38-16)'
+  },
+  P010: {
+    caption: 'P010 포장지침 (특정 액체)',
+    note: '4.1.1절·4.1.3절 일반규정 충족 시 허용.',
+    comboCols: ['최대 순질량'], singleCols: ['최대 용량'],
+    innerRows: [['유리', '1 L'], ['강재', '40 L']],
+    outer: [
+      { g: '드럼', rows: [['강재 (1A1, 1A2)', '400 kg'], ['플라스틱 (1H1, 1H2)', '400 kg'], ['합판 (1D)', '400 kg'], ['파이버 (1G)', '400 kg']] },
+      { g: '상자', rows: [['강재 (4A)', '400 kg'], ['천연목재 (4C1, 4C2)', '400 kg'], ['합판 (4D)', '400 kg'], ['재생목재 (4F)', '400 kg'], ['파이버보드 (4G)', '400 kg'], ['발포 플라스틱 (4H1)', '60 kg'], ['경질 플라스틱 (4H2)', '400 kg']] }
+    ],
+    single: [
+      { g: '드럼', rows: [['강재, 상판 고정식 (1A1)', '450 L']] },
+      { g: '제리캔', rows: [['강재, 상판 고정식 (3A1)', '60 L']] },
+      { g: '복합용기', rows: [['플라스틱 내용기 강재 드럼 (6HA1)', '250 L']] }
+    ],
+    foot: '강재 압력용기(제4.1.3.6항 충족 시)도 허용. (IMDG amdt 38-16 P010)'
+  },
+  P402: {
+    caption: 'P402 포장지침 (물반응성 액체)',
+    note: '① 압력용기(강재, 최초시험 0.6MPa(6bar) 이상, 10년 정기시험, 운송 중 액체는 0.2bar 이상 불활성가스 층 아래). ② 결합용기(아래). ③④ 단일/복합용기. 내장용기는 나사식 폐쇄구+불활성 완충재·흡수제로 감쌀 것.',
+    comboCols: ['최대 순질량'], singleCols: ['최대 용량'],
+    innerRows: [['유리', '10 kg'], ['금속·플라스틱', '15 kg']],
+    outer: [
+      { g: '외장용기 (외장용기당 최대 125 kg)', rows: [['드럼 (1A1,1A2,1B1,1B2,1N1,1N2,1H1,1H2,1D,1G)', '125 kg'], ['상자 (4A,4B,4N,4C1,4C2,4D,4F,4G,4H1,4H2)', '125 kg'], ['제리캔 (3A1,3A2,3B1,3B2,3H1,3H2)', '125 kg']] }
+    ],
+    single: [
+      { g: '드럼', rows: [['강재 드럼 (1A1)', '250 L']] },
+      { g: '복합용기', rows: [['플라스틱 내용기 강재/알루미늄 드럼 (6HA1, 6HB1)', '250 L']] }
+    ],
+    foot: '특별포장규정 PP31(지정 UN 기밀밀봉) 등은 IMDG 4.1.4.1 P402 원문 참조. (amdt 38-16)'
+  },
+  P403: {
+    caption: 'P403 포장지침 (물반응성/자연발화성 고체 등)',
+    note: '4.1.1절·4.1.3절 일반규정 충족 시 허용. 내장용기는 기밀밀봉(테이프·나사식 폐쇄구).',
+    comboCols: ['최대 순질량'], singleCols: ['최대 순질량'],
+    innerRows: [['유리', '2 kg'], ['플라스틱', '15 kg'], ['금속', '20 kg']],
+    outer: [
+      { g: '드럼', rows: [['강재 (1A1, 1A2)', '400 kg'], ['알루미늄 (1B1, 1B2)', '400 kg'], ['기타 금속 (1N1, 1N2)', '400 kg'], ['플라스틱 (1H1, 1H2)', '400 kg'], ['합판 (1D)', '400 kg'], ['파이버 (1G)', '400 kg']] },
+      { g: '상자', rows: [['강재 (4A)', '400 kg'], ['알루미늄 (4B)', '400 kg'], ['기타 금속 (4N)', '400 kg'], ['천연목재 (4C1)', '250 kg'], ['천연목재 분말누출방지벽형 (4C2)', '250 kg'], ['합판 (4D)', '250 kg'], ['재생목재 (4F)', '125 kg'], ['파이버보드 (4G)', '125 kg'], ['발포 플라스틱 (4H1)', '60 kg'], ['경질 플라스틱 (4H2)', '250 kg']] },
+      { g: '제리캔', rows: [['강재 (3A1, 3A2)', '120 kg'], ['알루미늄 (3B1, 3B2)', '120 kg'], ['플라스틱 (3H1, 3H2)', '120 kg']] }
+    ],
+    single: [
+      { g: '드럼', rows: [['강재 (1A1, 1A2)', '250 kg'], ['알루미늄 (1B1, 1B2)', '250 kg'], ['기타 금속 (1N1, 1N2)', '250 kg'], ['플라스틱 (1H1, 1H2)', '250 kg']] },
+      { g: '제리캔', rows: [['강재 (3A1, 3A2)', '120 kg'], ['알루미늄 (3B1, 3B2)', '120 kg'], ['플라스틱 (3H1, 3H2)', '120 kg']] },
+      { g: '복합용기', rows: [['플라스틱 내용기 강재/알루미늄 드럼 (6HA1, 6HB1)', '250 kg'], ['플라스틱 내용기 파이버/플라스틱/합판 드럼 (6HG1, 6HH1, 6HD1)', '75 kg'], ['플라스틱 내용기 상자 (6HA2·6HB2·6HC·6HD2·6HG2·6HH2)', '75 kg']] }
+    ],
+    foot: '압력용기(제4.1.3.6항 충족 시)도 허용. 특별포장규정 PP31(지정 UN 기밀밀봉)은 원문 참조. (amdt 38-16 P403)'
+  },
+  P404: {
+    caption: 'P404 포장지침 (자연발화성 고체 pyrophoric)',
+    note: '적용 UN: 1383·1854·1855·2008·2441·2545·2546·2846·2881·3200·3391·3393. 내장용기: 금속(15kg, 기밀밀봉·나사식) 또는 유리(1kg, 개스킷·완충 후 기밀 금속캔 수납).',
+    comboCols: ['최대 순질량'], singleCols: ['최대 총질량'],
+    innerRows: [['금속', '15 kg'], ['유리', '1 kg']],
+    outer: [
+      { g: '외장용기 (외장용기당 최대 125 kg)', rows: [['드럼/상자 (1A1,1A2,1B1,1B2,1N1,1N2,1H1,1H2,1D,1G,4A,4B,4N,4C1,4C2,4D,4F,4G,4H2)', '125 kg']] }
+    ],
+    single: [
+      { g: '금속용기', rows: [['1A1,1A2,1B1,1N1,1N2,3A1,3A2,3B1,3B2', '150 kg']] },
+      { g: '복합용기', rows: [['플라스틱 내용기 강재/알루미늄 드럼 (6HA1, 6HB1)', '150 kg']] }
+    ],
+    foot: '압력용기(제4.1.3.6항 충족 시)도 허용. PP31·PP86(UN3391·3393 질소치환 등)은 원문 참조. (amdt 38-16 P404)'
   }
 };
 function renderPackTableHtml(code) {
   const t = PACKTABLE[code]; if (!t) return '';
   const e = escapeHtml;
-  const grpTable = (head, groups) => {
-    let h = `<table class="pack-table"><tr><th>${e(head)}</th><th>PG I</th><th>PG II</th><th>PG III</th></tr>`;
+  const comboCols = t.comboCols || ['PG I', 'PG II', 'PG III'];   // 결합-외장 값 열
+  const singleCols = t.singleCols || ['PG I', 'PG II', 'PG III']; // 단일용기 값 열
+  const grpTable = (head, groups, cols) => {
+    const span = cols.length + 1;
+    let h = `<table class="pack-table"><tr><th>${e(head)}</th>${cols.map(c => `<th>${e(c)}</th>`).join('')}</tr>`;
     groups.forEach(gr => {
-      h += `<tr class="pack-grp"><td colspan="4">${e(gr.g)}</td></tr>`;
-      gr.rows.forEach(r => h += `<tr><td>${e(r[0])}</td><td>${e(r[1])}</td><td>${e(r[2])}</td><td>${e(r[3])}</td></tr>`);
+      h += `<tr class="pack-grp"><td colspan="${span}">${e(gr.g)}</td></tr>`;
+      gr.rows.forEach(r => { h += `<tr><td>${e(r[0])}</td>` + cols.map((_, k) => `<td>${e(r[1 + k] == null ? '' : r[1 + k])}</td>`).join('') + `</tr>`; });
     });
     return h + '</table>';
   };
@@ -1206,19 +1270,19 @@ function renderPackTableHtml(code) {
     // 그림처럼 내장용기(좌) + 외장용기(우) 병렬 배치 — 내장용기 2열은 전체 행에 rowspan
     const seq = [];
     t.outer.forEach(gr => { seq.push({ grp: gr.g }); gr.rows.forEach(r => seq.push({ row: r })); });
-    const N = seq.length;
+    const N = seq.length, cspan = comboCols.length + 1;
     const inNames = t.innerRows.map(r => e(r[0])).join('<br>');
     const inCaps = t.innerRows.map(r => e(r[1])).join('<br>');
     h += `<div class="pack-sec">결합용기 (Combination packaging)</div>`;
-    h += `<table class="pack-table pack-combo"><tr><th colspan="2">내장용기</th><th>외장용기</th><th>PG I</th><th>PG II</th><th>PG III</th></tr>`;
+    h += `<table class="pack-table pack-combo"><tr><th colspan="2">내장용기</th><th>외장용기</th>${comboCols.map(c => `<th>${e(c)}</th>`).join('')}</tr>`;
     seq.forEach((it, i) => {
       const left = i === 0 ? `<td class="pack-inner" rowspan="${N}">${inNames}</td><td class="pack-inner" rowspan="${N}">${inCaps}</td>` : '';
-      if (it.grp) h += `<tr>${left}<td class="pack-grp" colspan="4">${e(it.grp)}</td></tr>`;
-      else { const r = it.row; h += `<tr>${left}<td>${e(r[0])}</td><td>${e(r[1])}</td><td>${e(r[2])}</td><td>${e(r[3])}</td></tr>`; }
+      if (it.grp) h += `<tr>${left}<td class="pack-grp" colspan="${cspan}">${e(it.grp)}</td></tr>`;
+      else { const r = it.row; h += `<tr>${left}<td>${e(r[0])}</td>` + comboCols.map((_, k) => `<td>${e(r[1 + k] == null ? '' : r[1 + k])}</td>`).join('') + `</tr>`; }
     });
     h += `</table>`;
   }
-  if (t.single) { h += `<div class="pack-sec">단일용기 (Single)</div>` + grpTable('단일용기', t.single); }
+  if (t.single) { h += `<div class="pack-sec">단일용기 (Single)</div>` + grpTable('단일용기', t.single, singleCols); }
   if (t.foot) h += `<div class="pack-foot">${e(t.foot)}</div>`;
   return h + '</div>';
 }
