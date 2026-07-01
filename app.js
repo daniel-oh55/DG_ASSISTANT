@@ -90,6 +90,41 @@ const REF = {
     H5: { desc: 'Handling code H5. Please verify exact wording against the current IMDG Code.' }
   },
 
+  // 포장/탱크 코드 (IMDG 4.1 포장지침 P·LP·IBC / 4.2·6.7 이동식탱크 T·TP / 특별규정 PP·B)
+  // 자주 나오는 코드 위주. 없는 코드는 접두사 기반 일반 설명으로 자동 안내(getImdgCodeInfo PACK 분기).
+  packcode: {
+    P001: { desc: '액체(LIQUIDS)용 포장지침. 드럼·제리캔·박스·복합용기·압력용기 허용, 포장등급(PG I/II/III)별 용기 종류·최대 수용량 규정. (IMDG 4.1.4 P001)' },
+    P002: { desc: '고체(SOLIDS)용 포장지침. 드럼·박스·복합용기 허용, PG별 규정. (P002)' },
+    P003: { desc: '물품(Articles)·특수형태 물질용 포장지침.' },
+    P010: { desc: '특정 액체(물반응성 등)용 금속·복합 용기 지침.' },
+    P099: { desc: '주관청(관할당국)이 승인한 포장만 사용 가능.' },
+    P101: { desc: '주관청이 승인한 포장만 사용 가능.' },
+    P200: { desc: '압축·액화 가스(Class 2)용 실린더·튜브·압력용기 지침. 시험주기·충전비·밸브 보호 규정.' },
+    P203: { desc: '냉동액화가스용 용기 지침.' },
+    P400: { desc: '자연발화성/물반응성 물질용 포장지침.' },
+    P500: { desc: '산화성 물질(Class 5.1)용 포장지침.' },
+    P520: { desc: '유기과산화물(Class 5.2)용 포장지침.' },
+    P620: { desc: '감염성 물질(UN2814/2900)용 포장지침(엄격 요건).' },
+    P650: { desc: '진단용 검체 등 UN3373(Category B)용 포장지침.' },
+    P801: { desc: '납축전지(신품·중고) 포장지침.' },
+    P903: { desc: '리튬전지(UN3480/3481/3090/3091 등) 포장지침.' },
+    P910: { desc: '소량생산·시제품 리튬전지 포장지침.' },
+    LP01: { desc: '대형포장(Large Packaging) - 액체용.' },
+    LP02: { desc: '대형포장(Large Packaging) - 고체용.' },
+    IBC01: { desc: '액체용 금속 IBC.' }, IBC02: { desc: '액체용 IBC(금속·경질플라스틱·복합).' }, IBC03: { desc: '액체용 IBC.' },
+    IBC04: { desc: '고체(중력식 충전·배출)용 금속 IBC.' }, IBC05: { desc: '고체용 IBC.' }, IBC06: { desc: '고체용 IBC.' },
+    IBC07: { desc: '고체용 IBC.' }, IBC08: { desc: '고체용 IBC.' }, IBC99: { desc: '주관청 승인 IBC만 사용 가능.' },
+    IBC100: { desc: '특정 폭발성 물질용 IBC.' }, IBC520: { desc: '지정 유기과산화물/자기반응성 물질용 IBC(농도·용량 조건).' },
+    T11: { desc: '이동식 탱크 지침 T11: 최소 시험압력 6 bar, 하부 개구 허용, 감압장치 등 규정(액체 위험물).' },
+    T23: { desc: '자기반응성 물질·유기과산화물용 이동식 탱크 지침.' },
+    T50: { desc: '이동식 탱크 지침 T50: 비냉동 액화가스용.' },
+    T75: { desc: '이동식 탱크 지침 T75: 냉동액화가스용.' },
+    TP1: { desc: '충전율(Degree of filling) 규정: 충전율이 97 / (1 + α(t_r − t_f)) % 를 초과하지 않아야 함.' },
+    TP2: { desc: '충전율 규정: 95 / (1 + α(t_r − t_f)) % 초과 금지.' },
+    TP8: { desc: '인화점이 0℃를 초과하는 물질은 시험압력을 1.5 bar로 낮춰 사용 가능.' },
+    TP28: { desc: '해당 물질의 증기압을 반영해 산정한 시험압력 이상의 이동식 탱크 사용.' },
+    B20: { desc: 'IBC 특별규정 B20: 지정 조건(재질·구조) 하에서만 IBC 사용 허용.' }
+  },
 
   // SG Code 정의 (엑셀 SGCODE 시트 전체 — reqSeg 있는 항목만 격리 엔진에 사용)
   // type: 'CLASS' | 'SGG' | 'UNNO' | ''
@@ -905,16 +940,16 @@ view.innerHTML = `
         <div class="grid-cell col-2 header-sub">Provisions</div>
 
         <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">Packing</div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.p_inst}</div></div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.p_prov}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.p_inst)}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.p_prov)}</div></div>
 
         <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">IBCs</div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.ibc_inst}</div></div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.ibc_prov}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.ibc_inst)}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.ibc_prov)}</div></div>
 
         <div class="grid-cell col-2 header-sub" style="background:transparent !important; color:var(--accent) !important; text-align:left; padding-left:15px !important;">Tanks</div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.tank_inst}</div></div>
-        <div class="grid-cell col-2"><div class="cell-value">${res.tank_prov}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.tank_inst)}</div></div>
+        <div class="grid-cell col-2"><div class="cell-value">${renderPackingCodeLinks(res.tank_prov)}</div></div>
 
         <div class="grid-cell col-4 header-sub">(16a) Stowage and Handling</div>
         <div class="grid-cell col-2 header-sub">(16b) Segregation</div>
@@ -1067,6 +1102,22 @@ function renderImdgCodeLinks(text) {
     return result || escapeHtml(clean);
 }
 
+// 포장/탱크 코드(P·LP·IBC·T·TP·PP·B)를 클릭 가능한 링크로 렌더 → openImdgCodeModal('PACK', code)
+function renderPackingCodeLinks(text) {
+    const clean = String(text || '').trim();
+    if (!clean || clean === '-' || clean === '—') return '-';
+    const pattern = /\b(LP|IBC|TP|PP|BB|P|T|B|R)\s*(\d{1,3}[A-Za-z]?)\b/gi;
+    let result = '', last = 0, m;
+    while ((m = pattern.exec(clean)) !== null) {
+        const code = (m[1] + m[2]).toUpperCase();
+        result += escapeHtml(clean.slice(last, m.index));
+        result += `<button type="button" class="imdg-code-link-btn imdg-code-pack" onclick="openImdgCodeModal('PACK','${escapeHtml(code)}')">${escapeHtml(code)}</button>`;
+        last = pattern.lastIndex;
+    }
+    result += escapeHtml(clean.slice(last));
+    return result || escapeHtml(clean);
+}
+
 function getImdgCodeInfo(prefix, code) {
     const normalizedPrefix = String(prefix || '').toUpperCase();
     const normalizedCode = String(code || '').toUpperCase();
@@ -1128,6 +1179,24 @@ function getImdgCodeInfo(prefix, code) {
             subtitle: 'Handling Code',
             content: h?.desc || `${normalizedCode} 설명이 아직 등록되어 있지 않습니다.`
         };
+    }
+
+    if (normalizedPrefix === 'PACK') {
+        const c = normalizedCode;
+        const item = REF.packcode?.[c];
+        let content = item?.desc;
+        if (!content) {
+            if (/^LP/.test(c)) content = '대형포장(Large Packaging) 지침 — IMDG Code 4.1. 용기 종류·수용량 조건은 해당 지침 원문 참조.';
+            else if (/^IBC/.test(c)) content = 'IBC(중형산적용기) 포장지침 — IMDG Code 4.1. 허용 IBC 종류·조건 규정.';
+            else if (/^TP/.test(c)) content = '이동식 탱크 특별규정(TP) — IMDG Code 4.2.5. 충전율·시험압력 등 추가 조건.';
+            else if (/^T/.test(c)) content = '이동식 탱크 지침(T) — IMDG Code 4.2/6.7. 최소 시험압력·판 두께·개구·감압장치 규정(번호가 클수록 엄격).';
+            else if (/^PP/.test(c)) content = '포장 특별규정(PP) — IMDG Code 4.1. 특정 물질의 추가 포장 조건.';
+            else if (/^B/.test(c)) content = 'IBC 특별규정(B) — IMDG Code 4.1. IBC 사용 시 추가 조건.';
+            else if (/^P/.test(c)) content = '포장지침(P) — IMDG Code 4.1. 용기 종류·포장등급(PG)별 허용포장·최대 수용량 규정.';
+            else content = `${c} 코드 설명이 아직 등록되어 있지 않습니다.`;
+            content += ' ※ 정확한 조건은 IMDG Code 원문 대조가 필요합니다.';
+        }
+        return { title: c, group: 'Packing / Tank Code', subtitle: 'IMDG 포장·탱크 지침', content };
     }
 
     return {

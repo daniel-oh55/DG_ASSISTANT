@@ -3034,6 +3034,10 @@ header span {
     font-weight: 900;
 }
 
+.imdg-code-pack {
+    color: #6ee7a8;
+}
+
 .sidebar-logo-box {
     cursor: pointer;
 }
@@ -4309,6 +4313,10 @@ header span {
 
 [data-theme="bright"] .imdg-code-sw {
     color: #3177c8;
+}
+
+[data-theme="bright"] .imdg-code-pack {
+    color: #1a7f4b;
 }
 
 [data-theme="bright"] .imdg-code-h,
