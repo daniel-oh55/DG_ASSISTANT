@@ -7078,13 +7078,12 @@ function fireCargoViewImage(itemId, idx) {
   else bind();
 })();
 
-
 /* ==================================================================
-   선박/항차별 스페셜화물 (Special Cargo by Vessel / Voyage) v2
-   - 담당 선박 여러 척 선택 → 선박/항차 요약 리스트 → 항차 클릭 시 상세 조회
-   - 데이터: 사용자 Supabase inquiry_state(id='special_cargo')
-             (이 PC 수집기 collect_special_cargo.py 가 부킹 API에서 적재)
-   - DG 보강(CATEGORY·격리코드·산/알칼리): 기존 /api/dg-search (DG_TABLE), 상세 조회 시 on-demand
+   선박/항차별 스페셜화물 (Special Cargo by Vessel / Voyage) v3
+   - 담당 선박 여러 척 선택(칩) → 선박/항차 요약 리스트 → 항차 클릭 시 상세 조회
+   - 선택 선박은 서비스필터와 무관하게 전체 항차 표시(필터는 '선박 추가' 목록에만 적용)
+   - 혼적(같은 부킹 복수 위험물) 있는 항차 상세에 '혼적체크' 버튼 → IMDG 7.2.4 격리 판정
+   - 데이터: 사용자 Supabase inquiry_state(id='special_cargo') / DG 보강: /api/dg-search
    ================================================================== */
 (function () {
   const SC_ROW_ID = 'special_cargo';
@@ -7102,7 +7101,6 @@ function fireCargoViewImage(itemId, idx) {
     try {
       const s = JSON.parse(localStorage.getItem(SC_SEL_KEY) || 'null');
       if (s) { SC.sel.svc = s.svc || ''; SC.sel.vessels = Array.isArray(s.vessels) ? s.vessels : []; return; }
-      // v1 → v2 이전
       const old = JSON.parse(localStorage.getItem(SC_OLD_KEY) || 'null');
       if (old) { SC.sel.svc = old.svc || ''; SC.sel.vessels = old.vsl ? [old.vsl] : []; }
     } catch (e) { }
@@ -7161,7 +7159,7 @@ function fireCargoViewImage(itemId, idx) {
     if (!svcSel) return;
     svcSel.innerHTML = '<option value="">— 전체 —</option>' + scServices().map(s => `<option value="${scEsc(s)}">${scEsc(s)}</option>`).join('');
     svcSel.value = SC.sel.svc || '';
-    // 선박 추가 목록: 서비스 필터 적용, 이미 선택된 선박 제외
+    // '선박 추가' 목록만 서비스 필터 적용, 이미 선택된 선박 제외
     const pool = scVesselsForSvc(SC.sel.svc).filter(v => SC.sel.vessels.indexOf(v.vsl) < 0);
     addSel.innerHTML = '<option value="">＋ 선박 선택하여 추가</option>' + pool.map(v => `<option value="${scEsc(v.vsl)}">${scEsc(scVName(v))}</option>`).join('');
     addSel.value = '';
@@ -7212,15 +7210,16 @@ function fireCargoViewImage(itemId, idx) {
   function scOogTable(voy) {
     if (!(voy.oog || []).length) return '';
     const rows = voy.oog.map(o => {
-      const dim = (o.L || o.W || o.H) ? `${scNum(o.L)}×${scNum(o.W)}×${scNum(o.H)}` : '-';
+      // 치수: L(길이) × W(폭) × H(높이) 순
+      const dim = (o.L || o.W || o.H) ? `L ${scNum(o.L)} × W ${scNum(o.W)} × H ${scNum(o.H)}` : '-';
       return `<tr><td>${scEsc(o.ctr_size)}</td><td>${scEsc(o.ctr_type)}</td><td class="sc-c">${scEsc(o.qty)}</td>
         <td>${scEsc(o.item || '')}</td><td class="sc-c">${o.weight_kg ? scNum(o.weight_kg) : '-'}</td>
-        <td class="sc-c">${dim}</td><td class="sc-seg">${scEsc(scOverText(o))}</td>
+        <td class="sc-seg">${dim}</td><td class="sc-seg">${scEsc(scOverText(o))}</td>
         <td class="sc-c">${o.bb ? '<span class="sc-badge sc-mix">BB</span>' : '-'}</td></tr>`;
     }).join('');
     return `<div class="sc-subtitle">📐 초과규격 (OOG) <span>${voy.oog.length}건</span></div>
       <div class="sc-table-wrap"><table class="sc-table">
-        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>중량(kg)</th><th>치수 L×W×H(cm)</th><th>초과규격</th><th>BB</th></tr></thead>
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>중량(kg)</th><th>치수 L(길이)×W(폭)×H(높이) cm</th><th>초과규격</th><th>BB</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
   }
   function scFbTable(voy) {
@@ -7230,6 +7229,46 @@ function fireCargoViewImage(itemId, idx) {
       <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>화물품목</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
+  // ---- 혼적체크 (IMDG 7.2.4 격리표, 같은 부킹 복수 위험물) ----
+  function scHasMixed(voy) { return (voy.dg || []).some(d => d.mixed); }
+  function scSegColor(seg) {
+    if (seg.worst >= 3) return 'var(--red)';
+    if (seg.worst >= 1 || seg.anyAmbiguous || seg.hasStar || seg.anyUnknown || seg.allow === 'check') return 'var(--yellow)';
+    return 'var(--green)';
+  }
+  function scSegPanelHtml(title, seg) {
+    const color = scSegColor(seg);
+    const lab = x => x.unno ? ('UN' + x.unno) : ('Class ' + (x.cls || '?'));
+    const rows = (seg.pairs || []).map(p => {
+      const head = scEsc(lab(p.A)) + ' ↔ ' + scEsc(lab(p.B));
+      if (p.unknown) return `<li><b>${head}</b> : 클래스 미상 — 수동 확인 필요</li>`;
+      if (p.ambiguous) { const gl = p.groups.map(g => scEsc(g.keys.join('·')) + '이면 <b>' + scEsc(g.label) + '</b>').join(' · '); return `<li><b>${head}</b> : 세부분류별 — ${gl}</li>`; }
+      return `<li><b>${head}</b> : ${scEsc(p.groups.map(g => g.label).join(', '))}</li>`;
+    }).join('');
+    return `<div class="sc-seg-card" style="border-left-color:${color}">
+      <div class="sc-seg-title">${scEsc(title)}</div>
+      <div class="sc-seg-verdict" style="color:${color}">${scEsc(seg.verdict)}</div>
+      ${seg.cargos && seg.cargos.length ? `<div class="sc-seg-cargos">대상: ${seg.cargos.map(scEsc).join(' / ')}</div>` : ''}
+      ${rows ? `<ul class="sc-seg-list">${rows}</ul>` : ''}
+    </div>`;
+  }
+  function scRunSegCheck() {
+    const box = scEl('scSegResult'); if (!box || !SC.active) return;
+    if (typeof fqSegregationCheck !== 'function') { box.innerHTML = '<div class="sc-empty">격리 판정 엔진을 찾을 수 없습니다.</div>'; return; }
+    const vy = scVoyagesForVsl(SC.active.vsl, '').find(x => x.vyg === SC.active.vyg); if (!vy) return;
+    const byBk = {};
+    (vy.dg || []).forEach(d => { (byBk[d.bk_no] = byBk[d.bk_no] || []).push(d); });
+    const mixed = Object.keys(byBk).map(bk => [bk, byBk[bk]]).filter(([bk, items]) => new Set(items.map(i => i.unno)).size >= 2);
+    if (!mixed.length) { box.innerHTML = '<div class="sc-empty">혼적(같은 부킹 내 복수 위험물) 화물이 없습니다.</div>'; return; }
+    const html = mixed.map(([bk, items]) => {
+      const seen = new Set(), rows = [];
+      items.forEach(d => { if (!seen.has(d.unno)) { seen.add(d.unno); rows.push({ unno: d.unno, class: d.class, name: d.commodity || (SC.dgMap[d.unno] && SC.dgMap[d.unno].name) || '' }); } });
+      return scSegPanelHtml(`부킹 ${bk} — 위험물 ${rows.length}종`, fqSegregationCheck(rows));
+    }).join('');
+    box.innerHTML = `<div class="sc-seg-head">🔀 혼적체크 결과 <span>· 같은 부킹 내 복수 위험물의 IMDG 7.2.4 격리표 판정</span></div>${html}`;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   // ---- 요약 리스트 (선택 선박/항차) ----
   function scRenderList() {
     const list = scEl('scList'); if (!list) return;
@@ -7237,20 +7276,22 @@ function fireCargoViewImage(itemId, idx) {
     const blocks = SC.sel.vessels.map(code => {
       const v = scVesselObj(code);
       if (!v) return `<div class="sc-list-vessel"><div class="sc-list-vhead">🚢 ${scEsc(code)} <span>데이터 없음</span></div></div>`;
-      let voys = scVoyagesForVsl(code, SC.sel.svc).slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
+      // 선택 선박은 서비스필터 무관 전체 항차 표시(필터 기준=선박)
+      let voys = scVoyagesForVsl(code, '').slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
       const rows = voys.length ? voys.map(vy => {
         const t = vy.totals || {}; const route = [vy.pol, vy.pod].filter(Boolean).join(' → ');
         const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg;
+        const mixMark = scHasMixed(vy) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
         return `<tr class="sc-list-row${isAct ? ' active' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}">
           <td class="sc-lc-vyg">${scEsc(vy.vyg)}</td><td>${scEsc(vy.svc || '')}</td><td class="sc-c">${scYmd(vy.etd)}</td>
           <td class="sc-seg">${scEsc(route)}</td><td class="sc-c">${t.c20 || 0}</td><td class="sc-c">${t.c40 || 0}</td>
-          <td class="sc-c">${(vy.dg || []).length ? `<span class="sc-mini sc-mini-dg">${vy.dg.length}</span>` : '-'}</td>
+          <td class="sc-c">${(vy.dg || []).length ? `<span class="sc-mini sc-mini-dg">${vy.dg.length}</span>${mixMark}` : '-'}</td>
           <td class="sc-c">${(vy.oog || []).length ? `<span class="sc-mini sc-mini-oog">${vy.oog.length}</span>` : '-'}</td>
           <td class="sc-c">${(vy.fb || []).length ? `<span class="sc-mini sc-mini-fb">${vy.fb.length}</span>` : '-'}</td>
           <td class="sc-c"><span class="sc-view-btn">조회 ▸</span></td></tr>`;
-      }).join('') : '<tr><td colspan="10" class="sc-c" style="color:var(--muted)">해당 조건의 항차 없음</td></tr>';
+      }).join('') : '<tr><td colspan="10" class="sc-c" style="color:var(--muted)">항차 없음</td></tr>';
       return `<div class="sc-list-vessel">
         <div class="sc-list-vhead">🚢 ${scEsc(scVName(v))} <span>· 항차 ${voys.length}</span>
           <span class="sc-vhead-tot">20' <b>${c20}</b> · 40' <b>${c40}</b> · <em class="sc-t-dg">DG ${ndg}</em> · <em class="sc-t-oog">OOG ${noog}</em> · <em class="sc-t-fb">FB ${nfb}</em></span></div>
@@ -7264,7 +7305,7 @@ function fireCargoViewImage(itemId, idx) {
   // ---- 상세 조회 (항차 클릭 시) ----
   async function scOpenDetail(vsl, vyg) {
     SC.active = { vsl, vyg };
-    scRenderList(); // active 하이라이트 갱신
+    scRenderList();
     const det = scEl('scDetail'); if (!det) return;
     const v = scVesselObj(vsl); const vy = scVoyagesForVsl(vsl, '').find(x => x.vyg === vyg);
     if (!v || !vy) { det.innerHTML = ''; return; }
@@ -7272,6 +7313,10 @@ function fireCargoViewImage(itemId, idx) {
     await scEnrich((vy.dg || []).map(d => d.unno));
     const route = [vy.pol, vy.pod].filter(Boolean).join(' → ');
     const t = vy.totals || {};
+    const ndg = (vy.dg || []).length, noog = (vy.oog || []).length, nfb = (vy.fb || []).length;
+    const segBar = scHasMixed(vy)
+      ? `<div class="sc-segbar"><button type="button" id="scSegBtn" class="sc-segbtn">🔀 혼적체크 — 같은 부킹 복수 위험물 격리판정</button></div><div id="scSegResult"></div>`
+      : '';
     det.innerHTML = `<div class="sc-detail-inner">
       <div class="sc-detail-head">
         <div><span class="sc-vyg">${scEsc(v.vsl)} / ${scEsc(vy.vyg)}</span>
@@ -7281,8 +7326,9 @@ function fireCargoViewImage(itemId, idx) {
           ${route ? `<span class="sc-route">${scEsc(route)}</span>` : ''}</div>
         <span class="sc-tot">20' <b>${t.c20 || 0}</b> · 40' <b>${t.c40 || 0}</b></span>
       </div>
+      ${segBar}
       ${scDgTable(vy) || ''}${scOogTable(vy) || ''}${scFbTable(vy) || ''}
-      ${(!(vy.dg || []).length && !(vy.oog || []).length && !(vy.fb || []).length) ? '<div class="sc-empty">이 항차엔 스페셜화물이 없습니다.</div>' : ''}
+      ${(ndg || noog || nfb) ? `<div class="sc-detail-foot">이 항차 합계 · <em class="sc-t-dg">DG ${ndg}건</em> · <em class="sc-t-oog">OOG ${noog}건</em> · <em class="sc-t-fb">FB ${nfb}건</em> · 컨테이너 20' <b>${t.c20 || 0}</b> · 40' <b>${t.c40 || 0}</b></div>` : '<div class="sc-empty">이 항차엔 스페셜화물이 없습니다.</div>'}
     </div>`;
     det.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -7306,20 +7352,19 @@ function fireCargoViewImage(itemId, idx) {
     SC.loading = false;
     if (!SC.data || !(SC.data.vessels || []).length) {
       scRenderMeta();
-      if (list) list.innerHTML = '<div class="sc-empty">아직 수집된 스페셜화물 데이터가 없습니다. 수집기(collect_special_cargo.py)가 실행되면 표시됩니다.</div>';
+      if (list) list.innerHTML = '<div class="sc-empty">아직 수집된 스페셜화물 데이터가 없습니다. 수집기가 실행되면 표시됩니다.</div>';
       return;
     }
-    // 저장된 선박 중 현재 데이터에 없는 코드 정리
     SC.sel.vessels = SC.sel.vessels.filter(c => scVesselObj(c));
     scRenderMeta(); scFillControls(); scRenderList();
-    if (force && SC.active) { scEl('scDetail').innerHTML = ''; SC.active = null; }
+    if (force) { SC.active = null; const d = scEl('scDetail'); if (d) d.innerHTML = ''; }
   }
 
   // ---- 이벤트 ----
   let scBound = false;
   function scBind() {
     if (scBound) return; scBound = true;
-    const svc = scEl('scSvcSel'), add = scEl('scVslAdd'), rl = scEl('scReloadBtn'), chips = scEl('scChips'), list = scEl('scList'), rem = scEl('scRemember');
+    const svc = scEl('scSvcSel'), add = scEl('scVslAdd'), rl = scEl('scReloadBtn'), chips = scEl('scChips'), list = scEl('scList'), rem = scEl('scRemember'), det = scEl('scDetail');
     if (svc) svc.addEventListener('change', () => { SC.sel.svc = svc.value; scSaveSel(); scFillControls(); scRenderList(); });
     if (add) add.addEventListener('change', () => {
       const code = add.value; if (code && SC.sel.vessels.indexOf(code) < 0) { SC.sel.vessels.push(code); scSaveSel(); scFillControls(); scRenderList(); }
@@ -7332,11 +7377,11 @@ function fireCargoViewImage(itemId, idx) {
     if (list) list.addEventListener('click', e => {
       const row = e.target.closest('.sc-list-row'); if (row) scOpenDetail(row.getAttribute('data-vsl'), row.getAttribute('data-vyg'));
     });
+    if (det) det.addEventListener('click', e => { if (e.target.closest('#scSegBtn')) scRunSegCheck(); });
     if (rl) rl.addEventListener('click', () => scLoad(true));
     if (rem) rem.addEventListener('change', scSaveSel);
   }
 
-  // activateTab('tab-special') 에서 호출
   window.scRender = function () {
     scBind(); scLoadSel();
     if (!SC.data) scLoad(false);
