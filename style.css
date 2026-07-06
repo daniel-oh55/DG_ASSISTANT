@@ -5731,3 +5731,8 @@ body { top: 0 !important; position: static !important; }
 .sc-lc-mid { color: var(--muted); white-space: nowrap; }
 .sc-lc-vygc, .sc-lc-mid { background: rgba(127,127,127,0.05); }
 .sc-voy-first > td { border-top: 2px solid var(--border); }
+
+/* ===== 스페셜화물 v8: 기항순 + 빈 포트 표시 ===== */
+.sc-empty-port .sc-lc-pol { color: var(--muted); font-weight: 400; }
+.sc-none { color: var(--muted); font-size: 12px; }
+.sc-empty-port .sc-view-btn { opacity: 0.5; }

@@ -7263,9 +7263,9 @@ function fireCargoViewImage(itemId, idx) {
   }
   function scFbTable(voy) {
     if (!(voy.fb || []).length) return '';
-    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.pod || '-')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
+    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.ctr_size || '-')}</td><td>${scEsc(f.ctr_type || '드라이(GP)')}</td><td class="sc-c">${scEsc(f.qty || '-')}</td><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.pod || '-')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
     return `<div class="sc-subtitle">🛢️ 플렉시백 (FB) <span>${voy.fb.length}건</span></div>
-      <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>화물품목</th><th>양하지</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>양하지</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
   // ---- 혼적체크 (IMDG 7.2.4 격리표, 같은 부킹 복수 위험물) ----
@@ -7320,29 +7320,41 @@ function fireCargoViewImage(itemId, idx) {
       let voys = scVoyagesForVsl(code, '').filter(vy => scInRange(vy.etd)).slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
-      // 선적지(POL)별로 행 분리 — 같은 항차라도 KRPUS·KRKAN 등 각각 조회.
-      // 항차/SVC/ETD는 rowspan으로 병합해 그 항차 전체에 해당함을 표시.
+      // 선적지 행: 기항 스케줄(rotation)의 선적항을 기항순으로. 화물 없는 포트도 '없음' 표시.
+      // 항차/SVC는 rowspan 병합, ETD는 포트별(기항 출항일).
       const rowArr = [];
       voys.forEach(vy => {
-        const pols = scPolsOf(vy).sort();
-        const polList = pols.length ? pols : [''];   // pol 미상이면 단일 행
-        const n = polList.length;
-        polList.forEach((pol, pi) => {
-          const fv = scFilterByPol(vy, pol);
+        const rot = (vy.rotation && vy.rotation.length) ? vy.rotation : null;
+        const cargoPols = scPolsOf(vy);
+        let portRows;   // [{port, etd}]
+        if (rot) {
+          portRows = rot.map(r => ({ port: r.port, etd: r.etd }));
+          cargoPols.forEach(p => { if (!rot.some(r => r.port === p)) portRows.push({ port: p, etd: vy.etd }); });
+        } else {
+          portRows = (cargoPols.length ? cargoPols.slice().sort() : ['']).map(p => ({ port: p, etd: vy.etd }));
+        }
+        const n = portRows.length;
+        portRows.forEach((pr, pi) => {
+          const fv = scFilterByPol(vy, pr.port);
+          const has = fv.dg.length || fv.oog.length || fv.fb.length;
           const sz = scSizeCount(fv);
-          const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg && (SC.active.pol || '') === pol;
+          const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg && (SC.active.pol || '') === pr.port;
           const mixMark = scHasMixed(fv) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
           const merged = pi === 0
             ? `<td rowspan="${n}" class="sc-lc-vygc"><span class="sc-lc-vyg">${scEsc(vy.vyg)}</span></td>`
             + `<td rowspan="${n}" class="sc-lc-mid">${scEsc(vy.svc || '')}</td>`
-            + `<td rowspan="${n}" class="sc-lc-mid">${scYmd(vy.etd)}</td>`
             : '';
-          rowArr.push(`<tr class="sc-list-row${isAct ? ' active' : ''}${pi === 0 ? ' sc-voy-first' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}" data-pol="${scEsc(pol)}">
+          const countCells = has
+            ? `<td class="sc-c">${sz.c20}</td><td class="sc-c">${sz.c40}</td>`
+            + `<td class="sc-c">${fv.dg.length ? `<span class="sc-mini sc-mini-dg">${fv.dg.length}</span>${mixMark}` : '-'}</td>`
+            + `<td class="sc-c">${fv.oog.length ? `<span class="sc-mini sc-mini-oog">${fv.oog.length}</span>` : '-'}</td>`
+            + `<td class="sc-c">${fv.fb.length ? `<span class="sc-mini sc-mini-fb">${fv.fb.length}</span>` : '-'}</td>`
+            : `<td class="sc-c" colspan="5"><span class="sc-none">스페셜화물 없음</span></td>`;
+          rowArr.push(`<tr class="sc-list-row${isAct ? ' active' : ''}${pi === 0 ? ' sc-voy-first' : ''}${has ? '' : ' sc-empty-port'}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}" data-pol="${scEsc(pr.port)}">
             ${merged}
-            <td class="sc-lc-pol">${scEsc(pol || '-')}</td><td class="sc-c">${sz.c20}</td><td class="sc-c">${sz.c40}</td>
-            <td class="sc-c">${fv.dg.length ? `<span class="sc-mini sc-mini-dg">${fv.dg.length}</span>${mixMark}` : '-'}</td>
-            <td class="sc-c">${fv.oog.length ? `<span class="sc-mini sc-mini-oog">${fv.oog.length}</span>` : '-'}</td>
-            <td class="sc-c">${fv.fb.length ? `<span class="sc-mini sc-mini-fb">${fv.fb.length}</span>` : '-'}</td>
+            <td class="sc-lc-mid">${scYmd(pr.etd)}</td>
+            <td class="sc-lc-pol">${scEsc(pr.port || '-')}</td>
+            ${countCells}
             <td class="sc-c"><span class="sc-view-btn">조회 ▸</span></td></tr>`);
         });
       });
