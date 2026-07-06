@@ -7155,6 +7155,17 @@ function fireCargoViewImage(itemId, idx) {
   // 항차의 선적지(POL) 목록 — 항목(컨테이너)별 pol 취합
   function scPolsOf(voy) { const s = new Set(); (voy.dg || []).concat(voy.oog || [], voy.fb || []).forEach(it => { if (it.pol) s.add(it.pol); }); return [...s]; }
   function scPolLabel(voy) { const p = scPolsOf(voy); if (!p.length) return voy.pol || '-'; if (p.length <= 3) return p.join(', '); return p.slice(0, 3).join(', ') + ' 외 ' + (p.length - 3) + '곳'; }
+  // 선적지(POL)로 항차 화물 필터 → voy 유사객체 반환 (pol 비면 전체)
+  function scFilterByPol(voy, pol) {
+    const f = it => !pol || it.pol === pol;
+    return Object.assign({}, voy, { dg: (voy.dg || []).filter(f), oog: (voy.oog || []).filter(f), fb: (voy.fb || []).filter(f) });
+  }
+  // dg+oog 항목의 20'/40' 컨테이너 합계
+  function scSizeCount(voy) {
+    let c20 = 0, c40 = 0;
+    (voy.dg || []).concat(voy.oog || []).forEach(it => { if (it.ctr_size === "20'") c20 += it.qty || 0; else if (it.ctr_size === "40'" || it.ctr_size === "45'") c40 += it.qty || 0; });
+    return { c20, c40 };
+  }
 
   // ---- 컨트롤(서비스/선박추가 셀렉트 + 칩) ----
   function scFillControls() {
@@ -7195,14 +7206,14 @@ function fireCargoViewImage(itemId, idx) {
         : '<span class="sc-badge sc-single">단독</span>';
       const nm = d.commodity || info.name || '';
       return `<tr><td>${scEsc(d.ctr_size)}</td><td>${scEsc(d.ctr_type)}</td><td class="sc-c">${scEsc(d.qty)}</td>
-        <td class="sc-c"><b>${scEsc(d.class)}</b></td><td class="sc-c">UN${scEsc(d.unno)}</td><td>${scEsc(nm)}</td>
-        <td class="sc-c">${scEsc(d.pod || '-')}</td>
+        <td class="sc-c"><b>${scEsc(d.class)}</b></td><td class="sc-c">UN${scEsc(d.unno)}</td>
+        <td class="sc-c">${scEsc(d.pod || '-')}</td><td>${scEsc(nm)}</td>
         <td>${mixed}</td><td class="sc-c">${scEsc(cat)}</td><td class="sc-seg">${scEsc(seg)}</td>
         <td class="sc-c">${aa ? `<span class="sc-badge sc-aa">${aa}</span>` : '-'}</td></tr>`;
     }).join('');
     return `<div class="sc-subtitle">🧪 위험물 (DG) <span>${voy.dg.length}건</span></div>
       <div class="sc-table-wrap"><table class="sc-table">
-        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>Class</th><th>UNNO</th><th>품명</th><th>양하지</th><th>혼적</th><th>Category</th><th>격리코드</th><th>산/알칼리<br>(Cl.8)</th></tr></thead>
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>Class</th><th>UNNO</th><th>양하지</th><th>품명</th><th>혼적</th><th>Category</th><th>격리코드</th><th>산/알칼리<br>(Cl.8)</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
   }
   function scOverText(o) {
@@ -7259,7 +7270,8 @@ function fireCargoViewImage(itemId, idx) {
   function scRunSegCheck() {
     const box = scEl('scSegResult'); if (!box || !SC.active) return;
     if (typeof fqSegregationCheck !== 'function') { box.innerHTML = '<div class="sc-empty">격리 판정 엔진을 찾을 수 없습니다.</div>'; return; }
-    const vy = scVoyagesForVsl(SC.active.vsl, '').find(x => x.vyg === SC.active.vyg); if (!vy) return;
+    const vyAll = scVoyagesForVsl(SC.active.vsl, '').find(x => x.vyg === SC.active.vyg); if (!vyAll) return;
+    const vy = scFilterByPol(vyAll, SC.active.pol || '');
     const byBk = {};
     (vy.dg || []).forEach(d => { (byBk[d.bk_no] = byBk[d.bk_no] || []).push(d); });
     const mixed = Object.keys(byBk).map(bk => [bk, byBk[bk]]).filter(([bk, items]) => new Set(items.map(i => i.unno)).size >= 2);
@@ -7284,18 +7296,27 @@ function fireCargoViewImage(itemId, idx) {
       let voys = scVoyagesForVsl(code, '').slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
-      const rows = voys.length ? voys.map(vy => {
-        const t = vy.totals || {};
-        const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg;
-        const mixMark = scHasMixed(vy) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
-        return `<tr class="sc-list-row${isAct ? ' active' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}">
-          <td class="sc-lc-vyg">${scEsc(vy.vyg)}</td><td>${scEsc(vy.svc || '')}</td><td class="sc-c">${scYmd(vy.etd)}</td>
-          <td class="sc-seg">${scEsc(scPolLabel(vy))}</td><td class="sc-c">${t.c20 || 0}</td><td class="sc-c">${t.c40 || 0}</td>
-          <td class="sc-c">${(vy.dg || []).length ? `<span class="sc-mini sc-mini-dg">${vy.dg.length}</span>${mixMark}` : '-'}</td>
-          <td class="sc-c">${(vy.oog || []).length ? `<span class="sc-mini sc-mini-oog">${vy.oog.length}</span>` : '-'}</td>
-          <td class="sc-c">${(vy.fb || []).length ? `<span class="sc-mini sc-mini-fb">${vy.fb.length}</span>` : '-'}</td>
-          <td class="sc-c"><span class="sc-view-btn">조회 ▸</span></td></tr>`;
-      }).join('') : '<tr><td colspan="10" class="sc-c" style="color:var(--muted)">항차 없음</td></tr>';
+      // 선적지(POL)별로 행 분리 — 같은 항차라도 KRPUS·KRKAN 등 각각 조회
+      const rowArr = [];
+      voys.forEach(vy => {
+        const pols = scPolsOf(vy).sort();
+        const polList = pols.length ? pols : [''];   // pol 미상이면 단일 행
+        polList.forEach((pol, pi) => {
+          const fv = scFilterByPol(vy, pol);
+          const sz = scSizeCount(fv);
+          const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg && (SC.active.pol || '') === pol;
+          const mixMark = scHasMixed(fv) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
+          const vygCell = pi === 0 ? `<span class="sc-lc-vyg">${scEsc(vy.vyg)}</span>` : `<span class="sc-lc-vyg sc-lc-cont">${scEsc(vy.vyg)}</span>`;
+          rowArr.push(`<tr class="sc-list-row${isAct ? ' active' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}" data-pol="${scEsc(pol)}">
+            <td>${vygCell}</td><td>${pi === 0 ? scEsc(vy.svc || '') : ''}</td><td class="sc-c">${pi === 0 ? scYmd(vy.etd) : ''}</td>
+            <td class="sc-lc-pol">${scEsc(pol || '-')}</td><td class="sc-c">${sz.c20}</td><td class="sc-c">${sz.c40}</td>
+            <td class="sc-c">${fv.dg.length ? `<span class="sc-mini sc-mini-dg">${fv.dg.length}</span>${mixMark}` : '-'}</td>
+            <td class="sc-c">${fv.oog.length ? `<span class="sc-mini sc-mini-oog">${fv.oog.length}</span>` : '-'}</td>
+            <td class="sc-c">${fv.fb.length ? `<span class="sc-mini sc-mini-fb">${fv.fb.length}</span>` : '-'}</td>
+            <td class="sc-c"><span class="sc-view-btn">조회 ▸</span></td></tr>`);
+        });
+      });
+      const rows = rowArr.length ? rowArr.join('') : '<tr><td colspan="10" class="sc-c" style="color:var(--muted)">항차 없음</td></tr>';
       return `<div class="sc-list-vessel">
         <div class="sc-list-vhead">🚢 ${scEsc(scVName(v))} <span>· 항차 ${voys.length}</span>
           <span class="sc-vhead-tot">20' <b>${c20}</b> · 40' <b>${c40}</b> · <em class="sc-t-dg">DG ${ndg}</em> · <em class="sc-t-oog">OOG ${noog}</em> · <em class="sc-t-fb">FB ${nfb}</em></span></div>
@@ -7306,18 +7327,19 @@ function fireCargoViewImage(itemId, idx) {
     list.innerHTML = blocks;
   }
 
-  // ---- 상세 조회 (항차 클릭 시) ----
-  async function scOpenDetail(vsl, vyg) {
-    SC.active = { vsl, vyg };
+  // ---- 상세 조회 (선적지 행 클릭 시 — 그 선적지 화물만) ----
+  async function scOpenDetail(vsl, vyg, pol) {
+    pol = pol || '';
+    SC.active = { vsl, vyg, pol };
     scRenderList();
     const det = scEl('scDetail'); if (!det) return;
-    const v = scVesselObj(vsl); const vy = scVoyagesForVsl(vsl, '').find(x => x.vyg === vyg);
-    if (!v || !vy) { det.innerHTML = ''; return; }
+    const v = scVesselObj(vsl); const vyAll = scVoyagesForVsl(vsl, '').find(x => x.vyg === vyg);
+    if (!v || !vyAll) { det.innerHTML = ''; return; }
+    const vy = scFilterByPol(vyAll, pol);   // 선택한 선적지 화물만
     det.innerHTML = '<div class="sc-empty">상세 내역 불러오는 중…</div>';
     await scEnrich((vy.dg || []).map(d => d.unno));
-    const polLabel = scPolLabel(vy);
-    const t = vy.totals || {};
-    const ndg = (vy.dg || []).length, noog = (vy.oog || []).length, nfb = (vy.fb || []).length;
+    const sz = scSizeCount(vy);
+    const ndg = vy.dg.length, noog = vy.oog.length, nfb = vy.fb.length;
     const segBar = scHasMixed(vy)
       ? `<div class="sc-segbar"><button type="button" id="scSegBtn" class="sc-segbtn">🔀 혼적체크 — 같은 부킹 복수 위험물 격리판정</button></div><div id="scSegResult"></div>`
       : '';
@@ -7327,12 +7349,12 @@ function fireCargoViewImage(itemId, idx) {
           ${v.vsl_nm ? `<span class="sc-detail-nm">${scEsc(v.vsl_nm)}</span>` : ''}
           ${vy.svc ? `<span class="sc-svc">${scEsc(vy.svc)}</span>` : ''}
           ${vy.etd ? `<span class="sc-etd">ETD ${scYmd(vy.etd)}</span>` : ''}
-          ${polLabel && polLabel !== '-' ? `<span class="sc-route">선적지 ${scEsc(polLabel)}</span>` : ''}</div>
-        <span class="sc-tot">20' <b>${t.c20 || 0}</b> · 40' <b>${t.c40 || 0}</b></span>
+          <span class="sc-route sc-pol-badge">선적지 ${scEsc(pol || '-')}</span></div>
+        <span class="sc-tot">20' <b>${sz.c20}</b> · 40' <b>${sz.c40}</b></span>
       </div>
       ${segBar}
       ${scDgTable(vy) || ''}${scOogTable(vy) || ''}${scFbTable(vy) || ''}
-      ${(ndg || noog || nfb) ? `<div class="sc-detail-foot">이 항차 합계 · <em class="sc-t-dg">DG ${ndg}건</em> · <em class="sc-t-oog">OOG ${noog}건</em> · <em class="sc-t-fb">FB ${nfb}건</em> · 컨테이너 20' <b>${t.c20 || 0}</b> · 40' <b>${t.c40 || 0}</b></div>` : '<div class="sc-empty">이 항차엔 스페셜화물이 없습니다.</div>'}
+      ${(ndg || noog || nfb) ? `<div class="sc-detail-foot">선적지 <b>${scEsc(pol || '-')}</b> 합계 · <em class="sc-t-dg">DG ${ndg}건</em> · <em class="sc-t-oog">OOG ${noog}건</em> · <em class="sc-t-fb">FB ${nfb}건</em> · 컨테이너 20' <b>${sz.c20}</b> · 40' <b>${sz.c40}</b></div>` : '<div class="sc-empty">이 선적지엔 스페셜화물이 없습니다.</div>'}
     </div>`;
     det.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -7379,7 +7401,7 @@ function fireCargoViewImage(itemId, idx) {
       if (e.target.id === 'scClearAll') { SC.sel.vessels = []; SC.active = null; scEl('scDetail').innerHTML = ''; scSaveSel(); scFillControls(); scRenderList(); }
     });
     if (list) list.addEventListener('click', e => {
-      const row = e.target.closest('.sc-list-row'); if (row) scOpenDetail(row.getAttribute('data-vsl'), row.getAttribute('data-vyg'));
+      const row = e.target.closest('.sc-list-row'); if (row) scOpenDetail(row.getAttribute('data-vsl'), row.getAttribute('data-vyg'), row.getAttribute('data-pol') || '');
     });
     if (det) det.addEventListener('click', e => { if (e.target.closest('#scSegBtn')) scRunSegCheck(); });
     if (rl) rl.addEventListener('click', () => scLoad(true));

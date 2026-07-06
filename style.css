@@ -5708,3 +5708,9 @@ body { top: 0 !important; position: static !important; }
     background: var(--surface-solid); border: 1px solid var(--border); font-size: 14px; color: var(--text); font-weight: 600; }
 .sc-detail-foot em { font-style: normal; margin: 0 2px; }
 .sc-detail-foot b { color: var(--accent); }
+
+/* ===== 스페셜화물 v5: 선적지별 행 ===== */
+.sc-lc-pol { font-family: var(--font-mono); font-weight: 700; color: var(--accent-green); white-space: nowrap; }
+.sc-lc-cont { opacity: 0.45; }              /* 같은 항차 반복 표시 흐리게 */
+.sc-pol-badge { background: rgba(0,191,165,0.16); color: var(--accent-green);
+    border: 1px solid rgba(0,191,165,0.5); padding: 2px 9px; border-radius: 6px; font-weight: 700; font-family: var(--font-mono); }
