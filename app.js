@@ -7320,19 +7320,25 @@ function fireCargoViewImage(itemId, idx) {
       let voys = scVoyagesForVsl(code, '').filter(vy => scInRange(vy.etd)).slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
-      // 선적지(POL)별로 행 분리 — 같은 항차라도 KRPUS·KRKAN 등 각각 조회
+      // 선적지(POL)별로 행 분리 — 같은 항차라도 KRPUS·KRKAN 등 각각 조회.
+      // 항차/SVC/ETD는 rowspan으로 병합해 그 항차 전체에 해당함을 표시.
       const rowArr = [];
       voys.forEach(vy => {
         const pols = scPolsOf(vy).sort();
         const polList = pols.length ? pols : [''];   // pol 미상이면 단일 행
+        const n = polList.length;
         polList.forEach((pol, pi) => {
           const fv = scFilterByPol(vy, pol);
           const sz = scSizeCount(fv);
           const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg && (SC.active.pol || '') === pol;
           const mixMark = scHasMixed(fv) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
-          const vygCell = pi === 0 ? `<span class="sc-lc-vyg">${scEsc(vy.vyg)}</span>` : `<span class="sc-lc-vyg sc-lc-cont">${scEsc(vy.vyg)}</span>`;
-          rowArr.push(`<tr class="sc-list-row${isAct ? ' active' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}" data-pol="${scEsc(pol)}">
-            <td>${vygCell}</td><td>${pi === 0 ? scEsc(vy.svc || '') : ''}</td><td class="sc-c">${pi === 0 ? scYmd(vy.etd) : ''}</td>
+          const merged = pi === 0
+            ? `<td rowspan="${n}" class="sc-lc-vygc"><span class="sc-lc-vyg">${scEsc(vy.vyg)}</span></td>`
+            + `<td rowspan="${n}" class="sc-lc-mid">${scEsc(vy.svc || '')}</td>`
+            + `<td rowspan="${n}" class="sc-lc-mid">${scYmd(vy.etd)}</td>`
+            : '';
+          rowArr.push(`<tr class="sc-list-row${isAct ? ' active' : ''}${pi === 0 ? ' sc-voy-first' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}" data-pol="${scEsc(pol)}">
+            ${merged}
             <td class="sc-lc-pol">${scEsc(pol || '-')}</td><td class="sc-c">${sz.c20}</td><td class="sc-c">${sz.c40}</td>
             <td class="sc-c">${fv.dg.length ? `<span class="sc-mini sc-mini-dg">${fv.dg.length}</span>${mixMark}` : '-'}</td>
             <td class="sc-c">${fv.oog.length ? `<span class="sc-mini sc-mini-oog">${fv.oog.length}</span>` : '-'}</td>
@@ -7345,7 +7351,7 @@ function fireCargoViewImage(itemId, idx) {
         <div class="sc-list-vhead">🚢 ${scEsc(scVName(v))} <span>· 항차 ${voys.length}</span>
           <span class="sc-vhead-tot">20' <b>${c20}</b> · 40' <b>${c40}</b> · <em class="sc-t-dg">DG ${ndg}</em> · <em class="sc-t-oog">OOG ${noog}</em> · <em class="sc-t-fb">FB ${nfb}</em></span></div>
         <div class="sc-table-wrap"><table class="sc-table sc-list-table">
-          <thead><tr><th>항차</th><th>SVC</th><th>ETD</th><th>선적지</th><th>20'</th><th>40'</th><th>DG</th><th>OOG</th><th>FB</th><th></th></tr></thead>
+          <thead><tr><th>항차</th><th>SVC</th><th>ETD</th><th>선적지</th><th class="sc-c">20'</th><th class="sc-c">40'</th><th class="sc-c">DG</th><th class="sc-c">OOG</th><th class="sc-c">FB</th><th class="sc-c">상세</th></tr></thead>
           <tbody>${rows}</tbody></table></div></div>`;
     }).join('');
     list.innerHTML = blocks;

@@ -5722,3 +5722,12 @@ body { top: 0 !important; position: static !important; }
     border: 1px solid var(--border); font-family: var(--font-main); font-size: 13px;
 }
 .sc-daterange span { color: var(--muted); }
+
+/* ===== 스페셜화물 v7: 선적지별 행 병합/정렬 ===== */
+.sc-table thead th.sc-c { text-align: center; }
+.sc-list-table td { vertical-align: middle; }
+.sc-lc-vygc { border-right: 1px solid var(--border); white-space: nowrap; }
+.sc-lc-vygc .sc-lc-vyg { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+.sc-lc-mid { color: var(--muted); white-space: nowrap; }
+.sc-lc-vygc, .sc-lc-mid { background: rgba(127,127,127,0.05); }
+.sc-voy-first > td { border-top: 2px solid var(--border); }
