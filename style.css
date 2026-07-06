@@ -5548,3 +5548,90 @@ body { top: 0 !important; position: static !important; }
   #tab-fire-cargo, #tab-fire-cargo * { color: #000 !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+
+/* ===== 선박/항차별 스페셜화물 ===== */
+.sc-controls {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+    padding: 16px; margin-bottom: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; backdrop-filter: var(--glass-blur);
+}
+.sc-field { display: flex; flex-direction: column; gap: 5px; }
+.sc-field label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.sc-field select {
+    min-width: 200px; padding: 9px 12px; border-radius: 9px;
+    background: var(--surface-solid); color: var(--text);
+    border: 1px solid var(--border); font-family: var(--font-main); font-size: 14px;
+}
+.sc-remember { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.sc-reload {
+    margin-left: auto; padding: 9px 16px; border-radius: 9px; cursor: pointer;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid var(--accent); font-weight: 600; font-size: 13px;
+}
+.sc-reload:hover { background: var(--accent); color: #04121a; }
+.sc-meta { font-size: 12px; color: var(--muted); margin: 2px 4px 14px; line-height: 1.6; }
+.sc-meta b { color: var(--text); }
+
+.sc-empty { padding: 44px 16px; text-align: center; color: var(--muted); font-size: 15px; }
+
+.sc-vessel-sum {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 14px 18px; margin-bottom: 16px;
+    background: linear-gradient(135deg, rgba(150,106,255,0.14), rgba(0,242,255,0.06));
+    border: 1px solid var(--border); border-radius: 14px;
+}
+.sc-vessel-name { font-size: 19px; font-weight: 800; color: var(--text); }
+.sc-vessel-name span { font-size: 13px; font-weight: 500; color: var(--muted); }
+.sc-vessel-tot { display: flex; flex-wrap: wrap; gap: 8px; }
+.sc-chip {
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    background: var(--surface-solid); color: var(--text); border: 1px solid var(--border);
+}
+.sc-chip b { color: var(--accent); font-size: 15px; }
+.sc-chip-dg  { border-color: rgba(255,23,68,0.4); color: var(--red); }
+.sc-chip-oog { border-color: rgba(255,176,32,0.5); color: var(--yellow); }
+.sc-chip-fb  { border-color: rgba(0,191,165,0.5); color: var(--accent-green); }
+
+.sc-voyage {
+    padding: 16px 18px; margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; backdrop-filter: var(--glass-blur);
+}
+.sc-voyage-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.sc-vyg { font-size: 17px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+.sc-svc { padding: 2px 9px; border-radius: 6px; background: var(--accent-glow); color: var(--accent); font-size: 12px; font-weight: 700; }
+.sc-etd, .sc-route { font-size: 13px; color: var(--muted); }
+.sc-route { font-family: var(--font-mono); }
+.sc-tot { margin-left: auto; font-size: 14px; color: var(--text); }
+.sc-tot b { color: var(--accent); }
+
+.sc-subtitle { font-size: 14px; font-weight: 700; color: var(--text); margin: 14px 0 8px; }
+.sc-subtitle span { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+
+.sc-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+.sc-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+.sc-table thead th {
+    background: var(--surface-solid); color: var(--muted); font-weight: 700;
+    padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.sc-table tbody td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+.sc-table tbody tr:last-child td { border-bottom: none; }
+.sc-table tbody tr:hover { background: var(--accent-glow); }
+.sc-table .sc-c { text-align: center; white-space: nowrap; }
+.sc-table .sc-seg { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+.sc-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.sc-mix { background: rgba(255,23,68,0.18); color: var(--red); border: 1px solid rgba(255,23,68,0.4); }
+.sc-single { background: var(--surface-solid); color: var(--muted); border: 1px solid var(--border); }
+.sc-aa { background: rgba(255,176,32,0.18); color: var(--yellow); border: 1px solid rgba(255,176,32,0.45); }
+.sc-mixwith { font-size: 11px; color: var(--red); margin-top: 3px; font-family: var(--font-mono); }
+
+@media (max-width: 640px) {
+    .sc-field select { min-width: 100%; }
+    .sc-field { width: 100%; }
+    .sc-reload { margin-left: 0; width: 100%; }
+}

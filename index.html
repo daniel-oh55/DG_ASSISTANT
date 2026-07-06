@@ -89,6 +89,11 @@
         <span class="menu-text">선사별/포트별 선적가부 조회</span>
     </li>
 
+    <li class="menu-item" data-target="tab-special">
+        <span class="menu-icon">🚢</span>
+        <span class="menu-text">선박/항차별 스페셜화물</span>
+    </li>
+
     <li class="menu-item" data-target="tab-segregation">
         <span class="menu-icon">☷</span>
         <span class="menu-text">격리규정 확인</span>
@@ -207,6 +212,19 @@
                     <div class="home-quick-search" onclick="event.stopPropagation()">
                         <input type="text" id="homeCarrierQuickInput" placeholder="UNNO 입력">
                         <button type="button" id="homeCarrierQuickBtn">빠른조회</button>
+                    </div>
+                </article>
+
+                <article class="home-bento-card card-purple" data-target="tab-special">
+                    <div class="home-card-top">
+                        <div class="home-card-icon-wrap">
+                            <div class="home-card-icon">🚢</div>
+                        </div>
+
+                        <div class="home-card-title">선박/항차별 스페셜화물</div>
+                        <div class="home-card-desc">
+                            담당 선박·항차에 실린/실릴 DG·OOG·FB 화물을 한눈에 (부킹 API 연동)
+                        </div>
                     </div>
                 </article>
 
@@ -835,6 +853,39 @@
     <div class="rpt-section" data-rpt-panel="members">
       <p class="fq-email-guide">가입 요청을 검토해 <b>승인</b>하면 해당 ID로 로그인할 수 있습니다. <b>관리자 권한이 있으면 별도 비밀번호 없이 바로 승인</b>할 수 있습니다. 승인된 회원 정보(회사/부서·이름)는 AI문의·이메일 문의·게시판 작성 시 자동 적용됩니다.</p>
       <div class="dg-member-mgmt" id="dgMemberList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- [탭] 선박/항차별 스페셜화물 — 부킹 API(SVMS) 연동 DG/OOG/FB 현황 -->
+<section id="tab-special" class="tab-content">
+  <div class="container">
+    <header>
+      <h1>선박/항차별 스페셜화물 <span>Special Cargo by Vessel / Voyage</span></h1>
+      <p class="subtitle">담당 선박·항차에 실린(과거) / 실릴(예정) DG·OOG·FB 화물 현황 · 부킹 데이터 기반</p>
+    </header>
+
+    <!-- 선택 바 -->
+    <div class="sc-controls">
+      <div class="sc-field">
+        <label for="scSvcSel">담당 서비스(항로)</label>
+        <select id="scSvcSel"><option value="">— 전체 —</option></select>
+      </div>
+      <div class="sc-field">
+        <label for="scVslSel">담당 선박</label>
+        <select id="scVslSel"><option value="">— 선박 선택 —</option></select>
+      </div>
+      <div class="sc-field">
+        <label for="scVygSel">항차</label>
+        <select id="scVygSel"><option value="">— 전체 항차 —</option></select>
+      </div>
+      <label class="sc-remember"><input type="checkbox" id="scRemember" checked> 이 선택 기억하기</label>
+      <button type="button" id="scReloadBtn" class="sc-reload" title="최신 수집 데이터 다시 불러오기">↻ 새로고침</button>
+    </div>
+
+    <div id="scMeta" class="sc-meta"></div>
+    <div id="scBody" class="sc-body">
+      <div class="sc-empty">선박을 선택하면 스페셜화물 현황이 표시됩니다.</div>
     </div>
   </div>
 </section>

@@ -812,6 +812,9 @@ function activateTab(targetId) {
     if (targetId === 'tab-fire-cargo' && typeof renderFireCargo === 'function') {
         renderFireCargo();
     }
+    if (targetId === 'tab-special' && typeof scRender === 'function') {
+        scRender();
+    }
     if (targetId === 'tab-report' && typeof fqReportRender === 'function') {
         if (typeof fqSyncFaqRemote === 'function') fqSyncFaqRemote();
         if (typeof fqSyncPostsRemote === 'function') fqSyncPostsRemote();
@@ -7073,4 +7076,274 @@ function fireCargoViewImage(itemId, idx) {
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
+})();
+
+/* ==================================================================
+   선박/항차별 스페셜화물 (Special Cargo by Vessel / Voyage)
+   - 데이터: 사용자 Supabase inquiry_state(id='special_cargo')
+             (이 PC 수집기 collect_special_cargo.py 가 부킹 API에서 적재)
+   - DG 보강(CATEGORY·격리코드·산/알칼리): 기존 /api/dg-search (DG_TABLE)
+   ================================================================== */
+(function () {
+  const SC_ROW_ID = 'special_cargo';
+  const SC_SEL_KEY = 'dg_special_sel_v1';
+  const SC = { data: null, loading: false, dgMap: {}, sel: { svc: '', vsl: '', vyg: '' } };
+
+  function scEl(id) { return document.getElementById(id); }
+  function scEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function scNum(n) { const v = Number(n || 0); return v ? v.toLocaleString('ko-KR') : (n === 0 || n == null ? '0' : String(n)); }
+  function scYmd(s) { s = String(s || ''); return /^\d{8}$/.test(s) ? `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}` : (s || '-'); }
+
+  // ---- 선택 기억 (localStorage) ----
+  function scLoadSel() {
+    try {
+      const s = JSON.parse(localStorage.getItem(SC_SEL_KEY) || '{}');
+      SC.sel.svc = s.svc || ''; SC.sel.vsl = s.vsl || ''; SC.sel.vyg = s.vyg || '';
+    } catch (e) { }
+  }
+  function scSaveSel() {
+    const r = scEl('scRemember');
+    if (r && !r.checked) { localStorage.removeItem(SC_SEL_KEY); return; }
+    try { localStorage.setItem(SC_SEL_KEY, JSON.stringify(SC.sel)); } catch (e) { }
+  }
+
+  // ---- 데이터 로드 ----
+  async function scFetch() {
+    const url = `${FQ_SB_URL}/rest/v1/inquiry_state?id=eq.${SC_ROW_ID}&select=data`;
+    const res = await fetch(url, { headers: FQ_SB_HEADERS });
+    if (!res.ok) throw new Error('Supabase ' + res.status);
+    const rows = await res.json();
+    return (rows && rows[0] && rows[0].data) ? rows[0].data : null;
+  }
+
+  // ---- DG 보강 (?구분자 정리) ----
+  function scClean(v) {
+    if (v == null) return '';
+    const s = String(v).replace(/\?+/g, ' ').replace(/\s+/g, ' ').trim();
+    return s === '?' ? '' : s;
+  }
+  function scCatLetter(catStr) { const m = /Category\s*([A-E])/i.exec(catStr || ''); return m ? m[1] : ''; }
+  function scAcidAlkali(segs) {
+    const s = (segs || []).join(' ');
+    const acid = /\bSGG1\b/.test(s);      // SGG1 = 산류 (SGG18과 단어경계로 구분)
+    const alk = /\bSGG18\b/.test(s);      // SGG18 = 알칼리류
+    if (acid && alk) return '산+알칼리';
+    if (acid) return '산'; if (alk) return '알칼리';
+    return '';
+  }
+  async function scEnrich(unnos) {
+    const need = [...new Set(unnos.filter(u => u && !(u in SC.dgMap)))];
+    if (!need.length) return;
+    try {
+      const res = await fetch('/api/dg-search', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unnos: need })
+      });
+      const j = await res.json();
+      (j.data || []).forEach(row => {
+        const un = String(row.UNNO || '').trim();
+        const cat = scClean(row['Stowage and Handling']);
+        const seg = scClean(row['Segregation']);
+        let p = SC.dgMap[un];
+        if (!p) p = SC.dgMap[un] = { name: scClean(row.Name), cats: [], segs: [] };
+        if (cat && p.cats.indexOf(cat) < 0) p.cats.push(cat);
+        if (seg && p.segs.indexOf(seg) < 0) p.segs.push(seg);
+      });
+      need.forEach(u => { if (!(u in SC.dgMap)) SC.dgMap[u] = { name: '', cats: [], segs: [] }; });
+    } catch (e) { /* 보강 실패해도 기본표는 표시 */ }
+  }
+
+  // ---- 선택 헬퍼 ----
+  function scAllVoyages() { const out = []; (SC.data ? SC.data.vessels : []).forEach(v => (v.voyages || []).forEach(vy => out.push({ v, vy }))); return out; }
+  function scServices() {
+    const set = new Set();
+    scAllVoyages().forEach(({ vy }) => { if (vy.svc) set.add(vy.svc); });
+    return [...set].sort();
+  }
+  function scVesselsForSvc(svc) {
+    const map = new Map();
+    (SC.data ? SC.data.vessels : []).forEach(v => {
+      const has = !svc || (v.voyages || []).some(vy => vy.svc === svc);
+      if (has) map.set(v.vsl, v);
+    });
+    return [...map.values()].sort((a, b) => a.vsl.localeCompare(b.vsl));
+  }
+  function scVesselObj(code) { return (SC.data ? SC.data.vessels : []).find(v => v.vsl === code) || null; }
+  function scVoyagesForVsl(code, svc) {
+    const v = scVesselObj(code); if (!v) return [];
+    return (v.voyages || []).filter(vy => !svc || vy.svc === svc);
+  }
+
+  // ---- 셀렉트 채우기 ----
+  function scFillSelectors() {
+    const svcSel = scEl('scSvcSel'), vslSel = scEl('scVslSel'), vygSel = scEl('scVygSel');
+    if (!svcSel) return;
+    svcSel.innerHTML = '<option value="">— 전체 —</option>' +
+      scServices().map(s => `<option value="${scEsc(s)}">${scEsc(s)}</option>`).join('');
+    svcSel.value = SC.sel.svc || '';
+
+    const vessels = scVesselsForSvc(SC.sel.svc);
+    vslSel.innerHTML = '<option value="">— 선박 선택 —</option>' +
+      vessels.map(v => `<option value="${scEsc(v.vsl)}">${scEsc(v.vsl)}${v.vsl_nm ? ' — ' + scEsc(v.vsl_nm) : ''}</option>`).join('');
+    if (!vessels.some(v => v.vsl === SC.sel.vsl)) SC.sel.vsl = '';
+    vslSel.value = SC.sel.vsl || '';
+
+    const voys = scVoyagesForVsl(SC.sel.vsl, SC.sel.svc);
+    vygSel.innerHTML = '<option value="">— 전체 항차 —</option>' +
+      voys.map(vy => `<option value="${scEsc(vy.vyg)}">${scEsc(vy.vyg)}${vy.etd ? ' (ETD ' + scYmd(vy.etd) + ')' : ''}</option>`).join('');
+    if (!voys.some(vy => vy.vyg === SC.sel.vyg)) SC.sel.vyg = '';
+    vygSel.value = SC.sel.vyg || '';
+  }
+
+  // ---- 렌더: 항차 블록 ----
+  function scMixPartners(voy, bk, un) {
+    const seen = new Map();
+    (voy.dg || []).forEach(d => { if (d.bk_no === bk && d.unno !== un) seen.set(d.unno, d.class); });
+    return [...seen.entries()].map(([u, c]) => `UN${u}(Cl.${c})`);
+  }
+  function scDgTable(voy) {
+    if (!(voy.dg || []).length) return '';
+    const rows = voy.dg.map(d => {
+      const info = SC.dgMap[d.unno] || { cats: [], segs: [], name: '' };
+      const cat = [...new Set(info.cats.map(scCatLetter).filter(Boolean))].join('/') || '-';
+      const seg = info.segs.length ? info.segs.join(' · ') : '-';
+      const aa = d.class === '8' ? scAcidAlkali(info.segs) : '';
+      const mixed = d.mixed
+        ? `<span class="sc-badge sc-mix">혼적</span><div class="sc-mixwith">+ ${scEsc(scMixPartners(voy, d.bk_no, d.unno).join(', '))}</div>`
+        : '<span class="sc-badge sc-single">단독</span>';
+      const nm = d.commodity || info.name || '';
+      return `<tr>
+        <td>${scEsc(d.ctr_size)}</td><td>${scEsc(d.ctr_type)}</td><td class="sc-c">${scEsc(d.qty)}</td>
+        <td class="sc-c"><b>${scEsc(d.class)}</b></td>
+        <td class="sc-c">UN${scEsc(d.unno)}</td>
+        <td>${scEsc(nm)}</td>
+        <td>${mixed}</td>
+        <td class="sc-c">${scEsc(cat)}</td>
+        <td class="sc-seg">${scEsc(seg)}</td>
+        <td class="sc-c">${aa ? `<span class="sc-badge sc-aa">${aa}</span>` : '-'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="sc-subtitle">🧪 위험물 (DG) <span>${voy.dg.length}건</span></div>
+      <div class="sc-table-wrap"><table class="sc-table">
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>Class</th><th>UNNO</th><th>품명</th><th>혼적</th><th>Category</th><th>격리코드</th><th>산/알칼리<br>(Cl.8)</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+  }
+  function scOverText(o) {
+    const ov = o.over || {}; const parts = [];
+    if (ov.L_F) parts.push('앞' + ov.L_F); if (ov.L_B) parts.push('뒤' + ov.L_B);
+    if (ov.W_L) parts.push('좌' + ov.W_L); if (ov.W_R) parts.push('우' + ov.W_R);
+    if (ov.H) parts.push('높이' + ov.H);
+    return parts.length ? parts.join(' / ') + ' cm' : '-';
+  }
+  function scOogTable(voy) {
+    if (!(voy.oog || []).length) return '';
+    const rows = voy.oog.map(o => {
+      const dim = (o.L || o.W || o.H) ? `${scNum(o.L)}×${scNum(o.W)}×${scNum(o.H)}` : '-';
+      return `<tr>
+        <td>${scEsc(o.ctr_size)}</td><td>${scEsc(o.ctr_type)}</td><td class="sc-c">${scEsc(o.qty)}</td>
+        <td>${scEsc(o.item || '')}</td>
+        <td class="sc-c">${o.weight_kg ? scNum(o.weight_kg) : '-'}</td>
+        <td class="sc-c">${dim}</td>
+        <td class="sc-seg">${scEsc(scOverText(o))}</td>
+        <td class="sc-c">${o.bb ? '<span class="sc-badge sc-mix">BB</span>' : '-'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="sc-subtitle">📐 초과규격 (OOG) <span>${voy.oog.length}건</span></div>
+      <div class="sc-table-wrap"><table class="sc-table">
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>중량(kg)</th><th>치수 L×W×H(cm)</th><th>초과규격</th><th>BB</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+  }
+  function scFbTable(voy) {
+    if (!(voy.fb || []).length) return '';
+    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
+    return `<div class="sc-subtitle">🛢️ 플렉시백 (FB) <span>${voy.fb.length}건</span></div>
+      <div class="sc-table-wrap"><table class="sc-table">
+        <thead><tr><th>화물품목</th><th>상태</th><th>부킹번호</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+  }
+  function scVoyageBlock(v, vy) {
+    const route = [vy.pol, vy.pod].filter(Boolean).join(' → ');
+    const t = vy.totals || { c20: 0, c40: 0 };
+    return `<div class="sc-voyage">
+      <div class="sc-voyage-head">
+        <span class="sc-vyg">${scEsc(vy.vyg)}</span>
+        ${vy.svc ? `<span class="sc-svc">${scEsc(vy.svc)}</span>` : ''}
+        ${vy.etd ? `<span class="sc-etd">ETD ${scYmd(vy.etd)}</span>` : ''}
+        ${route ? `<span class="sc-route">${scEsc(route)}</span>` : ''}
+        <span class="sc-tot">20' <b>${t.c20}</b> · 40' <b>${t.c40}</b></span>
+      </div>
+      ${scDgTable(vy)}${scOogTable(vy)}${scFbTable(vy)}</div>`;
+  }
+
+  // ---- 메인 렌더 ----
+  async function scRenderBody() {
+    const body = scEl('scBody'); if (!body) return;
+    if (!SC.sel.vsl) { body.innerHTML = '<div class="sc-empty">담당 선박을 선택하면 스페셜화물 현황이 표시됩니다.</div>'; return; }
+    const v = scVesselObj(SC.sel.vsl);
+    if (!v) { body.innerHTML = '<div class="sc-empty">선택한 선박의 데이터가 없습니다.</div>'; return; }
+    let voys = scVoyagesForVsl(SC.sel.vsl, SC.sel.svc);
+    if (SC.sel.vyg) voys = voys.filter(vy => vy.vyg === SC.sel.vyg);
+    if (!voys.length) { body.innerHTML = '<div class="sc-empty">해당 조건의 항차가 없습니다.</div>'; return; }
+
+    body.innerHTML = '<div class="sc-empty">불러오는 중…</div>';
+    const uns = [];
+    voys.forEach(vy => (vy.dg || []).forEach(d => uns.push(d.unno)));
+    await scEnrich(uns);
+
+    // 선박 합계
+    let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
+    voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
+    const head = `<div class="sc-vessel-sum">
+      <div class="sc-vessel-name">🚢 ${scEsc(v.vsl)}${v.vsl_nm ? ' — ' + scEsc(v.vsl_nm) : ''} <span>· 항차 ${voys.length}개</span></div>
+      <div class="sc-vessel-tot">
+        <span class="sc-chip">20' 총 <b>${c20}</b></span>
+        <span class="sc-chip">40' 총 <b>${c40}</b></span>
+        <span class="sc-chip sc-chip-dg">DG ${ndg}</span>
+        <span class="sc-chip sc-chip-oog">OOG ${noog}</span>
+        <span class="sc-chip sc-chip-fb">FB ${nfb}</span>
+      </div></div>`;
+    body.innerHTML = head + voys.map(vy => scVoyageBlock(v, vy)).join('');
+  }
+
+  function scRenderMeta() {
+    const m = scEl('scMeta'); if (!m) return;
+    if (!SC.data) { m.innerHTML = ''; return; }
+    const c = SC.data.counts || {}, w = SC.data.window || {};
+    const up = SC.data.updated_at ? String(SC.data.updated_at).replace('T', ' ').slice(0, 16) : '-';
+    m.innerHTML = `수집시각 <b>${scEsc(up)}</b> · 조회창 ${scYmd(w.from)}~${scYmd(w.to)} · 선사 ${scEsc((SC.data.companies || []).join(', '))} · 특수화물 DG ${c.dg || 0}·OOG ${c.oog || 0}·FB ${c.fb || 0} / 선박 ${c.vessels || 0}·항차 ${c.voyages || 0}`;
+  }
+
+  async function scLoad(force) {
+    if (SC.loading) return;
+    SC.loading = true;
+    const body = scEl('scBody'); if (body && force) body.innerHTML = '<div class="sc-empty">최신 데이터 불러오는 중…</div>';
+    try { SC.data = await scFetch(); }
+    catch (e) { if (body) body.innerHTML = `<div class="sc-empty">데이터를 불러오지 못했습니다. (${scEsc(e.message)})</div>`; SC.loading = false; return; }
+    SC.loading = false;
+    if (!SC.data || !(SC.data.vessels || []).length) {
+      scRenderMeta();
+      if (body) body.innerHTML = '<div class="sc-empty">아직 수집된 스페셜화물 데이터가 없습니다. 수집기(collect_special_cargo.py)가 실행되면 표시됩니다.</div>';
+      return;
+    }
+    scRenderMeta(); scFillSelectors(); await scRenderBody();
+  }
+
+  let scBound = false;
+  function scBind() {
+    if (scBound) return; scBound = true;
+    const svc = scEl('scSvcSel'), vsl = scEl('scVslSel'), vyg = scEl('scVygSel'), rl = scEl('scReloadBtn');
+    if (svc) svc.addEventListener('change', () => { SC.sel.svc = svc.value; SC.sel.vsl = ''; SC.sel.vyg = ''; scSaveSel(); scFillSelectors(); scRenderBody(); });
+    if (vsl) vsl.addEventListener('change', () => { SC.sel.vsl = vsl.value; SC.sel.vyg = ''; scSaveSel(); scFillSelectors(); scRenderBody(); });
+    if (vyg) vyg.addEventListener('change', () => { SC.sel.vyg = vyg.value; scSaveSel(); scRenderBody(); });
+    if (rl) rl.addEventListener('click', () => scLoad(true));
+    const rem = scEl('scRemember'); if (rem) rem.addEventListener('change', scSaveSel);
+  }
+
+  // activateTab('tab-special') 에서 호출
+  window.scRender = function () {
+    scBind();
+    scLoadSel();
+    if (!SC.data) scLoad(false);
+    else { scRenderMeta(); scFillSelectors(); scRenderBody(); }
+  };
 })();
