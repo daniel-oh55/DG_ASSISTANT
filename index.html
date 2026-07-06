@@ -868,25 +868,29 @@
     <!-- 선택 바 -->
     <div class="sc-controls">
       <div class="sc-field">
-        <label for="scSvcSel">담당 서비스(항로)</label>
+        <label for="scSvcSel">담당 서비스(항로) 필터</label>
         <select id="scSvcSel"><option value="">— 전체 —</option></select>
       </div>
       <div class="sc-field">
-        <label for="scVslSel">담당 선박</label>
-        <select id="scVslSel"><option value="">— 선박 선택 —</option></select>
-      </div>
-      <div class="sc-field">
-        <label for="scVygSel">항차</label>
-        <select id="scVygSel"><option value="">— 전체 항차 —</option></select>
+        <label for="scVslAdd">담당 선박 추가 (여러 척 선택 가능)</label>
+        <select id="scVslAdd"><option value="">＋ 선박 선택하여 추가</option></select>
       </div>
       <label class="sc-remember"><input type="checkbox" id="scRemember" checked> 이 선택 기억하기</label>
       <button type="button" id="scReloadBtn" class="sc-reload" title="최신 수집 데이터 다시 불러오기">↻ 새로고침</button>
     </div>
 
+    <!-- 선택된 선박 칩 -->
+    <div id="scChips" class="sc-chips"></div>
+
     <div id="scMeta" class="sc-meta"></div>
-    <div id="scBody" class="sc-body">
-      <div class="sc-empty">선박을 선택하면 스페셜화물 현황이 표시됩니다.</div>
+
+    <!-- 선택된 선박/항차 리스트 (요약) -->
+    <div id="scList" class="sc-list">
+      <div class="sc-empty">담당 선박을 추가하면 해당 선박의 항차별 스페셜화물 요약이 표시됩니다. 항차를 클릭하면 상세 내역을 조회합니다.</div>
     </div>
+
+    <!-- 선택한 항차 상세 -->
+    <div id="scDetail" class="sc-detail"></div>
   </div>
 </section>
 
