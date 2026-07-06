@@ -7152,6 +7152,9 @@ function fireCargoViewImage(itemId, idx) {
   function scVesselObj(code) { return scVessels().find(v => v.vsl === code) || null; }
   function scVoyagesForVsl(code, svc) { const v = scVesselObj(code); return v ? (v.voyages || []).filter(vy => !svc || vy.svc === svc) : []; }
   function scVName(v) { return v.vsl + (v.vsl_nm ? ' — ' + v.vsl_nm : ''); }
+  // 항차의 선적지(POL) 목록 — 항목(컨테이너)별 pol 취합
+  function scPolsOf(voy) { const s = new Set(); (voy.dg || []).concat(voy.oog || [], voy.fb || []).forEach(it => { if (it.pol) s.add(it.pol); }); return [...s]; }
+  function scPolLabel(voy) { const p = scPolsOf(voy); if (!p.length) return voy.pol || '-'; if (p.length <= 3) return p.join(', '); return p.slice(0, 3).join(', ') + ' 외 ' + (p.length - 3) + '곳'; }
 
   // ---- 컨트롤(서비스/선박추가 셀렉트 + 칩) ----
   function scFillControls() {
@@ -7193,12 +7196,13 @@ function fireCargoViewImage(itemId, idx) {
       const nm = d.commodity || info.name || '';
       return `<tr><td>${scEsc(d.ctr_size)}</td><td>${scEsc(d.ctr_type)}</td><td class="sc-c">${scEsc(d.qty)}</td>
         <td class="sc-c"><b>${scEsc(d.class)}</b></td><td class="sc-c">UN${scEsc(d.unno)}</td><td>${scEsc(nm)}</td>
+        <td class="sc-c">${scEsc(d.pod || '-')}</td>
         <td>${mixed}</td><td class="sc-c">${scEsc(cat)}</td><td class="sc-seg">${scEsc(seg)}</td>
         <td class="sc-c">${aa ? `<span class="sc-badge sc-aa">${aa}</span>` : '-'}</td></tr>`;
     }).join('');
     return `<div class="sc-subtitle">🧪 위험물 (DG) <span>${voy.dg.length}건</span></div>
       <div class="sc-table-wrap"><table class="sc-table">
-        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>Class</th><th>UNNO</th><th>품명</th><th>혼적</th><th>Category</th><th>격리코드</th><th>산/알칼리<br>(Cl.8)</th></tr></thead>
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>Class</th><th>UNNO</th><th>품명</th><th>양하지</th><th>혼적</th><th>Category</th><th>격리코드</th><th>산/알칼리<br>(Cl.8)</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
   }
   function scOverText(o) {
@@ -7213,20 +7217,20 @@ function fireCargoViewImage(itemId, idx) {
       // 치수: L(길이) × W(폭) × H(높이) 순
       const dim = (o.L || o.W || o.H) ? `L ${scNum(o.L)} × W ${scNum(o.W)} × H ${scNum(o.H)}` : '-';
       return `<tr><td>${scEsc(o.ctr_size)}</td><td>${scEsc(o.ctr_type)}</td><td class="sc-c">${scEsc(o.qty)}</td>
-        <td>${scEsc(o.item || '')}</td><td class="sc-c">${o.weight_kg ? scNum(o.weight_kg) : '-'}</td>
+        <td>${scEsc(o.item || '')}</td><td class="sc-c">${scEsc(o.pod || '-')}</td><td class="sc-c">${o.weight_kg ? scNum(o.weight_kg) : '-'}</td>
         <td class="sc-seg">${dim}</td><td class="sc-seg">${scEsc(scOverText(o))}</td>
         <td class="sc-c">${o.bb ? '<span class="sc-badge sc-mix">BB</span>' : '-'}</td></tr>`;
     }).join('');
     return `<div class="sc-subtitle">📐 초과규격 (OOG) <span>${voy.oog.length}건</span></div>
       <div class="sc-table-wrap"><table class="sc-table">
-        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>중량(kg)</th><th>치수 L(길이)×W(폭)×H(높이) cm</th><th>초과규격</th><th>BB</th></tr></thead>
+        <thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>양하지</th><th>중량(kg)</th><th>치수 L(길이)×W(폭)×H(높이) cm</th><th>초과규격</th><th>BB</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
   }
   function scFbTable(voy) {
     if (!(voy.fb || []).length) return '';
-    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
+    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.pod || '-')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
     return `<div class="sc-subtitle">🛢️ 플렉시백 (FB) <span>${voy.fb.length}건</span></div>
-      <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>화물품목</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>화물품목</th><th>양하지</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
   // ---- 혼적체크 (IMDG 7.2.4 격리표, 같은 부킹 복수 위험물) ----
@@ -7281,12 +7285,12 @@ function fireCargoViewImage(itemId, idx) {
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
       const rows = voys.length ? voys.map(vy => {
-        const t = vy.totals || {}; const route = [vy.pol, vy.pod].filter(Boolean).join(' → ');
+        const t = vy.totals || {};
         const isAct = SC.active && SC.active.vsl === code && SC.active.vyg === vy.vyg;
         const mixMark = scHasMixed(vy) ? ' <span class="sc-mix-flag" title="혼적 위험물 있음">혼적</span>' : '';
         return `<tr class="sc-list-row${isAct ? ' active' : ''}" data-vsl="${scEsc(code)}" data-vyg="${scEsc(vy.vyg)}">
           <td class="sc-lc-vyg">${scEsc(vy.vyg)}</td><td>${scEsc(vy.svc || '')}</td><td class="sc-c">${scYmd(vy.etd)}</td>
-          <td class="sc-seg">${scEsc(route)}</td><td class="sc-c">${t.c20 || 0}</td><td class="sc-c">${t.c40 || 0}</td>
+          <td class="sc-seg">${scEsc(scPolLabel(vy))}</td><td class="sc-c">${t.c20 || 0}</td><td class="sc-c">${t.c40 || 0}</td>
           <td class="sc-c">${(vy.dg || []).length ? `<span class="sc-mini sc-mini-dg">${vy.dg.length}</span>${mixMark}` : '-'}</td>
           <td class="sc-c">${(vy.oog || []).length ? `<span class="sc-mini sc-mini-oog">${vy.oog.length}</span>` : '-'}</td>
           <td class="sc-c">${(vy.fb || []).length ? `<span class="sc-mini sc-mini-fb">${vy.fb.length}</span>` : '-'}</td>
@@ -7296,7 +7300,7 @@ function fireCargoViewImage(itemId, idx) {
         <div class="sc-list-vhead">🚢 ${scEsc(scVName(v))} <span>· 항차 ${voys.length}</span>
           <span class="sc-vhead-tot">20' <b>${c20}</b> · 40' <b>${c40}</b> · <em class="sc-t-dg">DG ${ndg}</em> · <em class="sc-t-oog">OOG ${noog}</em> · <em class="sc-t-fb">FB ${nfb}</em></span></div>
         <div class="sc-table-wrap"><table class="sc-table sc-list-table">
-          <thead><tr><th>항차</th><th>SVC</th><th>ETD</th><th>항로</th><th>20'</th><th>40'</th><th>DG</th><th>OOG</th><th>FB</th><th></th></tr></thead>
+          <thead><tr><th>항차</th><th>SVC</th><th>ETD</th><th>선적지</th><th>20'</th><th>40'</th><th>DG</th><th>OOG</th><th>FB</th><th></th></tr></thead>
           <tbody>${rows}</tbody></table></div></div>`;
     }).join('');
     list.innerHTML = blocks;
@@ -7311,7 +7315,7 @@ function fireCargoViewImage(itemId, idx) {
     if (!v || !vy) { det.innerHTML = ''; return; }
     det.innerHTML = '<div class="sc-empty">상세 내역 불러오는 중…</div>';
     await scEnrich((vy.dg || []).map(d => d.unno));
-    const route = [vy.pol, vy.pod].filter(Boolean).join(' → ');
+    const polLabel = scPolLabel(vy);
     const t = vy.totals || {};
     const ndg = (vy.dg || []).length, noog = (vy.oog || []).length, nfb = (vy.fb || []).length;
     const segBar = scHasMixed(vy)
@@ -7323,7 +7327,7 @@ function fireCargoViewImage(itemId, idx) {
           ${v.vsl_nm ? `<span class="sc-detail-nm">${scEsc(v.vsl_nm)}</span>` : ''}
           ${vy.svc ? `<span class="sc-svc">${scEsc(vy.svc)}</span>` : ''}
           ${vy.etd ? `<span class="sc-etd">ETD ${scYmd(vy.etd)}</span>` : ''}
-          ${route ? `<span class="sc-route">${scEsc(route)}</span>` : ''}</div>
+          ${polLabel && polLabel !== '-' ? `<span class="sc-route">선적지 ${scEsc(polLabel)}</span>` : ''}</div>
         <span class="sc-tot">20' <b>${t.c20 || 0}</b> · 40' <b>${t.c40 || 0}</b></span>
       </div>
       ${segBar}
