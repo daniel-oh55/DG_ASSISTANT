@@ -5714,3 +5714,11 @@ body { top: 0 !important; position: static !important; }
 .sc-lc-cont { opacity: 0.45; }              /* 같은 항차 반복 표시 흐리게 */
 .sc-pol-badge { background: rgba(0,191,165,0.16); color: var(--accent-green);
     border: 1px solid rgba(0,191,165,0.5); padding: 2px 9px; border-radius: 6px; font-weight: 700; font-family: var(--font-mono); }
+
+/* 기간 필터 */
+.sc-daterange { display: flex; align-items: center; gap: 6px; }
+.sc-daterange input[type="date"] {
+    padding: 8px 10px; border-radius: 9px; background: var(--surface-solid); color: var(--text);
+    border: 1px solid var(--border); font-family: var(--font-main); font-size: 13px;
+}
+.sc-daterange span { color: var(--muted); }

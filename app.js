@@ -7160,6 +7160,30 @@ function fireCargoViewImage(itemId, idx) {
     const f = it => !pol || it.pol === pol;
     return Object.assign({}, voy, { dg: (voy.dg || []).filter(f), oog: (voy.oog || []).filter(f), fb: (voy.fb || []).filter(f) });
   }
+  // 기간 필터 (ETD 기준)
+  function scDateBounds() {
+    const f = scEl('scFrom'), t = scEl('scTo'), strip = s => (s || '').replace(/-/g, '');
+    return { from: f ? strip(f.value) : '', to: t ? strip(t.value) : '' };
+  }
+  function scInRange(etd) {
+    etd = String(etd || '').slice(0, 8);
+    if (!etd) return true;              // ETD 없으면 제외하지 않음
+    const b = scDateBounds();
+    if (b.from && etd < b.from) return false;
+    if (b.to && etd > b.to) return false;
+    return true;
+  }
+  function scEnsureDates() {
+    const f = scEl('scFrom'), t = scEl('scTo');
+    if (!f || !t || (f.value && t.value)) return;
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = x => x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate());
+    const d = new Date();
+    const past = new Date(d); past.setDate(d.getDate() - 7);   // 과거 1주
+    const fut = new Date(d); fut.setDate(d.getDate() + 14);    // 미래 2주
+    if (!f.value) f.value = fmt(past);
+    if (!t.value) t.value = fmt(fut);
+  }
   // dg+oog 항목의 20'/40' 컨테이너 합계
   function scSizeCount(voy) {
     let c20 = 0, c40 = 0;
@@ -7292,8 +7316,8 @@ function fireCargoViewImage(itemId, idx) {
     const blocks = SC.sel.vessels.map(code => {
       const v = scVesselObj(code);
       if (!v) return `<div class="sc-list-vessel"><div class="sc-list-vhead">🚢 ${scEsc(code)} <span>데이터 없음</span></div></div>`;
-      // 선택 선박은 서비스필터 무관 전체 항차 표시(필터 기준=선박)
-      let voys = scVoyagesForVsl(code, '').slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
+      // 선택 선박은 서비스필터 무관, 기간(ETD) 필터만 적용
+      let voys = scVoyagesForVsl(code, '').filter(vy => scInRange(vy.etd)).slice().sort((a, b) => (a.etd || '').localeCompare(b.etd || ''));
       let c20 = 0, c40 = 0, ndg = 0, noog = 0, nfb = 0;
       voys.forEach(vy => { const t = vy.totals || {}; c20 += t.c20 || 0; c40 += t.c40 || 0; ndg += (vy.dg || []).length; noog += (vy.oog || []).length; nfb += (vy.fb || []).length; });
       // 선적지(POL)별로 행 분리 — 같은 항차라도 KRPUS·KRKAN 등 각각 조회
@@ -7404,12 +7428,15 @@ function fireCargoViewImage(itemId, idx) {
       const row = e.target.closest('.sc-list-row'); if (row) scOpenDetail(row.getAttribute('data-vsl'), row.getAttribute('data-vyg'), row.getAttribute('data-pol') || '');
     });
     if (det) det.addEventListener('click', e => { if (e.target.closest('#scSegBtn')) scRunSegCheck(); });
+    const df = scEl('scFrom'), dt = scEl('scTo');
+    if (df) df.addEventListener('change', () => scRenderList());
+    if (dt) dt.addEventListener('change', () => scRenderList());
     if (rl) rl.addEventListener('click', () => scLoad(true));
     if (rem) rem.addEventListener('change', scSaveSel);
   }
 
   window.scRender = function () {
-    scBind(); scLoadSel();
+    scBind(); scLoadSel(); scEnsureDates();
     if (!SC.data) scLoad(false);
     else { scRenderMeta(); scFillControls(); scRenderList(); }
   };
