@@ -5623,8 +5623,9 @@ body { top: 0 !important; position: static !important; }
 .sc-table tbody tr:hover { background: var(--accent-glow); }
 .sc-table .sc-c { text-align: center; white-space: nowrap; }
 .sc-table .sc-seg { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.sc-table .sc-nowrap { white-space: nowrap; }
 
-.sc-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.sc-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .sc-mix { background: rgba(255,23,68,0.18); color: var(--red); border: 1px solid rgba(255,23,68,0.4); }
 .sc-single { background: var(--surface-solid); color: var(--muted); border: 1px solid var(--border); }
 .sc-aa { background: rgba(255,176,32,0.18); color: var(--yellow); border: 1px solid rgba(255,176,32,0.45); }

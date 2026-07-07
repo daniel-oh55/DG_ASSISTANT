@@ -7229,7 +7229,7 @@ function fireCargoViewImage(itemId, idx) {
         ? `<span class="sc-badge sc-mix">혼적</span><div class="sc-mixwith">+ ${scEsc(scMixPartners(voy, d.bk_no, d.unno).join(', '))}</div>`
         : '<span class="sc-badge sc-single">단독</span>';
       const nm = d.commodity || info.name || '';
-      return `<tr><td>${scEsc(d.ctr_size)}</td><td>${scEsc(d.ctr_type)}</td><td class="sc-c">${scEsc(d.qty)}</td>
+      return `<tr><td>${scEsc(d.ctr_size)}</td><td class="sc-nowrap">${scEsc(d.ctr_type)}</td><td class="sc-c">${scEsc(d.qty)}</td>
         <td class="sc-c"><b>${scEsc(d.class)}</b></td><td class="sc-c">UN${scEsc(d.unno)}</td>
         <td class="sc-c">${scEsc(d.pod || '-')}</td><td>${scEsc(nm)}</td>
         <td>${mixed}</td><td class="sc-c">${scEsc(cat)}</td><td class="sc-seg">${scEsc(seg)}</td>
@@ -7251,7 +7251,7 @@ function fireCargoViewImage(itemId, idx) {
     const rows = voy.oog.map(o => {
       // 치수: L(길이) × W(폭) × H(높이) 순
       const dim = (o.L || o.W || o.H) ? `L ${scNum(o.L)} × W ${scNum(o.W)} × H ${scNum(o.H)}` : '-';
-      return `<tr><td>${scEsc(o.ctr_size)}</td><td>${scEsc(o.ctr_type)}</td><td class="sc-c">${scEsc(o.qty)}</td>
+      return `<tr><td>${scEsc(o.ctr_size)}</td><td class="sc-nowrap">${scEsc(o.ctr_type)}</td><td class="sc-c">${scEsc(o.qty)}</td>
         <td>${scEsc(o.item || '')}</td><td class="sc-c">${scEsc(o.pod || '-')}</td><td class="sc-c">${o.weight_kg ? scNum(o.weight_kg) : '-'}</td>
         <td class="sc-seg">${dim}</td><td class="sc-seg">${scEsc(scOverText(o))}</td>
         <td class="sc-c">${o.bb ? '<span class="sc-badge sc-mix">BB</span>' : '-'}</td></tr>`;
@@ -7263,7 +7263,7 @@ function fireCargoViewImage(itemId, idx) {
   }
   function scFbTable(voy) {
     if (!(voy.fb || []).length) return '';
-    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.ctr_size || '-')}</td><td>${scEsc(f.ctr_type || '드라이(GP)')}</td><td class="sc-c">${scEsc(f.qty || '-')}</td><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.pod || '-')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
+    const rows = voy.fb.map(f => `<tr><td>${scEsc(f.ctr_size || '-')}</td><td class="sc-nowrap">${scEsc(f.ctr_type || '드라이(GP)')}</td><td class="sc-c">${scEsc(f.qty || '-')}</td><td>${scEsc(f.item || '')}</td><td class="sc-c">${scEsc(f.pod || '-')}</td><td class="sc-c">${scEsc(f.status || '-')}</td><td class="sc-seg">${scEsc(f.bk_no || '')}</td></tr>`).join('');
     return `<div class="sc-subtitle">🛢️ 플렉시백 (FB) <span>${voy.fb.length}건</span></div>
       <div class="sc-table-wrap"><table class="sc-table"><thead><tr><th>크기</th><th>타입</th><th>개수</th><th>화물품목</th><th>양하지</th><th>상태</th><th>부킹번호</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
