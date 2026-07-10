@@ -2063,6 +2063,13 @@ const SKR_RFDG_REMARK = `<div class="carrier-rfdg-remark">
     <div>- <b>위험물(DG/RFDG)로 선적</b>되는 리튬이온 배터리는 <b>SKR/HAS 본사 승인 제조사</b>(SAMSUNG SDI / LG ENERGY SOLUTION〔LG Chem·LG 합작 PT. HLI GREEN POWER 포함〕 / SK ON)만 선적 가능. <b>SP188로 비위험물(NON-DG)로 분류되는 경우 제조사 제한 없음.</b></div>
 </div>`;
 
+// SKR/HAL UN2211·UN3314 컨테이너 조건 — IMDG는 오픈탑/리퍼 허용이나, 자사 규정은 OPEN TOP 컨테이너만 허용 (선사 규정집 J항)
+const SKR_2211_REMARK = `<div class="carrier-rfdg-remark">
+    <b>📌 UN2211 · UN3314 — 컨테이너 조건 (SKR/HAL)</b>
+    <div>- IMDG 규정: <b>OPEN TOP</b> 또는 <b>REEFER</b> 컨테이너만 허용.</div>
+    <div>- ⭐ <b>SKR/HAL 자사 규정: OPEN TOP 컨테이너만 허용</b> (REEFER 컨테이너 불가).</div>
+</div>`;
+
 function renderCarrierResultFromApi(dgItem, results) {
     const resultBox = document.getElementById('carrierCheckResult');
 
@@ -2151,6 +2158,7 @@ function renderCarrierResultFromApi(dgItem, results) {
                 <div class="carrier-rule-box">
                     ${ruleHtml}
                     ${(isOwn && /^0*(3480|3481)$/.test(String(dgItem.UNNO || '').trim())) ? SKR_RFDG_REMARK : ''}
+                    ${(isOwn && /^0*(2211|3314)$/.test(String(dgItem.UNNO || '').trim())) ? SKR_2211_REMARK : ''}
                     ${commonButtonHtml}
                     ${docHtml}
                 </div>
