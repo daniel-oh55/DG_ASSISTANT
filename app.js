@@ -6288,6 +6288,12 @@ async function dgLogin(id, pw) {
   if (await fqHash(pw) !== m.pwdHash) { fqToast('비밀번호가 일치하지 않습니다', 'warn'); return; }
   dgCurrentUser = { id: m.id, company: m.company, name: m.name, role: (m.role === 'admin' || dgIsAdminId(m.id)) ? 'admin' : 'general' };
   localStorage.setItem(DG_AUTH_KEY, JSON.stringify(dgCurrentUser));
+  // 접속 통계 기록(회원관리 리포트용) — 마지막 접속시각·누적 접속횟수
+  const _now = new Date().toISOString();
+  m.lastLoginAt = _now;
+  m.loginTotal = (m.loginTotal || 0) + 1;
+  if (!m.statsSince) m.statsSince = m.createdAt || _now;
+  try { await dgSaveMembers(); } catch (e) {}
   if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
   dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms();
   fqToast('✓ ' + (m.name || m.id) + '님 로그인되었습니다', 'success');
@@ -6362,6 +6368,22 @@ function dgAiIncUsage(userId) {
   d.counts[userId] = (d.counts[userId] || 0) + 1;
   try { localStorage.setItem(DG_AI_USAGE_KEY, JSON.stringify(d)); } catch (e) {}
   dgUpdateAiUsageUI();
+  dgRecordAiUsage(userId);   // 서버(회원 레코드)에 당일/누적 AI 사용 기록 — 회원관리 리포트용
+}
+// 회원별 AI 사용 통계를 Supabase 회원 레코드에 누적(관리자 리포트에서 조회) — 당일치는 날짜 바뀌면 자동 초기화
+async function dgRecordAiUsage(userId) {
+  if (!userId) return;
+  try {
+    await dgLoadMembers();
+    const m = dgMembers.find(x => x.id === userId);
+    if (!m) return;
+    const today = fqTodayStr();
+    if (m.aiTodayDate !== today) { m.aiTodayDate = today; m.aiToday = 0; }
+    m.aiToday = (m.aiToday || 0) + 1;
+    m.aiTotal = (m.aiTotal || 0) + 1;
+    if (!m.statsSince) m.statsSince = m.createdAt || new Date().toISOString();
+    await dgSaveMembers();
+  } catch (e) {}
 }
 // 사이드바 계정정보 — 이름 옆 'AI n/10' 표시 갱신
 function dgUpdateAiUsageUI() {
@@ -6418,12 +6440,28 @@ function dgRenderMembers() {
   const approved = dgMembers.filter(m => m.status === 'approved');
   const fmt = d => d ? new Date(d).toLocaleString('ko') : '-';
   const isAdm = m => m.role === 'admin' || dgIsAdminId(m.id);
+  // 회원별 접속·AI 사용 통계
+  const _today = fqTodayStr();
+  const daysSince = m => {
+    const since = m.statsSince || m.createdAt;
+    if (!since) return 1;
+    const diff = Date.now() - new Date(since).getTime();
+    return Math.max(1, Math.floor(diff / 86400000) + 1);   // 통계 시작일부터 오늘까지 일수(최소 1)
+  };
+  const round1 = n => Math.round(n * 10) / 10;             // 소수점 1자리
+  const aiTodayOf = m => (m.aiTodayDate === _today ? (m.aiToday || 0) : 0);
+  const statLine = m =>
+    '<span class="dg-mem-stat">🕒 최근 접속 <b>' + (m.lastLoginAt ? fmt(m.lastLoginAt) : '기록 없음') + '</b>' +
+      ' · 🤖 당일 AI <b>' + aiTodayOf(m) + '회</b></span>' +
+    '<span class="dg-mem-stat">📈 일평균 접속 <b>' + round1((m.loginTotal || 0) / daysSince(m)) + '회</b>' +
+      ' · 일평균 AI <b>' + round1((m.aiTotal || 0) / daysSince(m)) + '회</b></span>';
   const row = (m, isPending) =>
     '<div class="dg-mem-row' + (isPending ? ' pending' : '') + '">' +
       '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> ' +
         (isAdm(m) ? '<span class="dg-role-badge admin">👑 관리자</span>' : '<span class="dg-role-badge">일반</span>') +
         ' · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
-        '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span></div>' +
+        '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span>' +
+        (isPending ? '' : statLine(m)) + '</div>' +
       '<div class="dg-mem-actions">' +
         (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
         (!isPending && !isAdm(m) ? '<button class="fq-btn accent" data-grant="' + fqEsc(m.id) + '">👑 관리자 지정</button>' : '') +
