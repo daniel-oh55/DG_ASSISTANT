@@ -6471,9 +6471,9 @@ function dgRenderMembers() {
   box.innerHTML =
     '<div class="dg-mem-stats">전체 ' + dgMembers.length + '명 · 승인 ' + approved.length + ' · 대기 ' + pending.length + '</div>' +
     '<div class="dg-mem-group-title">⏳ 승인 대기 (' + pending.length + ')</div>' +
-    (pending.length ? pending.map(m => row(m, true)).join('') : '<div class="dg-mem-empty">승인 대기 중인 가입 요청이 없습니다.</div>') +
+    (pending.length ? '<div class="dg-mem-grid">' + pending.map(m => row(m, true)).join('') + '</div>' : '<div class="dg-mem-empty">승인 대기 중인 가입 요청이 없습니다.</div>') +
     '<div class="dg-mem-group-title">✅ 승인된 회원 (' + approved.length + ')</div>' +
-    (approved.length ? approved.map(m => row(m, false)).join('') : '<div class="dg-mem-empty">승인된 회원이 없습니다.</div>');
+    (approved.length ? '<div class="dg-mem-grid">' + approved.map(m => row(m, false)).join('') + '</div>' : '<div class="dg-mem-empty">승인된 회원이 없습니다.</div>');
   box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve));
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del));
   box.querySelectorAll('[data-grant]').forEach(b => b.onclick = () => dgSetRole(b.dataset.grant, 'admin'));
