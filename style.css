@@ -5355,11 +5355,13 @@ body { top: 0 !important; position: static !important; }
 /* 회원관리 (관리자 리포트) */
 .dg-mem-stats { font-size: 12.5px; color: var(--fq-muted, #8b949e); margin-bottom: 8px; }
 .dg-mem-group-title { font-size: 13px; font-weight: 800; color: var(--fq-text, #1f2937); margin: 16px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--fq-border, #e5e7eb); }
-/* 회원리스트 2열 격자 — 한 화면에 최대한 많이 보이도록 */
-.dg-mem-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
+/* 회원리스트 2열 격자 — 한 화면에 최대한 많이 보이도록. 좌우 카드 높이 자동 정렬 */
+.dg-mem-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
 @media (max-width: 720px) { .dg-mem-grid { grid-template-columns: 1fr; } }
-.dg-mem-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--fq-border, #e5e7eb); border-radius: 10px; margin-bottom: 0; background: var(--fq-card, #fff); color: var(--fq-text, #1f2937); flex-wrap: wrap; }
+/* 카드: 세로 배치로 아이디에 전체 폭을 주고(줄바뀜 최소화), 액션은 아래 고정 → 같은 줄 카드끼리 높이 일치 */
+.dg-mem-row { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; height: 100%; padding: 10px 12px; border: 1px solid var(--fq-border, #e5e7eb); border-radius: 10px; margin-bottom: 0; background: var(--fq-card, #fff); color: var(--fq-text, #1f2937); }
 .dg-mem-grid .dg-mem-info { min-width: 0; word-break: break-word; }
+.dg-mem-grid .dg-mem-actions { flex-wrap: wrap; }
 .dg-mem-row.pending { border-left: 4px solid #f59e0b; }
 .dg-mem-info { font-size: 13px; line-height: 1.5; }
 .dg-mem-co { color: var(--fq-muted, #8b949e); }
