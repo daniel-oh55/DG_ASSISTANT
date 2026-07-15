@@ -2054,7 +2054,7 @@ const CARRIER_DOCS = {
     NSS_DYS:     { url: '/carriers/nss_dys.xlsx',  label: 'NSS & DYS DG Prohibition List (XLSX)' },
     CKL_PARTNER: { url: '/carriers/ckl.pdf',      label: 'CKL DG Prohibited & Restricted List (2024.06.28)' },
     DONGJIN:     { url: '/carriers/dongjin.xlsx', label: 'Dongjin Shipping DG Prohibited List (2024.06.28)' },
-    CUL:         { url: '/carriers/cul.xlsx',     label: 'CULines DG Prohibition List (2026.03.31)' }
+    CUL:         { url: '/carriers/cul.pdf',      label: 'CULines DG Prohibition List (Version 2026)' }
 };
 
 // SKR/HAL 리튬이온 배터리(UN3480·3481) RFDG 선적 조건 Remark (선사 규정집 L항)
