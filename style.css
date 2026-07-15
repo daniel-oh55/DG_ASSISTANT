@@ -1780,26 +1780,37 @@ header span {
 .carrier-own-detailed .carrier-doc-link { font-size: 13.5px; }
 
 .carrier-doc-modal-window {
-    width: min(98vw, 1600px);
+    width: min(98vw, 1680px);
     min-width: min(720px, 90vw);
-    max-width: 98vw;
-    height: min(94vh, 1080px);
+    max-width: 99vw;
+    height: min(94vh, 1100px);
     min-height: 560px;
-    max-height: 94vh;
+    max-height: 96vh;
     padding: 20px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    resize: both;
+    resize: none;
 }
 
-.carrier-doc-modal-window::after {
+.carrier-doc-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 32px;
+    height: 32px;
+    cursor: nwse-resize;
+    touch-action: none;
+    z-index: 2;
+}
+
+.carrier-doc-resize-handle::after {
     content: '↘';
     position: absolute;
-    right: 7px;
-    bottom: 3px;
-    color: rgba(201, 220, 255, 0.75);
-    font-size: 16px;
+    right: 6px;
+    bottom: 5px;
+    color: rgba(201, 220, 255, 0.95);
+    font-size: 20px;
     line-height: 1;
     pointer-events: none;
 }
@@ -1879,10 +1890,9 @@ header span {
         max-height: 100vh;
         padding: 16px;
         border-radius: 0;
-        resize: none;
     }
 
-    .carrier-doc-modal-window::after {
+    .carrier-doc-resize-handle {
         display: none;
     }
 

@@ -2512,9 +2512,11 @@ function openCarrierDocument(carrierKey) {
                 </div>
                 <div id="carrierDocModalMeta" class="modal-meta"></div>
                 <div id="carrierDocModalBody" class="carrier-doc-modal-body"></div>
+                <div id="carrierDocResizeHandle" class="carrier-doc-resize-handle" title="드래그하여 창 크기 조절" aria-label="창 크기 조절"></div>
             </div>
         `;
         document.body.appendChild(modal);
+        setupCarrierDocumentResize(modal);
 
         modal.addEventListener('click', event => {
             if (event.target === modal) closeCarrierDocumentModal();
@@ -2535,7 +2537,7 @@ function openCarrierDocument(carrierKey) {
 
     title.textContent = doc.label;
     meta.textContent = isPdf
-        ? '원본 PDF를 넓게 표시합니다. 오른쪽 아래 모서리를 드래그하면 창 크기를 조절할 수 있습니다.'
+        ? '원본 PDF를 150%로 표시합니다. 오른쪽 아래 ↘ 핸들을 드래그하면 가로·세로 크기를 조절할 수 있습니다.'
         : '이 원본은 Excel 형식입니다. 아래 버튼으로 내려받아 확인하세요.';
     download.href = doc.url;
     download.setAttribute('download', '');
@@ -2543,7 +2545,7 @@ function openCarrierDocument(carrierKey) {
     if (isPdf) {
         const frame = document.createElement('iframe');
         frame.className = 'carrier-doc-frame';
-        frame.src = doc.url.includes('#') ? doc.url : `${doc.url}#zoom=page-width`;
+        frame.src = doc.url.includes('#') ? doc.url : `${doc.url}#zoom=150`;
         frame.title = doc.label;
         body.replaceChildren(frame);
     } else {
@@ -2551,6 +2553,42 @@ function openCarrierDocument(carrierKey) {
     }
 
     modal.style.display = 'flex';
+}
+
+function setupCarrierDocumentResize(modal) {
+    const box = modal.querySelector('.carrier-doc-modal-window');
+    const handle = modal.querySelector('.carrier-doc-resize-handle');
+    if (!box || !handle) return;
+
+    handle.addEventListener('pointerdown', event => {
+        if (window.innerWidth <= 640) return;
+        event.preventDefault();
+
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startWidth = box.getBoundingClientRect().width;
+        const startHeight = box.getBoundingClientRect().height;
+        const minWidth = Math.min(720, window.innerWidth * 0.9);
+        const minHeight = 560;
+        const maxWidth = window.innerWidth * 0.99;
+        const maxHeight = window.innerHeight * 0.96;
+
+        const resize = moveEvent => {
+            const width = Math.min(maxWidth, Math.max(minWidth, startWidth + moveEvent.clientX - startX));
+            const height = Math.min(maxHeight, Math.max(minHeight, startHeight + moveEvent.clientY - startY));
+            box.style.width = `${width}px`;
+            box.style.height = `${height}px`;
+        };
+        const stopResize = () => {
+            document.removeEventListener('pointermove', resize);
+            document.removeEventListener('pointerup', stopResize);
+            document.removeEventListener('pointercancel', stopResize);
+        };
+
+        document.addEventListener('pointermove', resize);
+        document.addEventListener('pointerup', stopResize);
+        document.addEventListener('pointercancel', stopResize);
+    });
 }
 
 function closeCarrierDocumentModal() {
