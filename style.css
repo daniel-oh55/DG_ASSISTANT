@@ -1780,12 +1780,15 @@ header span {
 .carrier-own-detailed .carrier-doc-link { font-size: 13.5px; }
 
 .carrier-doc-modal-window {
-    width: min(98vw, 1680px);
-    min-width: min(720px, 90vw);
-    max-width: 99vw;
-    height: min(94vh, 1100px);
-    min-height: 560px;
-    max-height: 96vh;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    width: min(calc(100vw - 24px), 1800px);
+    min-width: min(680px, calc(100vw - 24px));
+    max-width: calc(100vw - 16px);
+    height: min(calc(100vh - 24px), 1200px);
+    min-height: min(500px, calc(100vh - 24px));
+    max-height: calc(100vh - 16px);
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -1795,25 +1798,21 @@ header span {
 
 .carrier-doc-resize-handle {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 32px;
-    height: 32px;
-    cursor: nwse-resize;
     touch-action: none;
-    z-index: 2;
+    z-index: 3;
 }
 
-.carrier-doc-resize-handle::after {
-    content: '↘';
-    position: absolute;
-    right: 6px;
-    bottom: 5px;
-    color: rgba(201, 220, 255, 0.95);
-    font-size: 20px;
-    line-height: 1;
-    pointer-events: none;
-}
+.carrier-doc-resize-handle[data-resize="n"], .carrier-doc-resize-handle[data-resize="s"] { left: 20px; right: 20px; height: 12px; cursor: ns-resize; }
+.carrier-doc-resize-handle[data-resize="n"] { top: -6px; }
+.carrier-doc-resize-handle[data-resize="s"] { bottom: -6px; }
+.carrier-doc-resize-handle[data-resize="e"], .carrier-doc-resize-handle[data-resize="w"] { top: 20px; bottom: 20px; width: 12px; cursor: ew-resize; }
+.carrier-doc-resize-handle[data-resize="e"] { right: -6px; }
+.carrier-doc-resize-handle[data-resize="w"] { left: -6px; }
+.carrier-doc-resize-handle[data-resize="ne"], .carrier-doc-resize-handle[data-resize="sw"], .carrier-doc-resize-handle[data-resize="nw"], .carrier-doc-resize-handle[data-resize="se"] { width: 24px; height: 24px; }
+.carrier-doc-resize-handle[data-resize="ne"] { top: -6px; right: -6px; cursor: nesw-resize; }
+.carrier-doc-resize-handle[data-resize="sw"] { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.carrier-doc-resize-handle[data-resize="nw"] { top: -6px; left: -6px; cursor: nwse-resize; }
+.carrier-doc-resize-handle[data-resize="se"] { right: -6px; bottom: -6px; cursor: nwse-resize; }
 
 .carrier-doc-modal-header {
     gap: 14px;
@@ -1882,6 +1881,8 @@ header span {
 
 @media (max-width: 640px) {
     .carrier-doc-modal-window {
+        top: 0;
+        left: 0;
         width: 100vw;
         height: 100vh;
         min-width: 0;

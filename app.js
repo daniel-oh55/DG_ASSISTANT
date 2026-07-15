@@ -2512,7 +2512,14 @@ function openCarrierDocument(carrierKey) {
                 </div>
                 <div id="carrierDocModalMeta" class="modal-meta"></div>
                 <div id="carrierDocModalBody" class="carrier-doc-modal-body"></div>
-                <div id="carrierDocResizeHandle" class="carrier-doc-resize-handle" title="드래그하여 창 크기 조절" aria-label="창 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="n" title="위쪽 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="s" title="아래쪽 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="e" title="오른쪽 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="w" title="왼쪽 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="ne" title="대각선 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="nw" title="대각선 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="se" title="대각선 크기 조절"></div>
+                <div class="carrier-doc-resize-handle" data-resize="sw" title="대각선 크기 조절"></div>
             </div>
         `;
         document.body.appendChild(modal);
@@ -2535,9 +2542,11 @@ function openCarrierDocument(carrierKey) {
     const body = document.getElementById('carrierDocModalBody');
     const download = document.getElementById('carrierDocDownload');
 
+    resetCarrierDocumentSize(modal);
+
     title.textContent = doc.label;
     meta.textContent = isPdf
-        ? '원본 PDF를 150%로 표시합니다. 오른쪽 아래 ↘ 핸들을 드래그하면 가로·세로 크기를 조절할 수 있습니다.'
+        ? '원본 PDF는 팝업 크기에 맞춰 표시됩니다. 팝업의 상·하·좌·우 변 또는 모서리를 드래그하여 크기를 조절할 수 있습니다.'
         : '이 원본은 Excel 형식입니다. 아래 버튼으로 내려받아 확인하세요.';
     download.href = doc.url;
     download.setAttribute('download', '');
@@ -2545,7 +2554,7 @@ function openCarrierDocument(carrierKey) {
     if (isPdf) {
         const frame = document.createElement('iframe');
         frame.className = 'carrier-doc-frame';
-        frame.src = doc.url.includes('#') ? doc.url : `${doc.url}#zoom=150`;
+        frame.src = doc.url.includes('#') ? doc.url : `${doc.url}#zoom=page-width`;
         frame.title = doc.label;
         body.replaceChildren(frame);
     } else {
@@ -2557,38 +2566,73 @@ function openCarrierDocument(carrierKey) {
 
 function setupCarrierDocumentResize(modal) {
     const box = modal.querySelector('.carrier-doc-modal-window');
-    const handle = modal.querySelector('.carrier-doc-resize-handle');
-    if (!box || !handle) return;
+    const handles = modal.querySelectorAll('.carrier-doc-resize-handle');
+    if (!box || !handles.length) return;
 
-    handle.addEventListener('pointerdown', event => {
-        if (window.innerWidth <= 640) return;
-        event.preventDefault();
+    handles.forEach(handle => {
+        handle.addEventListener('pointerdown', event => {
+            if (window.innerWidth <= 640) return;
+            event.preventDefault();
 
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const startWidth = box.getBoundingClientRect().width;
-        const startHeight = box.getBoundingClientRect().height;
-        const minWidth = Math.min(720, window.innerWidth * 0.9);
-        const minHeight = 560;
-        const maxWidth = window.innerWidth * 0.99;
-        const maxHeight = window.innerHeight * 0.96;
+            const direction = handle.dataset.resize || '';
+            const rect = box.getBoundingClientRect();
+            const startX = event.clientX;
+            const startY = event.clientY;
+            const startLeft = rect.left;
+            const startTop = rect.top;
+            const startRight = rect.right;
+            const startBottom = rect.bottom;
+            const minWidth = Math.min(680, window.innerWidth - 24);
+            const minHeight = Math.min(500, window.innerHeight - 24);
+            const margin = 8;
 
-        const resize = moveEvent => {
-            const width = Math.min(maxWidth, Math.max(minWidth, startWidth + moveEvent.clientX - startX));
-            const height = Math.min(maxHeight, Math.max(minHeight, startHeight + moveEvent.clientY - startY));
-            box.style.width = `${width}px`;
-            box.style.height = `${height}px`;
-        };
-        const stopResize = () => {
-            document.removeEventListener('pointermove', resize);
-            document.removeEventListener('pointerup', stopResize);
-            document.removeEventListener('pointercancel', stopResize);
-        };
+            const resize = moveEvent => {
+                let width = rect.width;
+                let height = rect.height;
+                let left = startLeft;
+                let top = startTop;
 
-        document.addEventListener('pointermove', resize);
-        document.addEventListener('pointerup', stopResize);
-        document.addEventListener('pointercancel', stopResize);
+                if (direction.includes('e')) {
+                    width = Math.min(window.innerWidth - startLeft - margin, Math.max(minWidth, rect.width + moveEvent.clientX - startX));
+                }
+                if (direction.includes('w')) {
+                    width = Math.min(startRight - margin, Math.max(minWidth, rect.width - moveEvent.clientX + startX));
+                    left = startRight - width;
+                }
+                if (direction.includes('s')) {
+                    height = Math.min(window.innerHeight - startTop - margin, Math.max(minHeight, rect.height + moveEvent.clientY - startY));
+                }
+                if (direction.includes('n')) {
+                    height = Math.min(startBottom - margin, Math.max(minHeight, rect.height - moveEvent.clientY + startY));
+                    top = startBottom - height;
+                }
+
+                box.style.width = `${width}px`;
+                box.style.height = `${height}px`;
+                box.style.left = `${left}px`;
+                box.style.top = `${top}px`;
+            };
+            const stopResize = () => {
+                document.removeEventListener('pointermove', resize);
+                document.removeEventListener('pointerup', stopResize);
+                document.removeEventListener('pointercancel', stopResize);
+            };
+
+            document.addEventListener('pointermove', resize);
+            document.addEventListener('pointerup', stopResize);
+            document.addEventListener('pointercancel', stopResize);
+        });
     });
+}
+
+function resetCarrierDocumentSize(modal) {
+    if (window.innerWidth <= 640) return;
+    const box = modal.querySelector('.carrier-doc-modal-window');
+    if (!box) return;
+    box.style.removeProperty('width');
+    box.style.removeProperty('height');
+    box.style.removeProperty('left');
+    box.style.removeProperty('top');
 }
 
 function closeCarrierDocumentModal() {
