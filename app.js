@@ -2147,7 +2147,7 @@ function renderCarrierResultFromApi(dgItem, results) {
         const doc = CARRIER_DOCS[result.carrier_group];
         const docHtml = doc ? `
             <div class="carrier-doc-action">
-                <a class="carrier-doc-link" href="${doc.url}" target="_blank" rel="noopener" title="${escapeHtml(doc.label)}">📄 원본 규정 보기</a>
+                <button type="button" class="carrier-doc-link" onclick="openCarrierDocument('${escapeHtml(result.carrier_group)}')" title="${escapeHtml(doc.label)}">📄 원본 규정 보기</button>
             </div>` : '';
 
         return `
@@ -2489,6 +2489,75 @@ function closeCarrierCommonModal() {
     if (modal) {
         modal.style.display = 'none';
     }
+}
+
+function openCarrierDocument(carrierKey) {
+    const doc = CARRIER_DOCS[carrierKey];
+    if (!doc) return;
+
+    let modal = document.getElementById('carrierDocModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'carrierDocModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-window carrier-doc-modal-window" role="dialog" aria-modal="true" aria-labelledby="carrierDocModalTitle">
+                <div class="modal-header carrier-doc-modal-header">
+                    <h2 id="carrierDocModalTitle">원본 규정</h2>
+                    <div class="carrier-doc-modal-actions">
+                        <a id="carrierDocDownload" class="carrier-doc-download" download>⬇ 다운로드</a>
+                        <button type="button" class="modal-close" onclick="closeCarrierDocumentModal()" aria-label="닫기">×</button>
+                    </div>
+                </div>
+                <div id="carrierDocModalMeta" class="modal-meta"></div>
+                <div id="carrierDocModalBody" class="carrier-doc-modal-body"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', event => {
+            if (event.target === modal) closeCarrierDocumentModal();
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                closeCarrierDocumentModal();
+            }
+        });
+    }
+
+    const isPdf = /\.pdf(?:$|[?#])/i.test(doc.url);
+    const title = document.getElementById('carrierDocModalTitle');
+    const meta = document.getElementById('carrierDocModalMeta');
+    const body = document.getElementById('carrierDocModalBody');
+    const download = document.getElementById('carrierDocDownload');
+
+    title.textContent = doc.label;
+    meta.textContent = isPdf
+        ? '원본 PDF를 프로그램 안에서 확인할 수 있습니다.'
+        : '이 원본은 Excel 형식입니다. 아래 버튼으로 내려받아 확인하세요.';
+    download.href = doc.url;
+    download.setAttribute('download', '');
+
+    if (isPdf) {
+        const frame = document.createElement('iframe');
+        frame.className = 'carrier-doc-frame';
+        frame.src = doc.url;
+        frame.title = doc.label;
+        body.replaceChildren(frame);
+    } else {
+        body.innerHTML = `<div class="carrier-doc-download-note">이 형식은 브라우저 내 미리보기를 지원하지 않습니다. <b>다운로드</b> 버튼으로 원본 파일을 받으세요.</div>`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeCarrierDocumentModal() {
+    const modal = document.getElementById('carrierDocModal');
+    const body = document.getElementById('carrierDocModalBody');
+    if (body) body.replaceChildren();
+    if (modal) modal.style.display = 'none';
 }
 
 async function checkCarrierLoadingPossibility() {
