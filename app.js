@@ -2535,7 +2535,7 @@ function openCarrierDocument(carrierKey) {
 
     title.textContent = doc.label;
     meta.textContent = isPdf
-        ? '원본 PDF를 프로그램 안에서 확인할 수 있습니다.'
+        ? '원본 PDF를 넓게 표시합니다. 오른쪽 아래 모서리를 드래그하면 창 크기를 조절할 수 있습니다.'
         : '이 원본은 Excel 형식입니다. 아래 버튼으로 내려받아 확인하세요.';
     download.href = doc.url;
     download.setAttribute('download', '');
@@ -2543,7 +2543,7 @@ function openCarrierDocument(carrierKey) {
     if (isPdf) {
         const frame = document.createElement('iframe');
         frame.className = 'carrier-doc-frame';
-        frame.src = doc.url;
+        frame.src = doc.url.includes('#') ? doc.url : `${doc.url}#zoom=page-width`;
         frame.title = doc.label;
         body.replaceChildren(frame);
     } else {
