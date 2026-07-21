@@ -2047,7 +2047,7 @@ function renderRuleRemarkCondition(rule) {
 
 // 선사 그룹별 원본 규정 파일 (carriers/ 폴더에 호스팅)
 const CARRIER_DOCS = {
-    SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.11)' },
+    SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.12)' },
     HMM_PARTNER: { url: '/carriers/hmm.pdf',      label: 'HMM Prohibited & Restricted List' },
     TSL:         { url: '/carriers/tsl.pdf',      label: 'TSL Restricted-Prohibited DG (Rev.29)' },
     KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.06.15, Amd 42-24)' },

@@ -1,7 +1,7 @@
 {
  "carrier": "SKR/HAS (Sinokor & Heung-A) 위험물 금지리스트",
  "source": "SKR HAL ONLY 기준",
- "updated": "2026-06-08",
+ "updated": "2026-07-21",
  "note": "변경내용 요약만 표시(전체 목록은 PDF/엑셀 원본 참조).",
  "versions": [
   {
@@ -228,6 +228,27 @@
     }
    ],
    "remark": "추가 3건: UN3556, UN3557, UN3558"
+  },
+  {
+   "version": "VER.12",
+   "date": "2026-07-21",
+   "count": 327,
+   "added": [
+    "1052",
+    "1790"
+   ],
+   "removed": [],
+   "addedDetail": [
+    {
+     "unno": "1052",
+     "psn": "HYDROGEN FLUORIDE, ANHYDROUS"
+    },
+    {
+     "unno": "1790",
+     "psn": "HYDROFLUORIC ACID, with more than 60% hydrogen fluoride"
+    }
+   ],
+   "remark": "추가 2건: UN1052(무수불화수소), UN1790(불화수소산) — 앤트워프항 HF 누출사고(MSC Mia Summer II) 계기, 2026.07.21부 선적 금지. 기확정 부킹 포함 전건 적용."
   }
  ]
 }
