@@ -1,9 +1,13 @@
 -- SKR/HAL DG Prohibited List — VER.12 update
--- Source: carriers/skr_hal.pdf (Sinokor & Heung A DG prohibit list VER.12 - SKR HAL ONLY)
+-- Source: carriers/skr_hal.pdf (Sinokor & Heung A DG prohibit list VER.12 - SKR HAL ONLY, 2026-07-22)
 -- Effective: 2026-07-21
--- 변경: Hydrogen fluoride 계열 2건 신규 선적 금지 (앤트워프항 HF 누출사고 계기)
+-- 변경: Hydrogen fluoride 계열 2건 신규 선적 금지
 --   - Class 8 (Sub 6.1) / UN 1052 — HYDROGEN FLUORIDE, ANHYDROUS
 --   - Class 8 (Sub 6.1) / UN 1790 — HYDROFLUORIC ACID, with more than 60% hydrogen fluoride
+-- 검증: 공식 VER.12 본표 322개 품목 전수 대조 결과, DB(VER.11)에 이미 320개 반영·이 2건만 누락.
+--       → 전체 재생성 불필요, 이 2건만 추가하면 VER.12와 일치.
+-- 리마크: "2026.07.21부터 금지"는 공지용 특별문구라 UNNO 조회 화면에는 표기하지 않음
+--        → 다른 금지품목과 동일한 일반 문구 사용.
 -- ⚠️ Supabase SQL Editor에서 실행. carrier_name은 기존 SKR_HAL 행에서 그대로 승계.
 
 -- 재실행 안전(idempotent): 기존 동일 UNNO 룰 제거 후 재삽입
@@ -15,13 +19,13 @@ insert into public.dg_carrier_rules
 select 'SKR_HAL',
        coalesce((select carrier_name from public.dg_carrier_rules where carrier_group = 'SKR_HAL' and carrier_name is not null limit 1), 'SKR/HAL'),
        '8', '1052', 'HYDROGEN FLUORIDE, ANHYDROUS', 'PROHIBITED',
-       'Prohibited effective 2026-07-21. Hydrogen fluoride banned following the Port of Antwerp HF leak incident (MSC Mia Summer II). Applies to all bookings incl. already confirmed.',
+       'Listed in SKR/HAL prohibited dangerous goods list.',
        'skr_hal.pdf', 'VER.12', '2026-07-21', 99010, true
 union all
 select 'SKR_HAL',
        coalesce((select carrier_name from public.dg_carrier_rules where carrier_group = 'SKR_HAL' and carrier_name is not null limit 1), 'SKR/HAL'),
        '8', '1790', 'HYDROFLUORIC ACID, with more than 60% hydrogen fluoride', 'PROHIBITED',
-       'Prohibited effective 2026-07-21. Hydrogen fluoride banned following the Port of Antwerp HF leak incident (MSC Mia Summer II). Applies to all bookings incl. already confirmed.',
+       'Listed in SKR/HAL prohibited dangerous goods list.',
        'skr_hal.pdf', 'VER.12', '2026-07-21', 99020, true;
 
 -- 확인용
