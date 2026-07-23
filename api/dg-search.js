@@ -2,6 +2,11 @@ const { supabaseAdmin } = require('./_supabase');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  // 외부 프로그램(운항팀 연동)에서 자유롭게 조회할 수 있도록 CORS 허용 (읽기 전용)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (req.method !== 'POST') {
     return res.status(405).json({
