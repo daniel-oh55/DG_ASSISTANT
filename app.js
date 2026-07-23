@@ -4778,6 +4778,21 @@ function fqBindFaq(scope) {
 // ── AI에게 문의 (FAQ·문의답변 DB 기반 LLM 답변) ──
 // UN번호 추출 — UN / UNNO / UN NO / U.N. 등 다양한 표기 + 구분자(공백·-·.·#·:) 허용.
 // 격리·DG조회의 결정론적 판정이 표기 형식 때문에 누락되지 않도록 공통 사용.
+// 물질 이름(한글/영문) → UNNO 매핑. AI 문의에서 UN번호 없이 물질명으로만 물어도
+// 자사(SKR/HAL) 선적 금지·제한 근거를 조회할 수 있게 UN번호를 보강한다.
+// ⚠️ 선적 금지 품목은 여기에 반드시 등록할 것(금지품을 '가능'으로 오답하는 것을 막음).
+const FQ_SUBSTANCE_UNNO = [
+  { un: ['1052'], re: /무수\s*불화수소|불화수소\s*무수|anhydrous\s+hydrogen\s+fluoride/i },
+  { un: ['1790'], re: /불화수소산|불산\b|hydrofluoric\s+acid/i },
+  { un: ['1052', '1790'], re: /불화수소|hydrogen\s+fluoride|(^|[^A-Za-z])HF([^A-Za-z]|$)/i }
+  // 필요 시 여기에 물질명→UN 추가 (특히 선사 선적 금지 품목 우선)
+];
+function fqSubstanceUnnos(text) {
+  const t = String(text || '');
+  const out = [];
+  for (const e of FQ_SUBSTANCE_UNNO) { if (e.re.test(t)) e.un.forEach(u => out.push(u)); }
+  return [...new Set(out)];
+}
 function fqExtractUnnos(text) {
   const re = /U\s*\.?\s*N\s*\.?\s*(?:N\s*\.?\s*O|NO|No)?\s*\.?\s*[-#:]?\s*(\d{4})/gi;
   const out = []; let m;
@@ -4958,6 +4973,12 @@ async function fqAskAi() {
     const baseUn = fqExtractUnnos(q);
     const parsed = isSegQ ? fqParseSegCargos(q) : { rows: baseUn.map(u => ({ unno: u, class: null })), lookup: baseUn };
     let unnos = parsed.lookup;
+    // 물질명으로만 물어본 경우(예: "불화수소")에도 자사 선적 금지 근거를 조회하도록 UN번호 보강
+    const subUn = fqSubstanceUnnos(q);
+    if (subUn.length) {
+      subUn.forEach(u => { if (!unnos.includes(u)) unnos.push(u); });
+      if (!isSegQ) subUn.forEach(u => { if (!parsed.rows.some(r => r.unno === u)) parsed.rows.push({ unno: u, class: null }); });
+    }
     if (unnos.length) {
       try {
         const dr = await fetch('/api/dg-search', {
@@ -6537,6 +6558,25 @@ async function dgRecordAiUsage(userId) {
     await dgSaveMembers();
   } catch (e) {}
 }
+// 로그인 세션이 복원된(=재방문) 사용자의 '최근 접속'을 기록 — 하루 1회로 제한(쓰기 폭주·충돌 방지)
+const DG_ACCESS_DAY_KEY = 'dg_last_access_day_v1';
+async function dgRecordAccess(userId) {
+  if (!userId) return;
+  const today = (typeof fqTodayStr === 'function') ? fqTodayStr() : new Date().toISOString().slice(0, 10);
+  let lastDay = '';
+  try { lastDay = localStorage.getItem(DG_ACCESS_DAY_KEY) || ''; } catch (e) {}
+  if (lastDay === today) return;                 // 오늘 이미 기록함 — 재기록 안 함(하루 1회)
+  try { localStorage.setItem(DG_ACCESS_DAY_KEY, today); } catch (e) {}
+  try {
+    await dgLoadMembers();
+    const m = dgMembers.find(x => x.id === userId);
+    if (!m) return;
+    m.lastLoginAt = new Date().toISOString();    // '최근 접속' = 마지막 방문 시각(직접 로그인 아니어도 갱신)
+    m.loginTotal = (m.loginTotal || 0) + 1;      // 접속(방문) 횟수 누적 — 하루 최대 1 증가
+    if (!m.statsSince) m.statsSince = m.createdAt || m.lastLoginAt;
+    await dgSaveMembers();
+  } catch (e) {}
+}
 // 사이드바 계정정보 — 이름 옆 'AI n/10' 표시 갱신
 function dgUpdateAiUsageUI() {
   const el = document.getElementById('dgAiUsage');
@@ -6606,9 +6646,9 @@ function dgRenderMembers() {
   const aiTodayOf = m => (m.aiTodayDate === _today ? (m.aiToday || 0) : 0);
   const statLine = m =>
     '<span class="dg-mem-stat">🕒 최근 접속 <b>' + (m.lastLoginAt ? fmt(m.lastLoginAt) : '기록 없음') + '</b>' +
-      ' · 🤖 당일 AI <b>' + aiTodayOf(m) + '회</b></span>' +
-    '<span class="dg-mem-stat">📈 일평균 접속 <b>' + round1((m.loginTotal || 0) / daysSince(m)) + '회</b>' +
-      ' · 일평균 AI <b>' + round1((m.aiTotal || 0) / daysSince(m)) + '회</b></span>';
+      ' · 🤖 AI 누적 <b>' + (m.aiTotal || 0) + '회</b> (오늘 ' + aiTodayOf(m) + '회)</span>' +
+    '<span class="dg-mem-stat">📈 접속 <b>' + (m.loginTotal || 0) + '회</b> · 일평균 접속 <b>' + round1((m.loginTotal || 0) / daysSince(m)) + '</b>' +
+      ' · 일평균 AI <b>' + round1((m.aiTotal || 0) / daysSince(m)) + '</b></span>';
   const row = (m, isPending) =>
     '<div class="dg-mem-row' + (isPending ? ' pending' : '') + '">' +
       '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> ' +
@@ -6696,6 +6736,7 @@ async function dgInit() {
   await dgLoadMembers();
   dgRestoreSession();
   dgUpdateAuthUI();           // 세션 복원 후 갱신
+  if (dgCurrentUser && dgCurrentUser.id) dgRecordAccess(dgCurrentUser.id);   // 재방문 접속 기록(하루 1회)
   dgAutofillForms();
   dgUpdateMemberBadge();      // 승인 대기 회원 알림
   dgApplyReportAccess();      // 권한별 리포트 서브탭 표시
