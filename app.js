@@ -5012,6 +5012,7 @@ async function fqAskAi() {
       }
       if (isSegQ && finalRows.length >= 2) {
         segChk = fqSegregationCheck(finalRows);
+        segChk = fqSegApplyFullEngine(segChk, dgData);   // 개별 [격리규정/혼적 확인] 메뉴와 동일한 정밀 엔진(SG코드·격리그룹) 반영
         segInfo = { verdict: segChk.verdict, allow: segChk.allow, worst: segChk.worst, detail: segChk.detail, anyAmbiguous: segChk.anyAmbiguous, cargos: segChk.cargos };
         // ── SKR/HAL RFDG 혼적 금지 규칙 (IMDG 일반 격리표보다 우선) ──
         //   UN3480·3481(리튬이온)을 위험물(DG)로 선적하면 RFDG(Reefer) 필수이고,
@@ -5104,13 +5105,15 @@ function fqSegPanelHtml(seg) {
       const gl = p.groups.map(g => fqEsc(g.keys.join('·')) + '이면 <b>' + fqEsc(g.label) + '</b>').join(' · ');
       return '<li><b>' + head + '</b> : 세부분류에 따라 상이 — ' + gl + '</li>';
     }
-    return '<li><b>' + head + '</b> : ' + fqEsc(p.groups.map(g => g.label).join(', ')) + '</li>';
+    const sgExtra = (p.sgNote && p.sgNote.length) ? ' <span style="color:#b02020">(SG코드/격리그룹: ' + fqEsc(p.sgNote.join('; ')) + ')</span>' : '';
+    return '<li><b>' + head + '</b> : ' + fqEsc(p.groups.map(g => g.label).join(', ')) + sgExtra + '</li>';
   }).join('');
   return '<div class="fq-seg-panel" style="border:1px solid var(--border,#ddd);border-left:4px solid ' + color + ';border-radius:8px;padding:12px 14px;margin-bottom:12px;background:rgba(0,0,0,0.02)">'
     + '<div style="font-size:12px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:6px">IMDG 7.2.4 격리표 판정 · 시스템 결정론적 계산(권위 기준)</div>'
     + '<div style="font-weight:700;color:' + color + ';font-size:14px">' + fqEsc(seg.verdict) + '</div>'
     + cargoLine
     + (rows ? '<ul style="font-size:12.5px;color:#444;margin:8px 0 0 16px;padding:0;line-height:1.6">' + rows + '</ul>' : '')
+    + '<div style="font-size:12px;color:#1a7f37;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,0.12)">✅ 더 정확하고 빠른 확인: 좌측 사이드바 <b>[격리규정/혼적 확인]</b> 메뉴에 UN번호를 입력하면 IMDG 격리표(SG코드·격리그룹 포함) 기준으로 즉시·정확하게 조회됩니다.</div>'
     + '</div>';
 }
 
@@ -5125,7 +5128,7 @@ function fqSegGuideHtml() {
     + '<li>클래스: <b>Class 2.1, Class 3</b></li>'
     + '<li>표기가 헷갈리면 <b>CLASS/UNNO</b> 형식으로: <b>2.1/1950, 8/1760, 3/1993</b></li>'
     + '</ul></div>'
-    + '<div style="font-size:12.5px;color:#444;margin-top:8px">또는 좌측 사이드바의 <b>[격리규정 확인]</b> 메뉴에서 UN번호를 입력하면 표 기준으로 정확히 조회됩니다.</div>'
+    + '<div style="font-size:12.5px;color:#444;margin-top:8px">또는 좌측 사이드바의 <b>[격리규정/혼적 확인]</b> 메뉴에서 UN번호를 입력하면 표 기준으로 정확히 조회됩니다.</div>'
     + '</div>';
 }
 
@@ -5225,6 +5228,63 @@ function fqSegregationCheck(rows) {
       ? `UN${r.unno} ${r.name || ''} (Class ${r.cls}${r.sub && !/^[-–?\s]*$/.test(String(r.sub)) ? ', 부위험성 ' + r.sub : ''})`
       : `Class ${r.cls} (직접 입력)`)
   };
+}
+
+// ── AI 문의/회신 격리판정을 개별 [격리규정/혼적 확인] 메뉴와 동일한 정밀 엔진으로 보정 ──
+// fqSegregationCheck는 클래스×클래스 표만 보지만, 개별 메뉴는 calcPairSeg(SG코드·격리그룹까지 반영).
+// UN 레코드(dgData)가 있는 쌍은 calcPairSeg 결과로 격리코드를 덧씌워, 산↔알칼리(SGG1/SGG18) 등 SG코드 격리도 정확히 잡는다.
+function fqSegApplyFullEngine(segChk, dgData) {
+  try {
+    if (!segChk || !Array.isArray(segChk.pairs) || typeof calcPairSeg !== 'function' || typeof prepareEntry !== 'function') return segChk;
+    const recByUn = {};
+    (dgData || []).forEach(r => {
+      const u = normalizeUNNO(r.UNNO || r.unno || '');
+      if (u && !recByUn[u]) { try { recByUn[u] = prepareEntry(Object.assign({}, r)); } catch (_) {} }
+    });
+    const codeNames = { 0: 'X(격리 없음)', 1: '1 Away from(이격)', 2: '2 Separated from(격리)', 3: '3 완전구획 격리', 4: '4 종방향 구획 격리' };
+    let changed = false;
+    segChk.pairs.forEach(p => {
+      if (!p || p.unknown || p.ambiguous) return;
+      const ua = (p.A && p.A.unno) ? normalizeUNNO(p.A.unno) : null;
+      const ub = (p.B && p.B.unno) ? normalizeUNNO(p.B.unno) : null;
+      if (!ua || !ub) return;                       // 클래스 직접입력 화물은 SG데이터 없음 → 표 기준 유지
+      const ra = recByUn[ua], rb = recByUn[ub];
+      if (!ra || !rb) return;
+      let full; try { full = calcPairSeg(ra, rb); } catch (_) { return; }
+      if (!full || full.level === '*' || full.level === 'AMB') return;   // 화약(Class1)/모호는 표 기준 유지
+      const lvl = (full.level === 'X') ? 0 : full.level;
+      if (typeof lvl !== 'number') return;
+      const curr = (p.groups && p.groups.length)
+        ? Math.max.apply(null, p.groups.map(g => (g.code === 'X' ? 0 : (typeof g.code === 'number' ? g.code : 0))))
+        : 0;
+      if (lvl > curr) {   // SG코드/격리그룹으로 표기준보다 강한 격리요건 발견 → 반영
+        p.groups = [{ code: lvl, keys: [], label: codeNames[lvl] || String(lvl) }];
+        p.ambiguous = false;
+        const notes = (full.reasons || []).filter(t => /\bSG\s*\d|SGG|Separated|Away|구획|acid|alkali|산|알칼리|시안/i.test(t));
+        p.sgNote = notes.length ? notes : (full.reasons || []);
+        changed = true;
+      }
+    });
+    if (changed) {
+      let worst = segChk.worst || 0;
+      segChk.pairs.forEach(p => {
+        if (!p || p.unknown || p.ambiguous || !p.groups) return;
+        p.groups.forEach(g => { if (typeof g.code === 'number' && g.code > worst) worst = g.code; });
+      });
+      segChk.worst = worst;
+      if (!segChk.hasStar && !segChk.anyUnknown && !segChk.anyAmbiguous) {
+        if (worst === 0) { segChk.verdict = '혼적 가능 (격리표상 격리요건 없음)'; segChk.allow = 'yes'; }
+        else if (worst === 1) { segChk.verdict = '조건부 — 같은 컨테이너 적재 시 이격(Away from) 필요'; segChk.allow = 'cond'; }
+        else { segChk.verdict = `격리 필요(${codeNames[worst]})`; segChk.allow = 'no'; }
+      }
+      segChk.detail = segChk.pairs.map(p => {
+        if (p.unknown) return `${p.A.label} ↔ ${p.B.label}: 클래스 미상 — 확인 필요`;
+        if (p.ambiguous) return `${p.A.label} ↔ ${p.B.label}: 세부분류별 — ` + p.groups.map(g => `${g.keys.join('·')}이면 ${g.label}`).join(' / ');
+        return `${p.A.label} ↔ ${p.B.label}: ${p.groups.map(g => g.label).join(', ')}` + (p.sgNote && p.sgNote.length ? ` [${p.sgNote.join('; ')}]` : '');
+      });
+    }
+  } catch (_) { /* 보정 실패 시 원본 표 기준 결과 유지 */ }
+  return segChk;
 }
 
 // ── AI 회신 초안 작성 (기존 FAQ·문의답변 DB 분석 → 이메일 회신 초안) ──
