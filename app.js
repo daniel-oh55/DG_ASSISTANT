@@ -2047,7 +2047,7 @@ function renderRuleRemarkCondition(rule) {
 
 // 선사 그룹별 원본 규정 파일 (carriers/ 폴더에 호스팅)
 const CARRIER_DOCS = {
-    SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.12)' },
+    SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.12 · 2026-07-30 UPDATE)' },
     HMM_PARTNER: { url: '/carriers/hmm.pdf',      label: 'HMM Prohibited & Restricted List' },
     TSL:         { url: '/carriers/tsl.pdf',      label: 'TSL Restricted-Prohibited DG (Rev.29)' },
     KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.06.15, Amd 42-24)' },
@@ -3523,7 +3523,7 @@ let FQ_FAQ_DATA = {
       "id": "co-1790",
       "cat": "⚗️ 부식성 (Cl.8)",
       "q": "UN1790 (불산 / Hydrofluoric Acid) · UN1052 (무수불화수소) 선적 가능한가요?",
-      "a": "❌ **선적 금지 — 2026.07.21부터 전면 금지**\n\n불화수소 관련 품목은 **농도(함량)에 관계없이** 장금상선(SKR)·흥아라인(HAL) 전 선박에서 **선적이 전면 금지**되었습니다. (금지리스트 VER.12 반영)\n\n- **UN1052 HYDROGEN FLUORIDE, ANHYDROUS (무수불화수소)** — 선적 금지\n- **UN1790 HYDROFLUORIC ACID (불산 / 불화수소산)** — 선적 금지\n\n**⚠️ '60% 기준' 혼란 방지**: IMDG 품명에는 'HF 60% 초과/이하'로 포장등급(PG I / PG II)이 갈린다는 표기가 있지만, **당사 선적 금지는 농도와 무관하게 UN1790·UN1052 전체에 적용**됩니다. **60% 이하라도 선적할 수 없습니다.**\n\n(계기: 2026.07.21 앤트워프항 HF 누출사고) 관련 문의는 운항팀 DG센터로 연락 부탁드립니다.",
+      "a": "⚠️ **선적 조건부 — ISO 공(空)탱크만 가능 (그 외 전면 금지)**\n\n불화수소 관련 품목은 장금상선(SKR)·흥아라인(HAL) 전 선박에서 **'ISO 공(空)탱크(빈 ISO 탱크, uncleaned)'로만 선적 가능**하며, 그 외 모든 형태(내용물이 적재된 탱크·일반 포장·드럼 등)는 **선적이 전면 금지**됩니다. (금지리스트 VER.12 UPDATE, 2026.07.30 반영)\n\n- **UN1052 HYDROGEN FLUORIDE, ANHYDROUS (무수불화수소)** — ISO 공(空)탱크만 가능, 그 외 금지\n- **UN1790 HYDROFLUORIC ACID (불산 / 불화수소산)** — ISO 공(空)탱크만 가능, 그 외 금지\n\n**⚠️ '60% 기준' 혼란 방지**: IMDG 품명에는 'HF 60% 초과/이하'로 포장등급(PG I / PG II)이 갈린다는 표기가 있지만, **당사 규정(ISO 공탱크만 가능)은 농도와 무관하게 UN1790·UN1052 전체에 적용**됩니다. **60% 이하라도 ISO 공탱크 외에는 선적할 수 없습니다.**\n\n(계기: 2026.07.21 앤트워프항 HF 누출사고) 관련 문의는 운항팀 DG센터로 연락 부탁드립니다.",
       "tags": [
         "부식성",
         "불산",
