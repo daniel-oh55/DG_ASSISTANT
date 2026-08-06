@@ -3263,11 +3263,7 @@ if (themeToggleBtn) {
 const FQ_CONFIG = {
   FAQ_KEY:    'dg_assistant_faq_v3',
   BOARD_KEY:  'dg_assistant_board_v1',
-  ADMIN_SESSION_KEY: 'dg_assistant_admin_v1',
-  // 비밀번호 'admin1234' SHA-256 해시
-  ADMIN_PWD_HASH: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270',
   EXPORT_FILENAME: 'dg_assistant_inquiry_export',
-  REPLY_PWD: '1234',          // 담당자 답글 비밀번호
   FAQ_CACHE_KEY: 'dg_assistant_faq_dyn_v1',  // 동적 FAQ(DB) 오프라인 캐시
   API: '/api/inquiry'         // Supabase 공용 저장소 엔드포인트
 };
@@ -5813,10 +5809,8 @@ async function fqSubmitEmail() {
   const by = document.getElementById('fqEmBy').value.trim();
   let cat = document.getElementById('fqEmCat').value || FQ_AUTO_CAT;
   if (!subject || !reply) { fqToast('제목과 회신(답변)은 필수입니다', 'warn'); return; }
-  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요:');
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 이용할 수 있습니다', 'warn'); return;
   }
   // ── 등록 직전 격리표 자동검증 (혼적/격리 문의일 때 강제) ──
   // IMDG 격리 엔진(calcPairSeg)으로 다시 계산해, 작성한 답변이 규정과 어긋나면 등록을 막는다.
@@ -5875,11 +5869,9 @@ async function fqSubmitEmail() {
 function fqEditEmail(id) {
   const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id && i.source === 'email');
   if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
-  // 등록과 동일하게 담당자 비밀번호 1회 확인
-  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요:');
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');
+  // 등록과 동일하게 관리자 권한 확인
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 이용할 수 있습니다', 'warn'); return;
   }
   fqEditingId = id;
   // 폼 펼치기 + 기존 값 채우기
@@ -5909,15 +5901,13 @@ function fqResetEmSubmitBtn() {
   if (btn) { btn.textContent = '📥 이메일 문의 등록'; delete btn.dataset.editing; }
 }
 
-// 등록된 이메일 문의 삭제 — 확인 + 담당자 비밀번호
+// 등록된 이메일 문의 삭제 — 확인 + 관리자 권한
 async function fqDeleteEmail(id) {
   const m = (FQ_FAQ_DATA.items || []).find(i => i.id === id && i.source === 'email');
   if (!m) { fqToast('항목을 찾을 수 없습니다', 'warn'); return; }
   if (!confirm('이 이메일 문의 답변을 삭제하시겠습니까?\n\n제목: ' + (m.q || '') + '\n\n되돌릴 수 없습니다.')) return;
-  if (!fqAdminMode && !sessionStorage.getItem('fq_reply_ok')) {
-    const pwd = prompt('담당자 비밀번호를 입력하세요:');
-    if (pwd !== FQ_CONFIG.REPLY_PWD) { fqToast('✗ 비밀번호가 일치하지 않습니다', 'warn'); return; }
-    sessionStorage.setItem('fq_reply_ok', '1');
+  if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
+    fqToast('관리자 권한이 있는 회원만 이용할 수 있습니다', 'warn'); return;
   }
   // 삭제하려는 항목을 지금 수정 중이었다면 편집 상태 해제
   if (fqEditingId === id) {
@@ -6015,27 +6005,6 @@ async function fqHash(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuf = await crypto.subtle.digest('SHA-256', buf);
   return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function fqToggleAdmin() {
-  if (fqAdminMode) {
-    sessionStorage.removeItem(FQ_CONFIG.ADMIN_SESSION_KEY);
-    fqAdminMode = false;
-    fqToast('🚪 관리자 모드 종료', 'warn');
-  } else {
-    const pwd = prompt('관리자 비밀번호:');
-    if (!pwd) return;
-    const hash = await fqHash(pwd);
-    if (hash === FQ_CONFIG.ADMIN_PWD_HASH) {
-      sessionStorage.setItem(FQ_CONFIG.ADMIN_SESSION_KEY, '1');
-      fqAdminMode = true;
-      fqToast('✓ 관리자 로그인 성공', 'success');
-    } else {
-      fqToast('✗ 비밀번호 불일치', 'warn');
-      return;
-    }
-  }
-  fqUpdateAdminUI();
 }
 
 function fqUpdateAdminUI() {
@@ -6293,29 +6262,6 @@ async function fqChangePostCat(id, cat) {
   catch (e) { fqToast('카테고리 저장 실패(로컬만 반영): ' + e.message, 'warn'); }
 }
 
-async function fqUnlockPost(evt, id) {
-  evt.stopPropagation();
-  const post = fqPosts.find(p => p.id === id);
-  if (!post) return;
-  const pwd = prompt('이 글의 비밀번호 (담당자는 1234 입력 시 모든 비밀글 열람):');
-  if (!pwd) return;
-  // 담당자 마스터 비밀번호(1234) → 모든 비밀글 열람·답글 허용
-  if (pwd === FQ_CONFIG.REPLY_PWD) {
-    sessionStorage.setItem('fq_reply_ok', '1');
-    fqRenderPosts();
-    fqToast('✓ 담당자 인증 — 비밀글 열람/답글 가능', 'success');
-    return;
-  }
-  const hash = await fqHash(pwd);
-  if (hash === post.pwdHash) {
-    sessionStorage.setItem('fq_unlocked_' + id, '1');
-    fqRenderPosts();
-    fqToast('✓ 잠금 해제됨', 'success');
-  } else {
-    fqToast('✗ 비밀번호 불일치', 'warn');
-  }
-}
-
 // 답글 작성 요청 — 관리자 권한 회원만(비밀번호 기능 제거)
 function fqRequestReply(id) {
   if (!((typeof dgIsAdmin === 'function' && dgIsAdmin()) || fqAdminMode)) {
@@ -6489,14 +6435,16 @@ function fqToast(msg, type) {
 //   ⚠️ 정적 사이트 소프트 게이트 — 일반 사용자 차단·회원관리·자동입력용(완전한 접근제어 아님)
 // ════════════════════════════════════════════════════════════════
 const DG_AUTH_KEY = 'dg_auth_user_v1';
-const DG_APPROVE_PWD = '1234';      // 회원가입 승인 비밀번호
 const DG_ADMIN_IDS = ['wtlee'];     // 내장 관리자 ID(가입 시 자동 승인+관리자, 로그인 시 항상 관리자)
+const DG_DELETE_IDS = ['wtlee'];    // 회원 '삭제' 가능 ID — 관리자여도 이 계정 외에는 삭제 불가(오삭제 방지)
 let dgMembers = [];
 let dgCurrentUser = null;
 
 function dgIsAuthed() { return !!dgCurrentUser; }
 function dgIsAdminId(id) { return DG_ADMIN_IDS.includes(String(id || '').toLowerCase()); }
 function dgIsAdmin() { return !!dgCurrentUser && (dgCurrentUser.role === 'admin' || dgIsAdminId(dgCurrentUser.id)); }
+// 회원 삭제 권한 — 관리자 전체가 아니라 DG_DELETE_IDS 계정만(실수/무단 삭제로 회원이 사라지는 사고 방지)
+function dgCanDeleteMember() { return !!dgCurrentUser && DG_DELETE_IDS.includes(String(dgCurrentUser.id || '').toLowerCase()); }
 
 async function dgLoadMembers() {
   try { const data = await fqRemoteGet('members'); dgMembers = Array.isArray(data.members) ? data.members : []; }
@@ -6575,7 +6523,7 @@ async function dgApprove(id) {
 }
 
 async function dgDeleteMember(id) {
-  if (!dgIsAdmin()) { fqToast('관리자만 삭제할 수 있습니다', 'warn'); return; }
+  if (!dgCanDeleteMember()) { fqToast('회원 삭제 권한이 없습니다 (' + DG_DELETE_IDS.join(', ') + ' 계정만 가능)', 'warn'); return; }
   if (!confirm('이 회원을 삭제하시겠습니까?')) return;
   await dgLoadMembers();
   dgMembers = dgMembers.filter(x => x.id !== id);
@@ -6724,7 +6672,7 @@ function dgRenderMembers() {
         (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
         (!isPending && !isAdm(m) ? '<button class="fq-btn accent" data-grant="' + fqEsc(m.id) + '">👑 관리자 지정</button>' : '') +
         (!isPending && m.role === 'admin' && !dgIsAdminId(m.id) ? '<button class="fq-btn ghost" data-revoke="' + fqEsc(m.id) + '">관리자 해제</button>' : '') +
-        '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' +
+        (dgCanDeleteMember() ? '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' : '') +
       '</div></div>';
   box.innerHTML =
     '<div class="dg-mem-stats">전체 ' + dgMembers.length + '명 · 승인 ' + approved.length + ' · 대기 ' + pending.length + '</div>' +
