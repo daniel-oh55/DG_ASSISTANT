@@ -6431,106 +6431,150 @@ function fqToast(msg, type) {
 
 // 자동 초기화 + 사이드바 메뉴 → 모듈 내부 탭 연동
 // ════════════════════════════════════════════════════════════════
-//   사용자 로그인 / 회원가입 / 승인 (클라이언트 소프트 인증)
-//   저장: Supabase inquiry_state id='members' (publishable 키, fqRemoteGet/Set 재사용)
-//   ⚠️ 정적 사이트 소프트 게이트 — 일반 사용자 차단·회원관리·자동입력용(완전한 접근제어 아님)
+//   사용자 로그인 / 회원가입 / 승인 / 비밀번호 찾기
+//   서버 API(/api/auth)가 처리 — 세션은 httpOnly 쿠키, 비밀번호는 서버에서 해시·검증
+//   회원 데이터: Supabase public.dg_members (서비스 롤 전용, 브라우저에서 직접 접근 불가)
 // ════════════════════════════════════════════════════════════════
-const DG_AUTH_KEY = 'dg_auth_user_v1';
-const DG_ADMIN_IDS = ['wtlee'];     // 내장 관리자 ID(가입 시 자동 승인+관리자, 로그인 시 항상 관리자)
-const DG_DELETE_IDS = ['wtlee'];    // 회원 '삭제' 가능 ID — 관리자여도 이 계정 외에는 삭제 불가(오삭제 방지)
-let dgMembers = [];
+const DG_AUTH_API = '/api/auth';
+const DG_DELETE_IDS = ['wtlee'];    // 회원 '삭제' 가능 ID — 관리자여도 이 계정 외에는 삭제 불가(오삭제 방지, 서버도 동일 검사: MEMBER_DELETE_IDS)
+let dgMembers = [];        // 관리자 회원관리 화면용 (관리자 로그인 시에만 채워짐)
 let dgCurrentUser = null;
+let dgResetToken = '';     // 이메일 링크(?reset=...)로 들어온 재설정 토큰
 
 function dgIsAuthed() { return !!dgCurrentUser; }
-function dgIsAdminId(id) { return DG_ADMIN_IDS.includes(String(id || '').toLowerCase()); }
-function dgIsAdmin() { return !!dgCurrentUser && (dgCurrentUser.role === 'admin' || dgIsAdminId(dgCurrentUser.id)); }
+function dgIsAdmin() { return !!dgCurrentUser && dgCurrentUser.role === 'admin'; }
 // 회원 삭제 권한 — 관리자 전체가 아니라 DG_DELETE_IDS 계정만(실수/무단 삭제로 회원이 사라지는 사고 방지)
 function dgCanDeleteMember() { return !!dgCurrentUser && DG_DELETE_IDS.includes(String(dgCurrentUser.id || '').toLowerCase()); }
 
+// 서버 호출 — 실패하면 서버 메시지를 담은 Error를 던짐
+async function dgApi(action, payload) {
+  const res = await fetch(DG_AUTH_API, {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ action }, payload || {}))
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok || !data || !data.ok) throw new Error((data && data.message) || ('요청 실패 (HTTP ' + res.status + ')'));
+  return data;
+}
+
 async function dgLoadMembers() {
-  try { const data = await fqRemoteGet('members'); dgMembers = Array.isArray(data.members) ? data.members : []; }
+  if (!dgIsAdmin()) { dgMembers = []; return; }
+  try { dgMembers = (await dgApi('admin-list')).members || []; }
   catch (e) { dgMembers = []; }
 }
-async function dgSaveMembers() { await fqRemoteSet('members', { members: dgMembers }); }
 
-function dgRestoreSession() {
+async function dgRestoreSession() {
   try {
-    const saved = JSON.parse(localStorage.getItem(DG_AUTH_KEY) || 'null');
-    if (saved && saved.id) {
-      const m = dgMembers.find(x => x.id === saved.id && x.status === 'approved');
-      if (m) dgCurrentUser = { id: m.id, company: m.company, name: m.name, role: (m.role === 'admin' || dgIsAdminId(m.id)) ? 'admin' : 'general' };
-      else { dgCurrentUser = null; localStorage.removeItem(DG_AUTH_KEY); }
-    }
+    const res = await fetch(DG_AUTH_API + '?action=me', { credentials: 'same-origin' });
+    const data = await res.json();
+    dgCurrentUser = (data && data.ok && data.user) ? data.user : null;
   } catch (e) { dgCurrentUser = null; }
+  try { localStorage.removeItem('dg_auth_user_v1'); } catch (e) {}   // 구 방식(localStorage 세션) 잔여 정보 정리
 }
 
 async function dgLogin(id, pw) {
   id = (id || '').trim();
   if (!id || !pw) { fqToast('ID와 비밀번호를 입력하세요', 'warn'); return; }
-  await dgLoadMembers();
-  const m = dgMembers.find(x => String(x.id).toLowerCase() === id.toLowerCase());
-  if (!m) { fqToast('등록되지 않은 ID입니다', 'warn'); return; }
-  if (m.status !== 'approved') { fqToast('아직 승인되지 않은 계정입니다 (관리자 승인 대기 중)', 'warn'); return; }
-  if (await fqHash(pw) !== m.pwdHash) { fqToast('비밀번호가 일치하지 않습니다', 'warn'); return; }
-  dgCurrentUser = { id: m.id, company: m.company, name: m.name, role: (m.role === 'admin' || dgIsAdminId(m.id)) ? 'admin' : 'general' };
-  localStorage.setItem(DG_AUTH_KEY, JSON.stringify(dgCurrentUser));
-  // 접속 통계 기록(회원관리 리포트용) — 마지막 접속시각·누적 접속횟수
-  const _now = new Date().toISOString();
-  m.lastLoginAt = _now;
-  m.loginTotal = (m.loginTotal || 0) + 1;
-  if (!m.statsSince) m.statsSince = m.createdAt || _now;
-  try { await dgSaveMembers(); } catch (e) {}
-  if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
-  dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms();
-  fqToast('✓ ' + (m.name || m.id) + '님 로그인되었습니다', 'success');
+  try {
+    const r = await dgApi('login', { id, password: pw });
+    dgCurrentUser = r.user;
+    const pwEl = document.getElementById('dgLoginPw'); if (pwEl) pwEl.value = '';
+    await dgLoadMembers();
+    if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
+    dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms(); dgUpdateMemberBadge();
+    fqToast('✓ ' + (dgCurrentUser.name || dgCurrentUser.id) + '님 로그인되었습니다', 'success');
+    if (r.needs && (r.needs.email || r.needs.password)) dgShowAccount(r.needs);   // 이메일 미등록·짧은 비밀번호 보완 안내
+  } catch (e) { fqToast(e.message, 'warn'); }
 }
 
-function dgLogout() {
+async function dgLogout() {
+  try { await dgApi('logout'); } catch (e) {}
   dgCurrentUser = null;
-  localStorage.removeItem(DG_AUTH_KEY);
+  dgMembers = [];
   dgUpdateAuthUI();
   if (typeof activateTab === 'function') activateTab('tab-home');
   fqToast('로그아웃되었습니다', 'success');
 }
 
-async function dgSignup(company, name, id, pw) {
-  company = (company || '').trim(); name = (name || '').trim(); id = (id || '').trim();
-  if (!company || !name || !id || !pw) { fqToast('모든 항목을 입력하세요', 'warn'); return; }
-  if (pw.length < 4) { fqToast('비밀번호는 4자 이상이어야 합니다', 'warn'); return; }
-  await dgLoadMembers();
-  if (dgMembers.some(x => String(x.id).toLowerCase() === id.toLowerCase())) { fqToast('이미 사용 중인 ID입니다', 'warn'); return; }
-  const isAdminId = dgIsAdminId(id);
-  dgMembers.push({ id, company, name, pwdHash: await fqHash(pw),
-    role: isAdminId ? 'admin' : 'general',
-    status: isAdminId ? 'approved' : 'pending',
-    createdAt: new Date().toISOString(), approvedAt: isAdminId ? new Date().toISOString() : null });
-  try { await dgSaveMembers(); }
-  catch (e) { fqToast('가입 요청 저장 실패: ' + e.message, 'warn'); return; }
-  dgCloseModals();
-  ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
-  if (typeof dgUpdateMemberBadge === 'function') dgUpdateMemberBadge();
-  fqToast(isAdminId ? '✓ 관리자 계정으로 가입·승인 완료 — 바로 로그인하세요' : '✓ 가입 요청이 접수되었습니다 — 관리자 승인 후 로그인할 수 있습니다', 'success');
+async function dgSignup(company, name, id, email, pw) {
+  company = (company || '').trim(); name = (name || '').trim(); id = (id || '').trim(); email = (email || '').trim();
+  if (!company || !name || !id || !email || !pw) { fqToast('모든 항목을 입력하세요', 'warn'); return; }
+  if (pw.length < 8) { fqToast('비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
+  try {
+    const r = await dgApi('signup', { company, name, id, email, password: pw });
+    dgCloseModals();
+    ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuEmail', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+    fqToast('✓ ' + r.message, 'success');
+  } catch (e) { fqToast(e.message, 'warn'); }
+}
+
+// 비밀번호 찾기 1단계 — ID + 가입 이메일 → 재설정 링크 메일 발송
+async function dgForgot(id, email) {
+  id = (id || '').trim(); email = (email || '').trim();
+  if (!id || !email) { fqToast('ID와 이메일을 입력하세요', 'warn'); return; }
+  try {
+    const r = await dgApi('forgot', { id, email });
+    dgCloseModals();
+    fqToast('✓ ' + r.message, 'success');
+  } catch (e) { fqToast(e.message, 'warn'); }
+}
+
+// 비밀번호 찾기 2단계 — 메일 링크로 들어와 새 비밀번호 설정
+async function dgResetPassword(pw, pw2) {
+  if (!pw || pw.length < 8) { fqToast('비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
+  if (pw !== pw2) { fqToast('비밀번호 확인이 일치하지 않습니다', 'warn'); return; }
+  try {
+    const r = await dgApi('reset', { token: dgResetToken, password: pw });
+    dgResetToken = '';
+    ['dgRsPw', 'dgRsPw2'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+    fqToast('✓ ' + r.message, 'success');
+    dgShowLogin();
+  } catch (e) { fqToast(e.message, 'warn'); }
+}
+
+// 내 계정 — 이메일 등록/변경, 비밀번호 변경 (현재 비밀번호 필요)
+function dgShowAccount(needs) {
+  if (!dgCurrentUser) return;
+  dgShowModal('dgAccountModal');
+  const hint = document.getElementById('dgAcHint');
+  if (hint) {
+    const msgs = [];
+    if (needs && needs.email) msgs.push('비밀번호 분실 시 메일로 재설정할 수 있도록 이메일을 등록해 주세요.');
+    if (needs && needs.password) msgs.push('현재 비밀번호가 짧습니다. 8자 이상으로 변경하는 것을 권장합니다.');
+    hint.textContent = msgs.length ? msgs.join(' ') : '이메일과 비밀번호를 변경할 수 있습니다. 변경하려면 현재 비밀번호가 필요합니다.';
+  }
+  const em = document.getElementById('dgAcEmail'); if (em) em.value = dgCurrentUser.email || '';
+  ['dgAcCur', 'dgAcNew'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+}
+async function dgUpdateAccount() {
+  const cur = document.getElementById('dgAcCur').value;
+  const email = document.getElementById('dgAcEmail').value.trim();
+  const nw = document.getElementById('dgAcNew').value;
+  if (!cur) { fqToast('현재 비밀번호를 입력하세요', 'warn'); return; }
+  if (nw && nw.length < 8) { fqToast('새 비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
+  try {
+    const r = await dgApi('update-account', { currentPassword: cur, email, newPassword: nw });
+    dgCurrentUser = r.user;
+    dgCloseModals(); dgUpdateAuthUI();
+    fqToast('✓ ' + r.message, 'success');
+  } catch (e) { fqToast(e.message, 'warn'); }
 }
 
 async function dgApprove(id) {
   if (!dgIsAdmin()) { fqToast('관리자만 승인할 수 있습니다', 'warn'); return; }
-  await dgLoadMembers();
-  const m = dgMembers.find(x => x.id === id);
-  if (!m) { fqToast('대상을 찾을 수 없습니다', 'warn'); dgRenderMembers(); return; }
-  m.status = 'approved'; m.approvedAt = new Date().toISOString();
-  try { await dgSaveMembers(); fqToast('✓ ' + (m.name || m.id) + ' 승인 완료 — 이제 로그인할 수 있습니다', 'success'); }
-  catch (e) { fqToast('승인 저장 실패: ' + e.message, 'warn'); }
-  dgRenderMembers();
+  try { await dgApi('admin-approve', { id }); fqToast('✓ 승인 완료 — 이제 로그인할 수 있습니다', 'success'); }
+  catch (e) { fqToast('승인 실패: ' + e.message, 'warn'); }
+  await dgLoadMembers(); dgRenderMembers();
 }
 
 async function dgDeleteMember(id) {
   if (!dgCanDeleteMember()) { fqToast('회원 삭제 권한이 없습니다 (' + DG_DELETE_IDS.join(', ') + ' 계정만 가능)', 'warn'); return; }
   if (!confirm('이 회원을 삭제하시겠습니까?')) return;
-  await dgLoadMembers();
-  dgMembers = dgMembers.filter(x => x.id !== id);
-  try { await dgSaveMembers(); fqToast('회원이 삭제되었습니다', 'success'); }
-  catch (e) { fqToast('삭제 저장 실패: ' + e.message, 'warn'); }
-  dgRenderMembers();
+  try { await dgApi('admin-delete', { id }); fqToast('회원이 삭제되었습니다', 'success'); }
+  catch (e) { fqToast('삭제 실패: ' + e.message, 'warn'); }
+  await dgLoadMembers(); dgRenderMembers();
 }
 
 // ── UI ──
@@ -6559,17 +6603,7 @@ function dgAiIncUsage(userId) {
 // 회원별 AI 사용 통계를 Supabase 회원 레코드에 누적(관리자 리포트에서 조회) — 당일치는 날짜 바뀌면 자동 초기화
 async function dgRecordAiUsage(userId) {
   if (!userId) return;
-  try {
-    await dgLoadMembers();
-    const m = dgMembers.find(x => x.id === userId);
-    if (!m) return;
-    const today = fqTodayStr();
-    if (m.aiTodayDate !== today) { m.aiTodayDate = today; m.aiToday = 0; }
-    m.aiToday = (m.aiToday || 0) + 1;
-    m.aiTotal = (m.aiTotal || 0) + 1;
-    if (!m.statsSince) m.statsSince = m.createdAt || new Date().toISOString();
-    await dgSaveMembers();
-  } catch (e) {}
+  try { await dgApi('record-ai', { today: fqTodayStr() }); } catch (e) {}
 }
 // 로그인 세션이 복원된(=재방문) 사용자의 '최근 접속'을 기록 — 하루 1회로 제한(쓰기 폭주·충돌 방지)
 const DG_ACCESS_DAY_KEY = 'dg_last_access_day_v1';
@@ -6580,15 +6614,7 @@ async function dgRecordAccess(userId) {
   try { lastDay = localStorage.getItem(DG_ACCESS_DAY_KEY) || ''; } catch (e) {}
   if (lastDay === today) return;                 // 오늘 이미 기록함 — 재기록 안 함(하루 1회)
   try { localStorage.setItem(DG_ACCESS_DAY_KEY, today); } catch (e) {}
-  try {
-    await dgLoadMembers();
-    const m = dgMembers.find(x => x.id === userId);
-    if (!m) return;
-    m.lastLoginAt = new Date().toISOString();    // '최근 접속' = 마지막 방문 시각(직접 로그인 아니어도 갱신)
-    m.loginTotal = (m.loginTotal || 0) + 1;      // 접속(방문) 횟수 누적 — 하루 최대 1 증가
-    if (!m.statsSince) m.statsSince = m.createdAt || m.lastLoginAt;
-    await dgSaveMembers();
-  } catch (e) {}
+  try { await dgApi('record-visit'); } catch (e) {}   // 서버가 최근 접속·접속 횟수 기록
 }
 // 사이드바 계정정보 — 이름 옆 'AI n/10' 표시 갱신
 function dgUpdateAiUsageUI() {
@@ -6616,6 +6642,7 @@ function dgUpdateAuthUI() {
     box.innerHTML =
       '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 <span class="dg-auth-name">' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '</span></div>' +
       '<span class="dg-ai-usage" id="dgAiUsage" hidden></span>' +
+      '<button type="button" class="dg-auth-btn dg-auth-account" onclick="dgShowAccount()">내 계정</button>' +
       '<button type="button" class="dg-auth-btn dg-auth-logout" onclick="dgLogout()">로그아웃</button>';
   } else {
     box.innerHTML =
@@ -6628,6 +6655,7 @@ function dgCloseModals() { document.querySelectorAll('.dg-modal').forEach(m => m
 function dgShowModal(id) { dgCloseModals(); const m = document.getElementById(id); if (m) m.hidden = false; }
 function dgShowLogin() { dgShowModal('dgLoginModal'); const i = document.getElementById('dgLoginId'); if (i) setTimeout(() => i.focus(), 60); }
 function dgShowSignup() { dgShowModal('dgSignupModal'); const i = document.getElementById('dgSuCompany'); if (i) setTimeout(() => i.focus(), 60); }
+function dgShowForgot() { dgShowModal('dgForgotModal'); const i = document.getElementById('dgFpId'); if (i) setTimeout(() => i.focus(), 60); }
 function dgShowLoginRequired() { dgShowModal('dgLoginReqModal'); }
 
 function dgAutofillForms() {
@@ -6644,7 +6672,7 @@ function dgRenderMembers() {
   const pending = dgMembers.filter(m => m.status !== 'approved');
   const approved = dgMembers.filter(m => m.status === 'approved');
   const fmt = d => d ? new Date(d).toLocaleString('ko') : '-';
-  const isAdm = m => m.role === 'admin' || dgIsAdminId(m.id);
+  const isAdm = m => m.role === 'admin';
   const admins = approved.filter(m => isAdm(m));       // 관리자 회원 (상단 별도 칸)
   const generals = approved.filter(m => !isAdm(m));    // 일반 회원 (하단 별도 칸)
   // 회원별 접속·AI 사용 통계
@@ -6667,12 +6695,13 @@ function dgRenderMembers() {
       '<div class="dg-mem-info"><b>' + fqEsc(m.id) + '</b> ' +
         (isAdm(m) ? '<span class="dg-role-badge admin">👑 관리자</span>' : '<span class="dg-role-badge">일반</span>') +
         ' · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
+        (m.email ? ' · <span class="dg-mem-co">' + fqEsc(m.email) + '</span>' : '') +
         '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span>' +
         (isPending ? '' : statLine(m)) + '</div>' +
       '<div class="dg-mem-actions">' +
         (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
         (!isPending && !isAdm(m) ? '<button class="fq-btn accent" data-grant="' + fqEsc(m.id) + '">👑 관리자 지정</button>' : '') +
-        (!isPending && m.role === 'admin' && !dgIsAdminId(m.id) ? '<button class="fq-btn ghost" data-revoke="' + fqEsc(m.id) + '">관리자 해제</button>' : '') +
+        (!isPending && m.role === 'admin' && !(dgCurrentUser && m.id === dgCurrentUser.id) ? '<button class="fq-btn ghost" data-revoke="' + fqEsc(m.id) + '">관리자 해제</button>' : '') +
         (dgCanDeleteMember() ? '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' : '') +
       '</div></div>';
   box.innerHTML =
@@ -6694,13 +6723,9 @@ function dgRenderMembers() {
 async function dgSetRole(id, role) {
   if (!dgIsAdmin()) { fqToast('관리자만 권한을 변경할 수 있습니다', 'warn'); return; }
   if (!confirm(role === 'admin' ? '이 회원에게 관리자 권한을 부여하시겠습니까?' : '이 회원의 관리자 권한을 해제하시겠습니까?')) return;
-  await dgLoadMembers();
-  const m = dgMembers.find(x => x.id === id);
-  if (!m) { dgRenderMembers(); return; }
-  m.role = role;
-  try { await dgSaveMembers(); fqToast(role === 'admin' ? '✓ 관리자로 지정되었습니다' : '관리자 권한이 해제되었습니다', 'success'); }
+  try { await dgApi('admin-set-role', { id, role }); fqToast(role === 'admin' ? '✓ 관리자로 지정되었습니다' : '관리자 권한이 해제되었습니다', 'success'); }
   catch (e) { fqToast('저장 실패: ' + e.message, 'warn'); }
-  dgRenderMembers();
+  await dgLoadMembers(); dgRenderMembers();
 }
 
 // 승인 대기 회원이 있으면 사이드바 '관리자 리포트' 메뉴 + '회원관리' 서브탭에 빨간 느낌표
@@ -6732,27 +6757,45 @@ function dgApplyReportAccess() {
 
 // ── 바인딩 + 초기화 ──
 function dgBindAuth() {
-  const ls = document.getElementById('dgLoginSubmit');
-  if (ls) ls.addEventListener('click', () => dgLogin(document.getElementById('dgLoginId').value, document.getElementById('dgLoginPw').value));
-  const ss = document.getElementById('dgSignupSubmit');
-  if (ss) ss.addEventListener('click', () => dgSignup(document.getElementById('dgSuCompany').value, document.getElementById('dgSuName').value, document.getElementById('dgSuId').value, document.getElementById('dgSuPw').value));
-  ['dgLoginId', 'dgLoginPw'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('keydown', ev => { if (ev.key === 'Enter') dgLogin(document.getElementById('dgLoginId').value, document.getElementById('dgLoginPw').value); }); });
+  const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  const doLogin = () => dgLogin(val('dgLoginId'), val('dgLoginPw'));
+  const doForgot = () => dgForgot(val('dgFpId'), val('dgFpEmail'));
+  const doReset = () => dgResetPassword(val('dgRsPw'), val('dgRsPw2'));
+  const click = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener('click', fn); };
+  click('dgLoginSubmit', doLogin);
+  click('dgSignupSubmit', () => dgSignup(val('dgSuCompany'), val('dgSuName'), val('dgSuId'), val('dgSuEmail'), val('dgSuPw')));
+  click('dgForgotSubmit', doForgot);
+  click('dgResetSubmit', doReset);
+  click('dgAccountSubmit', dgUpdateAccount);
+  const enter = (ids, fn) => ids.forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('keydown', ev => { if (ev.key === 'Enter') fn(); }); });
+  enter(['dgLoginId', 'dgLoginPw'], doLogin);
+  enter(['dgFpId', 'dgFpEmail'], doForgot);
+  enter(['dgRsPw', 'dgRsPw2'], doReset);
+  enter(['dgAcCur', 'dgAcEmail', 'dgAcNew'], dgUpdateAccount);
   document.querySelectorAll('[data-dg-close]').forEach(b => b.addEventListener('click', dgCloseModals));
   document.querySelectorAll('[data-dg-go-login]').forEach(b => b.addEventListener('click', dgShowLogin));
   document.querySelectorAll('[data-dg-go-signup]').forEach(b => b.addEventListener('click', dgShowSignup));
+  document.querySelectorAll('[data-dg-go-forgot]').forEach(b => b.addEventListener('click', dgShowForgot));
   document.querySelectorAll('.dg-modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) dgCloseModals(); }));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') dgCloseModals(); });
 }
 async function dgInit() {
   dgBindAuth();
   dgUpdateAuthUI();           // 우선 버튼 표시
-  await dgLoadMembers();
-  dgRestoreSession();
+  await dgRestoreSession();
+  await dgLoadMembers();      // 관리자일 때만 목록 로드
   dgUpdateAuthUI();           // 세션 복원 후 갱신
   if (dgCurrentUser && dgCurrentUser.id) dgRecordAccess(dgCurrentUser.id);   // 재방문 접속 기록(하루 1회)
   dgAutofillForms();
   dgUpdateMemberBadge();      // 승인 대기 회원 알림
   dgApplyReportAccess();      // 권한별 리포트 서브탭 표시
+  // 비밀번호 재설정 메일 링크(?reset=토큰)로 진입한 경우
+  const rt = new URLSearchParams(location.search).get('reset');
+  if (rt) {
+    dgResetToken = rt;
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    dgShowModal('dgResetModal');
+  }
 }
 
 function fqBootstrap() {

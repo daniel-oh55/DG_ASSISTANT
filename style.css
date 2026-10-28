@@ -5874,3 +5874,4 @@ body { top: 0 !important; position: static !important; }
 .sc-empty-port .sc-lc-pol { color: var(--muted); font-weight: 400; }
 .sc-none { color: var(--muted); font-size: 12px; }
 .sc-empty-port .sc-view-btn { opacity: 0.5; }
+.dg-auth-account { flex: 0 0 auto; }
