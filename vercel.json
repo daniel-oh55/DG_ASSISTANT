@@ -1,9 +1,26 @@
 {
+  "rewrites": [
+    {
+      "source": "/api/notes-save",
+      "destination": "/api/notes?op=save"
+    },
+    {
+      "source": "/api/notes-update",
+      "destination": "/api/notes?op=update"
+    },
+    {
+      "source": "/api/notes-delete",
+      "destination": "/api/notes?op=delete"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]
