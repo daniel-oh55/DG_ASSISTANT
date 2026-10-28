@@ -9,11 +9,29 @@
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | 기존 값 그대로 |
 | `AUTH_SECRET` | **필수.** 세션 서명용 임의 문자열 (32자 이상 권장). 예: `openssl rand -hex 32` |
-| `RESEND_API_KEY` | 비밀번호 찾기 메일 발송용 [Resend](https://resend.com) API 키 |
-| `MAIL_FROM` | 발신자. 예: `DG ASSISTANT <noreply@도메인>` (Resend에서 도메인 인증 필요) |
-| `APP_URL` | 사이트 주소. 예: `https://dg-assistant.vercel.app` (재설정 링크에 사용) |
+| `APP_URL` | 사이트 주소. 예: `https://dg-assistant.vercel.app` (끝에 `/` 없이, 재설정 링크에 사용) |
 
-`RESEND_API_KEY` / `MAIL_FROM`이 없으면 로그인·가입은 동작하고, 비밀번호 찾기만 "메일 발송이 설정되지 않았습니다"로 응답합니다.
+메일 발송 방식은 **둘 중 하나**를 설정합니다. SMTP 설정이 있으면 SMTP를 우선 사용합니다.
+
+**A. Gmail SMTP (도메인 불필요)** — 전용 Gmail 계정 권장
+
+| 이름 | 설명 |
+|---|---|
+| `SMTP_USER` | 발송용 Gmail 주소 |
+| `SMTP_PASS` | 해당 계정의 **앱 비밀번호** 16자리 (일반 로그인 비밀번호 아님. 계정 2단계 인증 필요) |
+| `MAIL_FROM` | (선택) 예: `DG ASSISTANT <발송용Gmail주소>` — 생략 시 자동 |
+| `SMTP_HOST`, `SMTP_PORT` | (선택) 기본값 `smtp.gmail.com`, `465` |
+
+Gmail은 하루 약 500통까지 발송할 수 있고, 발신자는 항상 해당 Gmail 주소로 표시됩니다.
+
+**B. Resend (도메인 인증 필요)**
+
+| 이름 | 설명 |
+|---|---|
+| `RESEND_API_KEY` | [Resend](https://resend.com) API 키 |
+| `MAIL_FROM` | 발신자. 예: `DG ASSISTANT <noreply@도메인>` (Resend에서 도메인 인증 필요) |
+
+메일 설정(A 또는 B)이 없으면 로그인·가입은 동작하고, 비밀번호 찾기만 "메일 발송이 설정되지 않았습니다"로 응답합니다.
 
 ## 2. 배포 순서
 
