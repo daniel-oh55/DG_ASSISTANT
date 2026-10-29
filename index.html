@@ -1089,13 +1089,35 @@
         <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
         <div class="dg-modal-logo">📧</div>
         <h2 class="dg-modal-title">비밀번호 찾기</h2>
-        <p class="dg-modal-sub">ID와 가입 시 등록한 이메일을 입력하면<br>비밀번호 재설정 링크를 메일로 보내드립니다.</p>
-        <label class="dg-modal-label" for="dgFpId">ID</label>
-        <input type="text" id="dgFpId" class="dg-modal-input" autocomplete="username" placeholder="아이디">
-        <label class="dg-modal-label" for="dgFpEmail">이메일</label>
-        <input type="email" id="dgFpEmail" class="dg-modal-input" autocomplete="email" placeholder="등록한 이메일">
-        <button type="button" class="dg-modal-submit" id="dgForgotSubmit">재설정 메일 보내기</button>
-        <p class="dg-modal-foot">이메일을 등록하지 않으셨다면 관리자에게 문의해 주세요.<br><button type="button" class="dg-modal-link" data-dg-go-login>로그인으로 돌아가기</button></p>
+        <div id="dgFpForm">
+          <p class="dg-modal-sub">ID와 가입 시 등록한 이메일을 입력하면<br>비밀번호 재설정 링크를 메일로 보내드립니다.</p>
+          <label class="dg-modal-label" for="dgFpId">ID</label>
+          <input type="text" id="dgFpId" class="dg-modal-input" autocomplete="username" placeholder="아이디">
+          <label class="dg-modal-label" for="dgFpEmail">이메일</label>
+          <input type="email" id="dgFpEmail" class="dg-modal-input" autocomplete="email" placeholder="등록한 이메일">
+          <button type="button" class="dg-modal-submit" id="dgForgotSubmit">재설정 메일 보내기</button>
+          <p class="dg-modal-foot">ID가 기억나지 않으세요? <button type="button" class="dg-modal-link" data-dg-go-findid>ID 찾기</button><br>이메일을 등록하지 않으셨다면 <button type="button" class="dg-admin-tip" data-tip="관리자 (문의처)&#10;운항팀 오명기 차장&#10;운항팀 이원태 차장">관리자</button>에게 문의해 주세요.<br><button type="button" class="dg-modal-link" data-dg-go-login>로그인으로 돌아가기</button></p>
+        </div>
+        <div id="dgFpDone" class="dg-done-box" hidden>
+          <div class="dg-done-icon">✓</div>
+          <p class="dg-done-title">재설정 메일 발송 완료</p>
+          <p class="dg-modal-sub">입력하신 정보가 일치하면 재설정 링크가 담긴 메일이 발송됩니다.<br>메일함(스팸함 포함)을 확인해 주세요. 링크는 30분간 유효합니다.<br>몇 분이 지나도 메일이 없으면 이메일이 등록되어 있는지 확인하거나 <button type="button" class="dg-admin-tip" data-tip="관리자 (문의처)&#10;운항팀 오명기 차장&#10;운항팀 이원태 차장">관리자</button>에게 문의해 주세요.</p>
+          <button type="button" class="dg-modal-submit" data-dg-go-login>로그인 화면으로</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dg-modal" id="dgFindIdModal" hidden>
+      <div class="dg-modal-box">
+        <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
+        <div class="dg-modal-logo">🔍</div>
+        <h2 class="dg-modal-title">ID 찾기</h2>
+        <p class="dg-modal-sub">가입 시 입력한 이름으로 찾습니다.<br>개인정보 보호를 위해 ID 일부는 *로 가려서 표시됩니다.</p>
+        <label class="dg-modal-label" for="dgFiName">이름</label>
+        <input type="text" id="dgFiName" class="dg-modal-input" maxlength="60" autocomplete="name" placeholder="가입 시 입력한 이름">
+        <button type="button" class="dg-modal-submit" id="dgFindIdSubmit">ID 찾기</button>
+        <div id="dgFiResult" class="dg-fi-result" hidden></div>
+        <p class="dg-modal-foot"><button type="button" class="dg-modal-link" data-dg-go-forgot>비밀번호 찾기로</button> · <button type="button" class="dg-modal-link" data-dg-go-login>로그인으로 돌아가기</button></p>
       </div>
     </div>
 
@@ -1114,19 +1136,69 @@
     </div>
 
     <div class="dg-modal" id="dgAccountModal" hidden>
-      <div class="dg-modal-box">
+      <div class="dg-modal-box dg-acct-box">
         <button type="button" class="dg-modal-x" data-dg-close aria-label="닫기">✕</button>
         <div class="dg-modal-logo">👤</div>
         <h2 class="dg-modal-title">내 계정</h2>
         <p class="dg-modal-sub" id="dgAcHint"></p>
-        <label class="dg-modal-label" for="dgAcEmail">이메일</label>
-        <input type="email" id="dgAcEmail" class="dg-modal-input" maxlength="120" autocomplete="email" placeholder="name@company.com">
-        <label class="dg-modal-label" for="dgAcNew">새 비밀번호 (변경할 때만, 8자 이상)</label>
-        <input type="password" id="dgAcNew" class="dg-modal-input" maxlength="100" autocomplete="new-password" placeholder="변경하지 않으려면 비워 두세요">
-        <label class="dg-modal-label" for="dgAcCur">현재 비밀번호 (확인용)</label>
-        <input type="password" id="dgAcCur" class="dg-modal-input" autocomplete="current-password" placeholder="현재 비밀번호">
-        <button type="button" class="dg-modal-submit" id="dgAccountSubmit">저장</button>
-        <p class="dg-modal-foot"><button type="button" class="dg-modal-link" data-dg-close>나중에 하기</button></p>
+
+        <div class="dg-acct-row">
+          <div class="dg-acct-label">ID</div>
+          <div class="dg-acct-view"><span class="dg-acct-val" id="dgAcVal-id"></span></div>
+        </div>
+
+        <div class="dg-acct-row" data-ac-field="email">
+          <div class="dg-acct-label">이메일</div>
+          <div class="dg-acct-view">
+            <span class="dg-acct-val" id="dgAcVal-email"></span>
+            <button type="button" class="dg-acct-edit" data-ac-edit="email" title="이메일 수정" aria-label="이메일 수정"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          </div>
+          <div class="dg-acct-editbox" hidden>
+            <input type="email" id="dgAcIn-email" class="dg-modal-input" maxlength="120" autocomplete="email" placeholder="name@company.com">
+            <input type="password" id="dgAcCurEmail" class="dg-modal-input" autocomplete="current-password" placeholder="현재 비밀번호 (이메일 변경 확인용)">
+            <div class="dg-acct-actions"><button type="button" class="dg-acct-save" data-ac-save="email">저장</button><button type="button" class="dg-acct-cancel" data-ac-cancel="email">취소</button></div>
+          </div>
+        </div>
+
+        <div class="dg-acct-row" data-ac-field="company">
+          <div class="dg-acct-label">소속</div>
+          <div class="dg-acct-view">
+            <span class="dg-acct-val" id="dgAcVal-company"></span>
+            <button type="button" class="dg-acct-edit" data-ac-edit="company" title="소속 수정" aria-label="소속 수정"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          </div>
+          <div class="dg-acct-editbox" hidden>
+            <input type="text" id="dgAcIn-company" class="dg-modal-input" maxlength="100" placeholder="예: 장금상선 운항팀">
+            <div class="dg-acct-actions"><button type="button" class="dg-acct-save" data-ac-save="company">저장</button><button type="button" class="dg-acct-cancel" data-ac-cancel="company">취소</button></div>
+          </div>
+        </div>
+
+        <div class="dg-acct-row" data-ac-field="name">
+          <div class="dg-acct-label">이름</div>
+          <div class="dg-acct-view">
+            <span class="dg-acct-val" id="dgAcVal-name"></span>
+            <button type="button" class="dg-acct-edit" data-ac-edit="name" title="이름 수정" aria-label="이름 수정"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          </div>
+          <div class="dg-acct-editbox" hidden>
+            <input type="text" id="dgAcIn-name" class="dg-modal-input" maxlength="60" autocomplete="name" placeholder="이름">
+            <div class="dg-acct-actions"><button type="button" class="dg-acct-save" data-ac-save="name">저장</button><button type="button" class="dg-acct-cancel" data-ac-cancel="name">취소</button></div>
+          </div>
+        </div>
+
+        <div class="dg-acct-row" data-ac-field="password">
+          <div class="dg-acct-label">비밀번호</div>
+          <div class="dg-acct-view">
+            <span class="dg-acct-val">••••••••</span>
+            <button type="button" class="dg-acct-pwbtn" data-ac-edit="password">비밀번호 변경</button>
+          </div>
+          <div class="dg-acct-editbox" hidden>
+            <input type="password" id="dgAcCur" class="dg-modal-input" autocomplete="current-password" placeholder="현재 비밀번호">
+            <input type="password" id="dgAcNew" class="dg-modal-input" maxlength="100" autocomplete="new-password" placeholder="새 비밀번호 (8자 이상)">
+            <input type="password" id="dgAcNew2" class="dg-modal-input" maxlength="100" autocomplete="new-password" placeholder="새 비밀번호 확인">
+            <div class="dg-acct-actions"><button type="button" class="dg-acct-save" data-ac-save="password">저장</button><button type="button" class="dg-acct-cancel" data-ac-cancel="password">취소</button></div>
+          </div>
+        </div>
+
+        <p class="dg-modal-foot"><button type="button" class="dg-modal-link" data-dg-close>닫기</button></p>
       </div>
     </div>
 

@@ -36,6 +36,18 @@ async function update(id, patch) {
   if (error) throw error;
 }
 
+// ID 찾기 결과용 마스킹: 앞 2글자(짧으면 1글자)만 보이고 나머지는 * (이메일 형태 ID는 @도메인 유지)
+function maskId(id) {
+  const mask = t => {
+    const n = t.length;
+    const head = n <= 3 ? 1 : 2;
+    const tail = n >= 6 ? 1 : 0;
+    return t.slice(0, head) + '*'.repeat(Math.max(1, n - head - tail)) + (tail ? t.slice(-1) : '');
+  };
+  const at = id.indexOf('@');
+  return at > 0 ? mask(id.slice(0, at)) + id.slice(at) : mask(id);
+}
+
 // 브라우저에 내려주는 본인 정보
 function sessionUser(m) {
   return { id: m.id, company: m.company, name: m.name, role: m.role === 'admin' ? 'admin' : 'general', email: m.email || '' };
@@ -165,8 +177,14 @@ const actions = {
     const generic = { message: '입력한 정보가 일치하면 재설정 링크를 이메일로 보내드립니다. (유효시간 ' + RESET_TTL_MIN + '분)' };
 
     const m = await findById(id);
-    if (!m || !m.email || m.email.toLowerCase() !== email) return generic;
-    if (m.reset_requested_at && Date.now() - new Date(m.reset_requested_at).getTime() < RESET_COOLDOWN_SEC * 1000) return generic;
+    if (!m || !m.email || m.email.toLowerCase() !== email) {
+      console.log('[auth/forgot] not sent: ' + (!m ? 'unknown id' : !m.email ? 'no email registered' : 'email mismatch'));   // 응답은 항상 동일, 사유는 서버 로그에만 기록
+      return generic;
+    }
+    if (m.reset_requested_at && Date.now() - new Date(m.reset_requested_at).getTime() < RESET_COOLDOWN_SEC * 1000) {
+      console.log('[auth/forgot] not sent: cooldown');
+      return generic;
+    }
 
     const t = A.newResetToken();
     await update(m.id, {
@@ -186,6 +204,7 @@ const actions = {
             '<p style="color:#888;font-size:12px">버튼이 안 열리면 주소를 복사해 브라우저에 붙여넣으세요:<br>' + link + '</p>' +
             '<p style="color:#888;font-size:12px">본인이 요청하지 않았다면 이 메일을 무시하셔도 됩니다.</p>'
     });
+    console.log('[auth/forgot] sent');
     return generic;
   },
 
@@ -232,6 +251,37 @@ const actions = {
     await update(m.id, patch);
     if (patch.pw_changed_at) A.setSessionCookie(req, res, m.id);   // 현재 기기는 새 세션으로 유지, 다른 기기 세션은 무효
     return { user: sessionUser(Object.assign({}, m, patch)), message: '저장되었습니다.' };
+  },
+
+  // 내 계정: 소속·이름 수정 (로그인 세션만 필요)
+  async 'update-profile'(req) {
+    const m = await requireMember(req);
+    const b = req.body || {};
+    const patch = {};
+    if (b.company !== undefined) {
+      const v = str(b.company);
+      if (!v || v.length > 100) throw new HttpError(400, '소속을 1~100자로 입력하세요.');
+      patch.company = v;
+    }
+    if (b.name !== undefined) {
+      const v = str(b.name);
+      if (!v || v.length > 60) throw new HttpError(400, '이름을 1~60자로 입력하세요.');
+      patch.name = v;
+    }
+    if (!Object.keys(patch).length) throw new HttpError(400, '변경할 내용이 없습니다.');
+    await update(m.id, patch);
+    return { user: sessionUser(Object.assign({}, m, patch)), message: '저장 완료' };
+  },
+
+  // ID 찾기: 이름이 같은 회원의 ID를 마스킹해서 알려줌 (전체 ID는 노출하지 않음)
+  async 'find-id'(req) {
+    const name = str((req.body || {}).name);
+    if (name.length < 2 || name.length > 60) throw new HttpError(400, '이름을 2자 이상 입력하세요.');
+    const { data, error } = await supabaseAdmin.from(TABLE).select('id').ilike('name', name.replace(/[\\%_]/g, '\\$&')).limit(6);
+    if (error) throw error;
+    const rows = data || [];
+    if (rows.length > 5) return { ids: [], tooMany: true };
+    return { ids: rows.map(r => maskId(r.id)) };
   },
 
   // 문의(AI) 사용 횟수 기록 — 회원관리 리포트용

@@ -6474,19 +6474,39 @@ async function dgRestoreSession() {
   try { localStorage.removeItem('dg_auth_user_v1'); } catch (e) {}   // 구 방식(localStorage 세션) 잔여 정보 정리
 }
 
+// 관리자 문의처 — 마우스를 올리거나 클릭(터치)하면 담당자가 표시되는 '관리자' 링크
+const DG_ADMIN_CONTACTS = ['운항팀 오명기 차장', '운항팀 이원태 차장'];
+const DG_ADMIN_TIP = '<button type="button" class="dg-admin-tip" data-tip="' + ['관리자 (문의처)'].concat(DG_ADMIN_CONTACTS).join('&#10;') + '">관리자</button>';
+
+// 버튼 로딩 표시 — 처리 중 스피너 + 라벨 변경 + 중복 클릭 방지 (너무 빨리 끝나도 최소 0.4초는 보이게 함)
+async function dgBusy(btn, label, fn) {
+  if (!btn || btn.disabled) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.classList.add('dg-loading'); btn.textContent = label;
+  const t0 = Date.now();
+  try { return await fn(); }
+  finally {
+    const wait = 400 - (Date.now() - t0);
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    btn.disabled = false; btn.classList.remove('dg-loading'); btn.textContent = orig;
+  }
+}
+
 async function dgLogin(id, pw) {
   id = (id || '').trim();
   if (!id || !pw) { fqToast('ID와 비밀번호를 입력하세요', 'warn'); return; }
-  try {
-    const r = await dgApi('login', { id, password: pw });
-    dgCurrentUser = r.user;
-    const pwEl = document.getElementById('dgLoginPw'); if (pwEl) pwEl.value = '';
-    await dgLoadMembers();
-    if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
-    dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms(); dgUpdateMemberBadge();
-    fqToast('✓ ' + (dgCurrentUser.name || dgCurrentUser.id) + '님 로그인되었습니다', 'success');
-    if (r.needs && (r.needs.email || r.needs.password)) dgShowAccount(r.needs);   // 이메일 미등록·짧은 비밀번호 보완 안내
-  } catch (e) { fqToast(e.message, 'warn'); }
+  return dgBusy(document.getElementById('dgLoginSubmit'), '로그인 중…', async () => {
+    try {
+      const r = await dgApi('login', { id, password: pw });
+      dgCurrentUser = r.user;
+      const pwEl = document.getElementById('dgLoginPw'); if (pwEl) pwEl.value = '';
+      await dgLoadMembers();
+      if (typeof dgApplyReportAccess === 'function') dgApplyReportAccess();
+      dgUpdateAuthUI(); dgCloseModals(); dgAutofillForms(); dgUpdateMemberBadge();
+      fqToast('✓ ' + (dgCurrentUser.name || dgCurrentUser.id) + '님 로그인되었습니다', 'success');
+      if (r.needs && (r.needs.email || r.needs.password)) dgShowAccount(r.needs);   // 이메일 미등록·짧은 비밀번호 보완 안내
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
 }
 
 async function dgLogout() {
@@ -6502,64 +6522,129 @@ async function dgSignup(company, name, id, email, pw) {
   company = (company || '').trim(); name = (name || '').trim(); id = (id || '').trim(); email = (email || '').trim();
   if (!company || !name || !id || !email || !pw) { fqToast('모든 항목을 입력하세요', 'warn'); return; }
   if (pw.length < 8) { fqToast('비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
-  try {
-    const r = await dgApi('signup', { company, name, id, email, password: pw });
-    dgCloseModals();
-    ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuEmail', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
-    fqToast('✓ ' + r.message, 'success');
-  } catch (e) { fqToast(e.message, 'warn'); }
+  return dgBusy(document.getElementById('dgSignupSubmit'), '가입 요청 중…', async () => {
+    try {
+      const r = await dgApi('signup', { company, name, id, email, password: pw });
+      dgCloseModals();
+      ['dgSuCompany', 'dgSuName', 'dgSuId', 'dgSuEmail', 'dgSuPw'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+      fqToast('✓ ' + r.message, 'success');
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
 }
 
-// 비밀번호 찾기 1단계 — ID + 가입 이메일 → 재설정 링크 메일 발송
+// 비밀번호 찾기 1단계 — ID + 가입 이메일 → 재설정 링크 메일 발송, 창 안에 '발송 완료' 안내 표시
 async function dgForgot(id, email) {
   id = (id || '').trim(); email = (email || '').trim();
   if (!id || !email) { fqToast('ID와 이메일을 입력하세요', 'warn'); return; }
-  try {
-    const r = await dgApi('forgot', { id, email });
-    dgCloseModals();
-    fqToast('✓ ' + r.message, 'success');
-  } catch (e) { fqToast(e.message, 'warn'); }
+  return dgBusy(document.getElementById('dgForgotSubmit'), '메일 보내는 중…', async () => {
+    try {
+      await dgApi('forgot', { id, email });
+      const f = document.getElementById('dgFpForm'), d = document.getElementById('dgFpDone');
+      if (f) f.hidden = true;
+      if (d) d.hidden = false;
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
+}
+
+// ID 찾기 — 이름으로 조회, ID 일부는 *로 가려서 표시
+async function dgFindId(name) {
+  name = (name || '').trim();
+  const box = document.getElementById('dgFiResult');
+  if (name.length < 2) { fqToast('이름을 2자 이상 입력하세요', 'warn'); return; }
+  return dgBusy(document.getElementById('dgFindIdSubmit'), '찾는 중…', async () => {
+    try {
+      const r = await dgApi('find-id', { name });
+      if (!box) return;
+      box.hidden = false;
+      if (r.tooMany) box.innerHTML = '<p>같은 이름의 회원이 많아 표시할 수 없습니다. ' + DG_ADMIN_TIP + '에게 문의해 주세요.</p>';
+      else if (!r.ids.length) box.innerHTML = '<p>일치하는 회원이 없습니다.<br>가입 시 입력한 이름을 확인하거나 ' + DG_ADMIN_TIP + '에게 문의해 주세요.</p>';
+      else box.innerHTML = '<p class="dg-fi-title">일치하는 ID (' + r.ids.length + '건)</p>' +
+        r.ids.map(x => '<div class="dg-fi-id">' + fqEsc(x) + '</div>').join('') +
+        '<p class="dg-fi-note">보안을 위해 일부만 표시됩니다. 위 ID가 본인 것이라면 전체 ID로 로그인하거나 "비밀번호 찾기"를 이용하세요.</p>';
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
 }
 
 // 비밀번호 찾기 2단계 — 메일 링크로 들어와 새 비밀번호 설정
 async function dgResetPassword(pw, pw2) {
   if (!pw || pw.length < 8) { fqToast('비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
   if (pw !== pw2) { fqToast('비밀번호 확인이 일치하지 않습니다', 'warn'); return; }
-  try {
-    const r = await dgApi('reset', { token: dgResetToken, password: pw });
-    dgResetToken = '';
-    ['dgRsPw', 'dgRsPw2'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
-    fqToast('✓ ' + r.message, 'success');
-    dgShowLogin();
-  } catch (e) { fqToast(e.message, 'warn'); }
+  return dgBusy(document.getElementById('dgResetSubmit'), '변경 중…', async () => {
+    try {
+      const r = await dgApi('reset', { token: dgResetToken, password: pw });
+      dgResetToken = '';
+      ['dgRsPw', 'dgRsPw2'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+      fqToast('✓ ' + r.message, 'success');
+      dgShowLogin();
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
 }
 
-// 내 계정 — 이메일 등록/변경, 비밀번호 변경 (현재 비밀번호 필요)
+// ── 내 계정: 이메일·소속·이름은 행별 연필 버튼으로 수정, 비밀번호는 '비밀번호 변경' 버튼으로 수정 ──
+const DG_AC_FIELDS = ['email', 'company', 'name', 'password'];
+function dgAcRender() {
+  const u = dgCurrentUser || {};
+  const set = (f, v) => { const el = document.getElementById('dgAcVal-' + f); if (!el) return; el.textContent = v || '미등록'; el.classList.toggle('dg-acct-empty', !v); };
+  set('id', u.id); set('email', u.email); set('company', u.company); set('name', u.name);
+}
+function dgAcRow(field) { return document.querySelector('#dgAccountModal [data-ac-field="' + field + '"]'); }
+function dgAcClose(field) {
+  const row = dgAcRow(field); if (!row) return;
+  row.classList.remove('editing');
+  const box = row.querySelector('.dg-acct-editbox'); if (box) box.hidden = true;
+}
+function dgAcOpen(field) {
+  DG_AC_FIELDS.forEach(dgAcClose);
+  const row = dgAcRow(field); if (!row) return;
+  const u = dgCurrentUser || {};
+  ['email', 'company', 'name'].forEach(f => { const el = document.getElementById('dgAcIn-' + f); if (el) el.value = u[f] || ''; });
+  ['dgAcCurEmail', 'dgAcCur', 'dgAcNew', 'dgAcNew2'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+  row.classList.add('editing');
+  const box = row.querySelector('.dg-acct-editbox'); if (box) box.hidden = false;
+  const first = box && box.querySelector('input');
+  if (first) setTimeout(() => first.focus(), 40);
+}
 function dgShowAccount(needs) {
   if (!dgCurrentUser) return;
   dgShowModal('dgAccountModal');
+  dgAcRender();
+  DG_AC_FIELDS.forEach(dgAcClose);
   const hint = document.getElementById('dgAcHint');
   if (hint) {
     const msgs = [];
     if (needs && needs.email) msgs.push('비밀번호 분실 시 메일로 재설정할 수 있도록 이메일을 등록해 주세요.');
     if (needs && needs.password) msgs.push('현재 비밀번호가 짧습니다. 8자 이상으로 변경하는 것을 권장합니다.');
-    hint.textContent = msgs.length ? msgs.join(' ') : '이메일과 비밀번호를 변경할 수 있습니다. 변경하려면 현재 비밀번호가 필요합니다.';
+    hint.textContent = msgs.length ? msgs.join(' ') : '수정하려면 해당 항목 오른쪽의 연필 버튼을 누르세요.';
   }
-  const em = document.getElementById('dgAcEmail'); if (em) em.value = dgCurrentUser.email || '';
-  ['dgAcCur', 'dgAcNew'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+  if (needs && needs.email) dgAcOpen('email');
 }
-async function dgUpdateAccount() {
-  const cur = document.getElementById('dgAcCur').value;
-  const email = document.getElementById('dgAcEmail').value.trim();
-  const nw = document.getElementById('dgAcNew').value;
-  if (!cur) { fqToast('현재 비밀번호를 입력하세요', 'warn'); return; }
-  if (nw && nw.length < 8) { fqToast('새 비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
-  try {
-    const r = await dgApi('update-account', { currentPassword: cur, email, newPassword: nw });
-    dgCurrentUser = r.user;
-    dgCloseModals(); dgUpdateAuthUI();
-    fqToast('✓ ' + r.message, 'success');
-  } catch (e) { fqToast(e.message, 'warn'); }
+async function dgAcSave(field, btn) {
+  const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  let action, payload, doneMsg = '✓ 저장 완료';
+  if (field === 'email') {
+    const email = val('dgAcIn-email').trim(), cur = val('dgAcCurEmail');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { fqToast('올바른 이메일 주소를 입력하세요', 'warn'); return; }
+    if (!cur) { fqToast('현재 비밀번호를 입력하세요', 'warn'); return; }
+    action = 'update-account'; payload = { currentPassword: cur, email };
+  } else if (field === 'company' || field === 'name') {
+    const v = val('dgAcIn-' + field).trim();
+    if (!v) { fqToast((field === 'company' ? '소속' : '이름') + '을 입력하세요', 'warn'); return; }
+    action = 'update-profile'; payload = { [field]: v };
+  } else if (field === 'password') {
+    const cur = val('dgAcCur'), nw = val('dgAcNew'), nw2 = val('dgAcNew2');
+    if (!cur) { fqToast('현재 비밀번호를 입력하세요', 'warn'); return; }
+    if (nw.length < 8) { fqToast('새 비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
+    if (nw !== nw2) { fqToast('새 비밀번호 확인이 일치하지 않습니다', 'warn'); return; }
+    action = 'update-account'; payload = { currentPassword: cur, newPassword: nw }; doneMsg = '✓ 비밀번호 변경 완료';
+  } else return;
+  return dgBusy(btn, '저장 중…', async () => {
+    try {
+      const r = await dgApi(action, payload);
+      dgCurrentUser = r.user;
+      dgAcClose(field); dgAcRender(); dgUpdateAuthUI();
+      fqToast(doneMsg, 'success');
+    } catch (e) { fqToast(e.message, 'warn'); }
+  });
 }
 
 async function dgApprove(id) {
@@ -6655,7 +6740,17 @@ function dgCloseModals() { document.querySelectorAll('.dg-modal').forEach(m => m
 function dgShowModal(id) { dgCloseModals(); const m = document.getElementById(id); if (m) m.hidden = false; }
 function dgShowLogin() { dgShowModal('dgLoginModal'); const i = document.getElementById('dgLoginId'); if (i) setTimeout(() => i.focus(), 60); }
 function dgShowSignup() { dgShowModal('dgSignupModal'); const i = document.getElementById('dgSuCompany'); if (i) setTimeout(() => i.focus(), 60); }
-function dgShowForgot() { dgShowModal('dgForgotModal'); const i = document.getElementById('dgFpId'); if (i) setTimeout(() => i.focus(), 60); }
+function dgShowForgot() {
+  dgShowModal('dgForgotModal');
+  const f = document.getElementById('dgFpForm'), d = document.getElementById('dgFpDone');
+  if (f) f.hidden = false; if (d) d.hidden = true;   // 이전에 본 '발송 완료' 화면 초기화
+  const i = document.getElementById('dgFpId'); if (i) setTimeout(() => i.focus(), 60);
+}
+function dgShowFindId() {
+  dgShowModal('dgFindIdModal');
+  const r = document.getElementById('dgFiResult'); if (r) { r.hidden = true; r.innerHTML = ''; }
+  const i = document.getElementById('dgFiName'); if (i) setTimeout(() => i.focus(), 60);
+}
 function dgShowLoginRequired() { dgShowModal('dgLoginReqModal'); }
 
 function dgAutofillForms() {
@@ -6760,24 +6855,46 @@ function dgBindAuth() {
   const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
   const doLogin = () => dgLogin(val('dgLoginId'), val('dgLoginPw'));
   const doForgot = () => dgForgot(val('dgFpId'), val('dgFpEmail'));
+  const doFindId = () => dgFindId(val('dgFiName'));
   const doReset = () => dgResetPassword(val('dgRsPw'), val('dgRsPw2'));
   const click = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener('click', fn); };
   click('dgLoginSubmit', doLogin);
   click('dgSignupSubmit', () => dgSignup(val('dgSuCompany'), val('dgSuName'), val('dgSuId'), val('dgSuEmail'), val('dgSuPw')));
   click('dgForgotSubmit', doForgot);
+  click('dgFindIdSubmit', doFindId);
   click('dgResetSubmit', doReset);
-  click('dgAccountSubmit', dgUpdateAccount);
   const enter = (ids, fn) => ids.forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('keydown', ev => { if (ev.key === 'Enter') fn(); }); });
   enter(['dgLoginId', 'dgLoginPw'], doLogin);
   enter(['dgFpId', 'dgFpEmail'], doForgot);
+  enter(['dgFiName'], doFindId);
   enter(['dgRsPw', 'dgRsPw2'], doReset);
-  enter(['dgAcCur', 'dgAcEmail', 'dgAcNew'], dgUpdateAccount);
+  // 내 계정 — 연필(수정)/저장/취소 버튼은 이벤트 위임, 입력칸에서 Enter 누르면 해당 행 저장
+  const acct = document.getElementById('dgAccountModal');
+  if (acct) {
+    acct.addEventListener('click', e => {
+      const ed = e.target.closest('[data-ac-edit]'); if (ed) return dgAcOpen(ed.dataset.acEdit);
+      const sv = e.target.closest('[data-ac-save]'); if (sv) return dgAcSave(sv.dataset.acSave, sv);
+      const cn = e.target.closest('[data-ac-cancel]'); if (cn) return dgAcClose(cn.dataset.acCancel);
+    });
+    acct.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+      const box = e.target.closest('.dg-acct-editbox'); const b = box && box.querySelector('[data-ac-save]');
+      if (b) b.click();
+    });
+  }
   document.querySelectorAll('[data-dg-close]').forEach(b => b.addEventListener('click', dgCloseModals));
   document.querySelectorAll('[data-dg-go-login]').forEach(b => b.addEventListener('click', dgShowLogin));
   document.querySelectorAll('[data-dg-go-signup]').forEach(b => b.addEventListener('click', dgShowSignup));
   document.querySelectorAll('[data-dg-go-forgot]').forEach(b => b.addEventListener('click', dgShowForgot));
+  document.querySelectorAll('[data-dg-go-findid]').forEach(b => b.addEventListener('click', dgShowFindId));
   document.querySelectorAll('.dg-modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) dgCloseModals(); }));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') dgCloseModals(); });
+  // '관리자' 문의처 툴팁 — 클릭(터치)하면 열고, 다른 곳을 누르면 닫음 (마우스 올리면 CSS로 표시)
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.dg-admin-tip');
+    document.querySelectorAll('.dg-admin-tip.open').forEach(x => { if (x !== t) x.classList.remove('open'); });
+    if (t) t.classList.toggle('open');
+  });
 }
 async function dgInit() {
   dgBindAuth();
