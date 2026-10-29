@@ -6727,7 +6727,7 @@ function dgUpdateAuthUI() {
     box.innerHTML =
       '<div class="dg-auth-user" title="' + fqEsc(dgCurrentUser.company || '') + '">👤 <span class="dg-auth-name">' + fqEsc(dgCurrentUser.name || dgCurrentUser.id) + '</span></div>' +
       '<span class="dg-ai-usage" id="dgAiUsage" hidden></span>' +
-      '<button type="button" class="dg-auth-btn dg-auth-account" onclick="dgShowAccount()">내 계정</button>' +
+      '<button type="button" class="dg-auth-btn dg-auth-account" onclick="dgShowAccount()">내정보</button>' +
       '<button type="button" class="dg-auth-btn dg-auth-logout" onclick="dgLogout()">로그아웃</button>';
   } else {
     box.innerHTML =
