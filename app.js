@@ -6480,7 +6480,8 @@ const DG_ADMIN_TIP = '<button type="button" class="dg-admin-tip" data-tip="' + [
 
 // 버튼 로딩 표시 — 처리 중 스피너 + 라벨 변경 + 중복 클릭 방지 (너무 빨리 끝나도 최소 0.4초는 보이게 함)
 async function dgBusy(btn, label, fn) {
-  if (!btn || btn.disabled) return;
+  if (!btn) return fn();
+  if (btn.disabled) return;
   const orig = btn.textContent;
   btn.disabled = true; btn.classList.add('dg-loading'); btn.textContent = label;
   const t0 = Date.now();
@@ -6647,19 +6648,31 @@ async function dgAcSave(field, btn) {
   });
 }
 
-async function dgApprove(id) {
-  if (!dgIsAdmin()) { fqToast('관리자만 승인할 수 있습니다', 'warn'); return; }
-  try { await dgApi('admin-approve', { id }); fqToast('✓ 승인 완료 — 이제 로그인할 수 있습니다', 'success'); }
-  catch (e) { fqToast('승인 실패: ' + e.message, 'warn'); }
-  await dgLoadMembers(); dgRenderMembers();
+// 회원관리 행 버튼 처리 중 표시 — 누른 버튼은 스피너, 같은 행의 다른 버튼은 잠깐 비활성화(중복 처리 방지)
+async function dgMemberAction(btn, label, fn) {
+  const row = btn && btn.closest ? btn.closest('.dg-mem-row') : null;
+  const others = row ? [...row.querySelectorAll('button')].filter(b => b !== btn) : [];
+  others.forEach(b => { b.disabled = true; });
+  try { await dgBusy(btn, label, fn); }
+  finally { others.forEach(b => { b.disabled = false; }); }
+  await dgLoadMembers(); dgRenderMembers();   // 스피너가 끝난 뒤 목록 새로고침
 }
 
-async function dgDeleteMember(id) {
+async function dgApprove(id, btn) {
+  if (!dgIsAdmin()) { fqToast('관리자만 승인할 수 있습니다', 'warn'); return; }
+  return dgMemberAction(btn, '승인 중…', async () => {
+    try { await dgApi('admin-approve', { id }); fqToast('✓ 승인 완료 — 이제 로그인할 수 있습니다', 'success'); }
+    catch (e) { fqToast('승인 실패: ' + e.message, 'warn'); }
+  });
+}
+
+async function dgDeleteMember(id, btn) {
   if (!dgCanDeleteMember()) { fqToast('회원 삭제 권한이 없습니다 (' + DG_DELETE_IDS.join(', ') + ' 계정만 가능)', 'warn'); return; }
   if (!confirm('이 회원을 삭제하시겠습니까?')) return;
-  try { await dgApi('admin-delete', { id }); fqToast('회원이 삭제되었습니다', 'success'); }
-  catch (e) { fqToast('삭제 실패: ' + e.message, 'warn'); }
-  await dgLoadMembers(); dgRenderMembers();
+  return dgMemberAction(btn, '삭제 중…', async () => {
+    try { await dgApi('admin-delete', { id }); fqToast('회원이 삭제되었습니다', 'success'); }
+    catch (e) { fqToast('삭제 실패: ' + e.message, 'warn'); }
+  });
 }
 
 // ── UI ──
@@ -6807,20 +6820,21 @@ function dgRenderMembers() {
     (admins.length ? '<div class="dg-mem-grid">' + admins.map(m => row(m, false)).join('') + '</div>' : '<div class="dg-mem-empty">관리자가 없습니다.</div>') +
     '<div class="dg-mem-group-title">👤 일반 회원 (' + generals.length + ')</div>' +
     (generals.length ? '<div class="dg-mem-grid">' + generals.map(m => row(m, false)).join('') + '</div>' : '<div class="dg-mem-empty">승인된 일반 회원이 없습니다.</div>');
-  box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve));
-  box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del));
-  box.querySelectorAll('[data-grant]').forEach(b => b.onclick = () => dgSetRole(b.dataset.grant, 'admin'));
-  box.querySelectorAll('[data-revoke]').forEach(b => b.onclick = () => dgSetRole(b.dataset.revoke, 'general'));
+  box.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => dgApprove(b.dataset.approve, b));
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del, b));
+  box.querySelectorAll('[data-grant]').forEach(b => b.onclick = () => dgSetRole(b.dataset.grant, 'admin', b));
+  box.querySelectorAll('[data-revoke]').forEach(b => b.onclick = () => dgSetRole(b.dataset.revoke, 'general', b));
   dgUpdateMemberBadge();
 }
 
 // 관리자 권한 부여/해제 (관리자만)
-async function dgSetRole(id, role) {
+async function dgSetRole(id, role, btn) {
   if (!dgIsAdmin()) { fqToast('관리자만 권한을 변경할 수 있습니다', 'warn'); return; }
   if (!confirm(role === 'admin' ? '이 회원에게 관리자 권한을 부여하시겠습니까?' : '이 회원의 관리자 권한을 해제하시겠습니까?')) return;
-  try { await dgApi('admin-set-role', { id, role }); fqToast(role === 'admin' ? '✓ 관리자로 지정되었습니다' : '관리자 권한이 해제되었습니다', 'success'); }
-  catch (e) { fqToast('저장 실패: ' + e.message, 'warn'); }
-  await dgLoadMembers(); dgRenderMembers();
+  return dgMemberAction(btn, '변경 중…', async () => {
+    try { await dgApi('admin-set-role', { id, role }); fqToast(role === 'admin' ? '✓ 관리자로 지정되었습니다' : '관리자 권한이 해제되었습니다', 'success'); }
+    catch (e) { fqToast('저장 실패: ' + e.message, 'warn'); }
+  });
 }
 
 // 승인 대기 회원이 있으면 사이드바 '관리자 리포트' 메뉴 + '회원관리' 서브탭에 빨간 느낌표

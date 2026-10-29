@@ -5879,7 +5879,7 @@ body { top: 0 !important; position: static !important; }
 /* ── 로그인/계정 UX: 버튼 로딩 스피너, 내 계정 행, 발송 완료, ID 찾기, 관리자 문의처 툴팁 ── */
 @keyframes dgSpin { to { transform: rotate(360deg); } }
 .dg-loading { opacity: .85; cursor: progress; pointer-events: none; }
-.dg-loading::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; border: 2px solid rgba(255,255,255,0.45); border-top-color: #fff; border-radius: 50%; animation: dgSpin .7s linear infinite; vertical-align: -2px; }
+.dg-loading::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: dgSpin .7s linear infinite; vertical-align: -2px; }
 @media (prefers-reduced-motion: reduce) { .dg-loading::before { animation-duration: 1.6s; } }
 
 .dg-acct-box { width: min(440px, 94vw); max-height: 92vh; overflow-y: auto; }
