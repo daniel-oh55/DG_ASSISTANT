@@ -60,7 +60,8 @@ function adminView(m) {
     role: m.role === 'admin' ? 'admin' : 'general', status: m.status,
     createdAt: m.created_at, approvedAt: m.approved_at, lastLoginAt: m.last_login_at,
     loginTotal: m.login_total, statsSince: m.stats_since,
-    aiToday: m.ai_today, aiTodayDate: m.ai_today_date, aiTotal: m.ai_total
+    aiToday: m.ai_today, aiTodayDate: m.ai_today_date, aiTotal: m.ai_total,
+    lockedUntil: (m.locked_until && new Date(m.locked_until) > new Date()) ? m.locked_until : null   // 로그인 5회 실패 잠금 중이면 해제 시각
   };
 }
 
@@ -177,8 +178,10 @@ const actions = {
     const generic = { message: '입력한 정보가 일치하면 재설정 링크를 이메일로 보내드립니다. (유효시간 ' + RESET_TTL_MIN + '분)' };
 
     const m = await findById(id);
-    if (!m || !m.email || m.email.toLowerCase() !== email) {
-      console.log('[auth/forgot] not sent: ' + (!m ? 'unknown id' : !m.email ? 'no email registered' : 'email mismatch'));   // 응답은 항상 동일, 사유는 서버 로그에만 기록
+    // 등록 이메일이 없어도 ID 자체가 이메일 형태(기존 회원 다수)이면 그 주소를 등록 이메일로 인정
+    const regEmail = m ? String(m.email || (EMAIL_RE.test(m.id) ? m.id : '')).toLowerCase() : '';
+    if (!m || !regEmail || regEmail !== email) {
+      console.log('[auth/forgot] not sent: ' + (!m ? 'unknown id' : !regEmail ? 'no email registered' : 'email mismatch'));   // 응답은 항상 동일, 사유는 서버 로그에만 기록
       return generic;
     }
     if (m.reset_requested_at && Date.now() - new Date(m.reset_requested_at).getTime() < RESET_COOLDOWN_SEC * 1000) {
@@ -187,14 +190,16 @@ const actions = {
     }
 
     const t = A.newResetToken();
-    await update(m.id, {
+    const patch = {
       reset_token_hash: t.hash,
       reset_expires_at: new Date(Date.now() + RESET_TTL_MIN * 60000).toISOString(),
       reset_requested_at: iso()
-    });
+    };
+    if (!m.email) patch.email = regEmail;   // 이메일형 ID로 인증된 경우 등록 이메일로 저장
+    await update(m.id, patch);
     const link = appBase(req) + '/?reset=' + t.token;
     await sendMail({
-      to: m.email,
+      to: regEmail,
       subject: '[DG ASSISTANT] 비밀번호 재설정 안내',
       text: m.name + '님, 비밀번호 재설정을 요청하셨습니다.\n\n아래 링크에서 새 비밀번호를 설정하세요 (' + RESET_TTL_MIN + '분 이내, 1회 사용).\n' + link +
             '\n\n본인이 요청하지 않았다면 이 메일을 무시하셔도 됩니다.',
@@ -328,6 +333,37 @@ const actions = {
     const { error } = await supabaseAdmin.from(TABLE).delete().eq('id', m.id);
     if (error) throw error;
     return {};
+  },
+
+  // 로그인 5회 실패 잠금 해제 (관리자)
+  async 'admin-unlock'(req) {
+    await requireAdmin(req);
+    const m = await findById(str((req.body || {}).id));
+    if (!m) throw new HttpError(404, '대상을 찾을 수 없습니다.');
+    await update(m.id, { fail_count: 0, locked_until: null });
+    return {};
+  },
+
+  // 관리자가 회원 비밀번호를 임시 비밀번호로 초기화 — 이메일 미등록 기존 회원이 비밀번호를 잊었을 때 사용
+  //   · 본인 계정은 불가(내정보에서 변경) · 관리자 계정은 MEMBER_DELETE_IDS(기본 wtlee)만 초기화 가능
+  //   · 초기화하면 기존 로그인 세션은 모두 무효, 잠금·실패 횟수도 함께 풀림
+  async 'admin-reset-password'(req) {
+    const me = await requireAdmin(req);
+    const b = req.body || {};
+    const password = typeof b.password === 'string' ? b.password : '';
+    const m = await findById(str(b.id));
+    if (!m) throw new HttpError(404, '대상을 찾을 수 없습니다.');
+    if (m.id === me.id) throw new HttpError(400, '본인 비밀번호는 내정보에서 변경하세요.');
+    if (m.role === 'admin' && !DELETE_IDS.includes(me.id.toLowerCase())) {
+      throw new HttpError(403, '관리자 계정의 비밀번호 초기화는 ' + DELETE_IDS.join(', ') + ' 계정만 가능합니다.');
+    }
+    checkNewPassword(password, m.id);
+    await update(m.id, {
+      pwd_hash: await A.hashPassword(password), pw_changed_at: iso(),
+      fail_count: 0, locked_until: null, reset_token_hash: null, reset_expires_at: null
+    });
+    console.log('[auth/admin-reset-password] by=' + me.id + ' target=' + m.id);
+    return { message: m.id + ' 비밀번호가 초기화되었습니다. 임시 비밀번호를 본인에게 전달하고, 로그인 후 내정보에서 변경하도록 안내하세요.' };
   },
 
   async 'admin-set-role'(req) {

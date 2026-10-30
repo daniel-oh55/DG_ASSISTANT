@@ -6675,6 +6675,28 @@ async function dgDeleteMember(id, btn) {
   });
 }
 
+// 비밀번호 초기화 (관리자) — 이메일 미등록 기존 회원이 비밀번호를 잊었을 때. 임시 비밀번호를 정해 본인에게 전달
+async function dgResetMemberPassword(id, btn) {
+  if (!dgIsAdmin()) { fqToast('관리자만 초기화할 수 있습니다', 'warn'); return; }
+  const pw = prompt(id + ' 회원의 임시 비밀번호를 입력하세요 (8자 이상, ID와 달라야 함).\n초기화하면 이 회원의 기존 로그인은 모두 풀리고, 잠금도 해제됩니다.');
+  if (pw === null) return;
+  if (pw.length < 8) { fqToast('임시 비밀번호는 8자 이상이어야 합니다', 'warn'); return; }
+  if (!confirm(id + ' 비밀번호를 초기화하시겠습니까?')) return;
+  return dgMemberAction(btn, '초기화 중…', async () => {
+    try { const r = await dgApi('admin-reset-password', { id, password: pw }); fqToast('✓ ' + (r.message || '초기화 완료'), 'success'); }
+    catch (e) { fqToast('초기화 실패: ' + e.message, 'warn'); }
+  });
+}
+
+// 로그인 5회 실패 잠금 해제 (관리자)
+async function dgUnlockMember(id, btn) {
+  if (!dgIsAdmin()) { fqToast('관리자만 해제할 수 있습니다', 'warn'); return; }
+  return dgMemberAction(btn, '해제 중…', async () => {
+    try { await dgApi('admin-unlock', { id }); fqToast('✓ 잠금이 해제되었습니다 — 바로 다시 로그인할 수 있습니다', 'success'); }
+    catch (e) { fqToast('해제 실패: ' + e.message, 'warn'); }
+  });
+}
+
 // ── UI ──
 // ═══ 회원별 AI 문의 일일 횟수 제한 (토큰 절약) ═══
 const DG_AI_LIMIT = 20;                       // 일반 회원 하루 AI 문의 허용 횟수
@@ -6781,6 +6803,7 @@ function dgRenderMembers() {
   const approved = dgMembers.filter(m => m.status === 'approved');
   const fmt = d => d ? new Date(d).toLocaleString('ko') : '-';
   const isAdm = m => m.role === 'admin';
+  const isSelf = m => !!(dgCurrentUser && m.id === dgCurrentUser.id);
   const admins = approved.filter(m => isAdm(m));       // 관리자 회원 (상단 별도 칸)
   const generals = approved.filter(m => !isAdm(m));    // 일반 회원 (하단 별도 칸)
   // 회원별 접속·AI 사용 통계
@@ -6805,11 +6828,14 @@ function dgRenderMembers() {
         ' · ' + fqEsc(m.name || '') + ' · <span class="dg-mem-co">' + fqEsc(m.company || '') + '</span>' +
         (m.email ? ' · <span class="dg-mem-co">' + fqEsc(m.email) + '</span>' : '') +
         '<span class="dg-mem-date">' + (isPending ? '요청 ' + fmt(m.createdAt) : '승인 ' + fmt(m.approvedAt)) + '</span>' +
+        (m.lockedUntil ? '<span class="dg-mem-date" style="color:#dc2626;font-weight:700">🔒 로그인 잠금 중 (' + fmt(m.lockedUntil) + '까지 · 비밀번호 5회 오류)</span>' : '') +
         (isPending ? '' : statLine(m)) + '</div>' +
       '<div class="dg-mem-actions">' +
         (isPending ? '<button class="fq-btn primary" data-approve="' + fqEsc(m.id) + '">✅ 승인</button>' : '') +
         (!isPending && !isAdm(m) ? '<button class="fq-btn accent" data-grant="' + fqEsc(m.id) + '">👑 관리자 지정</button>' : '') +
         (!isPending && m.role === 'admin' && !(dgCurrentUser && m.id === dgCurrentUser.id) ? '<button class="fq-btn ghost" data-revoke="' + fqEsc(m.id) + '">관리자 해제</button>' : '') +
+        (!isPending && !isSelf(m) && (!isAdm(m) || dgCanDeleteMember()) ? '<button class="fq-btn ghost" data-pwreset="' + fqEsc(m.id) + '" title="비밀번호를 잊은 회원에게 임시 비밀번호를 정해 줍니다">🔑 비밀번호 초기화</button>' : '') +
+        (m.lockedUntil ? '<button class="fq-btn ghost" data-unlock="' + fqEsc(m.id) + '">🔓 잠금 해제</button>' : '') +
         (dgCanDeleteMember() ? '<button class="fq-btn danger" data-del="' + fqEsc(m.id) + '">삭제</button>' : '') +
       '</div></div>';
   box.innerHTML =
@@ -6824,6 +6850,8 @@ function dgRenderMembers() {
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => dgDeleteMember(b.dataset.del, b));
   box.querySelectorAll('[data-grant]').forEach(b => b.onclick = () => dgSetRole(b.dataset.grant, 'admin', b));
   box.querySelectorAll('[data-revoke]').forEach(b => b.onclick = () => dgSetRole(b.dataset.revoke, 'general', b));
+  box.querySelectorAll('[data-pwreset]').forEach(b => b.onclick = () => dgResetMemberPassword(b.dataset.pwreset, b));
+  box.querySelectorAll('[data-unlock]').forEach(b => b.onclick = () => dgUnlockMember(b.dataset.unlock, b));
   dgUpdateMemberBadge();
 }
 
