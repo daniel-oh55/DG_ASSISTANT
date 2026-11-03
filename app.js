@@ -6615,7 +6615,7 @@ function dgShowAccount(needs) {
     const msgs = [];
     if (needs && needs.email) msgs.push('비밀번호 분실 시 메일로 재설정할 수 있도록 이메일을 등록해 주세요.');
     if (needs && needs.password) msgs.push('현재 비밀번호가 짧습니다. 8자 이상으로 변경하는 것을 권장합니다.');
-    hint.textContent = msgs.length ? msgs.join(' ') : '수정하려면 해당 항목 오른쪽의 연필 버튼을 누르세요.';
+    hint.textContent = msgs.length ? msgs.join(' ') : '비밀번호를 잊으면 아래 이메일로 재설정 링크가 발송됩니다. 수정하려면 각 항목 오른쪽의 연필 버튼을 누르세요.';
   }
   if (needs && needs.email) dgAcOpen('email');
 }
@@ -6756,6 +6756,8 @@ function dgUpdateAuthUI() {
     if (dgCurrentUser) { top.hidden = false; top.innerHTML = '<span class="dg-top-dot"></span>' + fqEsc(dgCurrentUser.id) + ' 로그인됨'; top.title = fqEsc((dgCurrentUser.name || '') + ' · ' + (dgCurrentUser.company || '')); }
     else top.hidden = true;
   }
+  const topAcct = document.getElementById('dgTopAccount');   // 우측상단 '내정보 수정' 버튼 — 로그인 시에만
+  if (topAcct) topAcct.hidden = !dgCurrentUser;
   const box = document.getElementById('sidebarAuth');
   if (!box) return;
   if (dgCurrentUser) {

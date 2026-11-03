@@ -22,7 +22,8 @@
 <body>
     <!-- 언어 선택 (어느 화면에서든 항상 우측상단 고정 · 소형). notranslate: 버튼 자체는 번역 제외 -->
     <div id="langSwitch" class="lang-switch notranslate" translate="no">
-      <span id="dgTopUser" class="dg-topuser" hidden></span>
+      <span id="dgTopUser" class="dg-topuser" hidden title="내정보 수정" onclick="dgShowAccount()"></span>
+      <button type="button" id="dgTopAccount" class="dg-topacct" hidden onclick="dgShowAccount()" title="내정보 수정하기 — 이메일·소속·이름·비밀번호 변경">👤 내정보 수정</button>
       <button type="button" id="langToggle" class="lang-toggle" title="언어 / Language">🌐 <span id="langCurrent">한국어</span> ▾</button>
       <div id="langMenu" class="lang-menu" hidden>
         <button type="button" data-lang="ko">한국어</button>
@@ -1148,7 +1149,7 @@
         </div>
 
         <div class="dg-acct-row" data-ac-field="email">
-          <div class="dg-acct-label">이메일</div>
+          <div class="dg-acct-label">이메일 <span class="dg-acct-note">(비밀번호 재설정 링크를 받는 주소)</span></div>
           <div class="dg-acct-view">
             <span class="dg-acct-val" id="dgAcVal-email"></span>
             <button type="button" class="dg-acct-edit" data-ac-edit="email" title="이메일 수정" aria-label="이메일 수정"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
