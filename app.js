@@ -2050,9 +2050,9 @@ const CARRIER_DOCS = {
     SKR_HAL:     { url: '/carriers/skr_hal.pdf',  label: 'Sinokor & Heung-A 금지리스트 (VER.12 · 2026-07-30 UPDATE)' },
     HMM_PARTNER: { url: '/carriers/hmm.pdf',      label: 'HMM Prohibited & Restricted List (IMDG 42-24 · 2026-10-15 Rev.1)' },
     TSL:         { url: '/carriers/tsl.pdf',      label: 'TSL Restricted-Prohibited DG (Rev.29)' },
-    KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.06.15, Amd 42-24)' },
+    KMTC:        { url: '/carriers/kmtc.pdf',      label: 'KMTC DG In-house Policy (2026.11.15, Amd 42-24)' },
     NSS_DYS:     { url: '/carriers/nss_dys.xlsx',  label: 'NSS & DYS DG Prohibition List (XLSX)' },
-    CKL_PARTNER: { url: '/carriers/ckl.pdf',      label: 'CKL DG Prohibited & Restricted List (2024.06.28)' },
+    CKL_PARTNER: { url: '/carriers/ckl.pdf',      label: 'CKL DG Prohibited & Restricted List (2026.11.19)' },
     DONGJIN:     { url: '/carriers/dongjin.xlsx', label: 'Dongjin Shipping DG Prohibited List (2024.06.28)' },
     CUL:         { url: '/carriers/cul.pdf',      label: 'CULines DG Prohibition List (Version 2026)' },
     PANOCEAN:    { url: '/carriers/panocean.pdf', label: 'Pan Ocean 금지리스트 (2026-08-20 UPDATE)' }
