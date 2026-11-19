@@ -139,13 +139,18 @@ function diffRows(current, next) {
 // UN번호가 IMDG 표(DG_TABLE)에 있는지 — AI 가 숫자를 잘못 읽었는지 가려내는 용도
 async function knownUnnos(unnos) {
   const list = [...new Set(unnos.filter(u => /^\d{4}$/.test(u)))];
-  const known = new Set();
+  const known = new Map();                                   // UN번호 → IMDG 표의 Class 목록
   for (let i = 0; i < list.length; i += 100) {
     const part = list.slice(i, i + 100);
     const variants = [...new Set(part.concat(part.map(u => String(Number(u)))))];
-    const { data, error } = await supabaseAdmin.from('DG_TABLE').select('UNNO').in('UNNO', variants);
+    const { data, error } = await supabaseAdmin.from('DG_TABLE').select('UNNO, Class').in('UNNO', variants);
     if (error) throw error;
-    (data || []).forEach(d => known.add(String(d.UNNO).trim().padStart(4, '0')));
+    (data || []).forEach(d => {
+      const u = String(d.UNNO).trim().padStart(4, '0');
+      if (!known.has(u)) known.set(u, new Set());
+      const c = normClass(d.Class);
+      if (/^\d/.test(c)) known.get(u).add(c);
+    });
   }
   return known;
 }
@@ -173,7 +178,9 @@ doc (fill from the whole document, same answer on every page):
 - effective_date: effective/issue date as YYYY-MM-DD. Empty string if none.
 
 rows — one object per rule row printed on page ${page}:
-- c: IMDG class as printed, digits only ("1", "2.1", "4.3", "9"). For a merged or blank Class cell use the class the row belongs to.
+- c: IMDG class as printed, digits only ("1", "2.1", "4.3", "9"). The Class cell is usually merged over many rows and its label
+     is printed once, vertically centred in that group; use the horizontal ruling lines of the Class column to decide which
+     group a row belongs to, not the nearest label. Never leave it blank.
 - u: UN number as exactly 4 digits. Use "ALL" when the row bans/restricts a whole class or division (no UN number).
      Use "COMMON" for general rules that have no UN number and no single class (container types, name-based bans,
      special provisions, document requirements); for those set c to "COMMON".
@@ -364,6 +371,20 @@ const actions = {
     const known = await knownUnnos(rows.map(r => r.unno).concat((Array.isArray(b.pdf_unnos) ? b.pdf_unnos : []).map(normUnno)));
     const unknown = [...new Set(rows.filter(r => /^\d{4}$/.test(r.unno) && !known.has(r.unno)).map(r => r.unno))];
     if (unknown.length) warnings.push({ type: 'unknown_un', message: 'IMDG 표에 없는 UN번호입니다. 숫자를 잘못 읽었을 수 있습니다.', items: unknown });
+    // Class 바로잡기 — 표의 Class 칸은 여러 줄이 합쳐져 있어 AI 가 옆 묶음의 Class 로 잘못 읽는 일이 있다.
+    // UN번호의 IMDG Class 와 앞자리(대분류)가 다르면 IMDG 표의 Class 로 고친다. (1 ↔ 1.4S, 2 ↔ 2.1 처럼 대분류가 같으면 그대로 둔다)
+    const fixed = [];
+    rows.forEach(r => {
+      if (!/^\d{4}$/.test(r.unno)) return;
+      const cls = known.get(r.unno);
+      if (!cls || !cls.size) return;
+      const main = String(r.class_no).split('.')[0].replace(/\D/g, '');
+      if ([...cls].some(c => c.split('.')[0].replace(/\D/g, '') === main)) return;
+      const to = [...cls][0].replace(/[A-Z]$/, '');
+      fixed.push('UN' + r.unno + ': ' + r.class_no + ' → ' + to);
+      r.class_no = to;
+    });
+    if (fixed.length) warnings.push({ type: 'class_fixed', message: 'Class 를 IMDG 표 기준으로 바로잡았습니다. 원본 PDF 와 맞는지 확인해 주세요.', items: fixed });
     // PDF 글자에는 있는데 판독 결과에 없는 UN번호 (누락 의심)
     if (Array.isArray(b.pdf_unnos)) {
       const got = new Set(rows.map(r => r.unno));

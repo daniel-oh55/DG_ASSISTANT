@@ -207,7 +207,9 @@
   function buildMeta(doc) {
     const c = currentCarrier() || {};
     const version = doc.version_no || (doc.effective_date ? doc.effective_date.replace(/-/g, '.') : '');
-    const title = doc.title || ((c.carrier_name || S.group) + ' DG Prohibited & Restricted List');
+    let title = doc.title || 'DG Prohibited & Restricted List';
+    const cname = c.carrier_name || S.group;                 // 문서 제목에 선사 이름이 없으면 앞에 붙인다
+    if (title.toLowerCase().replace(/[^a-z0-9]/g, '').indexOf(String(cname).toLowerCase().replace(/[^a-z0-9]/g, '')) < 0) title = cname + ' ' + title;
     return { version_no: version, effective_date: doc.effective_date || '', label: title + (version ? ' (' + version + ')' : '') };
   }
 
