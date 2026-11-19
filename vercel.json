@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/carrier-update.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
       "source": "/api/notes-save",

@@ -112,12 +112,19 @@ module.exports = async function handler(req, res) {
 
     // 2) 활성화된 선사 그룹 조회
     // 현재는 룰 테이블에 있는 carrier_group 기준으로 자동 구성
-    const { data: carrierRows, error: carrierError } = await supabaseAdmin
-      .from('dg_carrier_rules')
-      .select('carrier_group, carrier_name')
-      .eq('is_active', true);
-
-    if (carrierError) throw carrierError;
+    // 1,000행씩 나눠 끝까지 읽는다 (규정 행이 1,000행을 넘으면 뒤쪽 선사가 목록에서 빠지는 것 방지)
+    const carrierRows = [];
+    for (let from = 0; from < 20000; from += 1000) {
+      const { data: part, error: carrierError } = await supabaseAdmin
+        .from('dg_carrier_rules')
+        .select('carrier_group, carrier_name')
+        .eq('is_active', true)
+        .order('id', { ascending: true })
+        .range(from, from + 999);
+      if (carrierError) throw carrierError;
+      carrierRows.push(...(part || []));
+      if (!part || part.length < 1000) break;
+    }
 
     const carrierMap = new Map();
     (carrierRows || []).forEach(row => {

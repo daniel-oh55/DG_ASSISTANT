@@ -6750,6 +6750,7 @@ function dgUpdateAiUsageUI() {
   el.title = '오늘 사용한 AI 문의 ' + used + '회 / 하루 한도 ' + lim + '회';
 }
 function dgUpdateAuthUI() {
+  if (typeof window.cuApplyAccess === 'function') window.cuApplyAccess();   // 로그인·로그아웃 때 선사 규정 업데이트 버튼 갱신
   // 우측상단(언어 버튼 옆) 로그인 표시
   const top = document.getElementById('dgTopUser');
   if (top) {
@@ -6882,6 +6883,7 @@ async function dgRefreshMemberBadge() { await dgLoadMembers(); dgUpdateMemberBad
 // 관리자 리포트 접근제어 — 관리자만 모든 서브탭(검토·뉴스·회원관리), 일반회원은 문의통계만
 function dgApplyReportAccess() {
   const admin = dgIsAdmin();
+  if (typeof window.cuApplyAccess === 'function') window.cuApplyAccess();   // 선사 규정 업데이트 버튼(관리자만)
   const adminTabs = ['audit', 'news', 'members'];
   document.querySelectorAll('#tab-report [data-rpt]').forEach(b => {
     if (adminTabs.includes(b.dataset.rpt)) b.style.display = admin ? '' : 'none';
