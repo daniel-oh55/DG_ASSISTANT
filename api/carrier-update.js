@@ -11,6 +11,7 @@ const RULES = 'dg_carrier_rules';
 const BUCKET = 'dg_files';
 const ROOT = 'carrier_rules';
 const DOCS_PATH = ROOT + '/docs.json';
+const CHANGES_PATH = ROOT + '/changes.json';   // 선사별 변경 이력 (타사 규정 변경 이력 화면)
 const MAX_PDF = 3 * 1024 * 1024;          // Vercel 요청 본문 4.5MB 한도 → base64 로 약 4MB
 const MAX_ROWS = 1500;
 const LOCKED_GROUPS = ['SKR_HAL'];        // 자사 규정은 화면 고정 안내문과 묶여 있어 이 기능으로 바꾸지 않는다
@@ -281,6 +282,20 @@ async function replaceRules(group, rows) {
   return { removed: oldIds.length, inserted: newIds.length };
 }
 
+// 변경 이력 한 건 추가 (선사별 최근 30건 보관). 이력 기록 실패가 규정 적용을 막지는 않는다.
+async function logChange(group, entry) {
+  try {
+    const all = (await readJson(CHANGES_PATH)) || {};
+    const cut = (list, n) => list.slice(0, n);
+    const e = Object.assign({}, entry, {
+      added: cut(entry.added || [], 400), removed: cut(entry.removed || [], 400), changed: cut(entry.changed || [], 200),
+      added_total: (entry.added || []).length, removed_total: (entry.removed || []).length, changed_total: (entry.changed || []).length
+    });
+    all[group] = (all[group] || []).concat([e]).slice(-30);
+    await writeJson(CHANGES_PATH, all);
+  } catch (err) { console.error('[api/carrier-update] change log error:', err); }
+}
+
 function stamp() {
   return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');   // 20261119T071500Z
 }
@@ -388,6 +403,7 @@ const actions = {
       throw new HttpError(400, '행 수가 크게 줄었습니다. 미리보기의 확인란을 체크한 뒤 다시 적용해 주세요.');
     }
     const carrierName = current[0].carrier_name;
+    const change = diffRows(current.filter(r => r.is_active !== false), rows);
     const docs = (await readJson(DOCS_PATH)) || {};
     const backup = await saveBackup(group, current, docs[group] || null, me.id, '적용 전 자동 백업 (' + version + ')');
 
@@ -406,6 +422,8 @@ const actions = {
     docs[group] = { url: `/api/carrier-update?action=pdf&g=${encodeURIComponent(group)}&v=${ts}&f=doc.pdf`, label,
       path: pdfPath, version_no: version, effective_date: eff, updated_at: new Date().toISOString(), updated_by: me.id };
     await writeJson(DOCS_PATH, docs);
+    await logChange(group, { carrier_name: carrierName, version: version, date: eff, count: rows.length, applied_at: new Date().toISOString(),
+      by: me.id, remark: '', added: change.added, removed: change.removed, changed: change.changed });
     return { carrier_group: group, inserted: done.inserted, removed: done.removed, backup, doc: { url: docs[group].url, label } };
   },
 
@@ -438,9 +456,12 @@ const actions = {
     const docs = (await readJson(DOCS_PATH)) || {};
     const saved = await saveBackup(group, current, docs[group] || null, me.id, '되돌리기 전 자동 백업');
     const rows = j.rows.map(r => { const o = Object.assign({}, r, { carrier_group: group, is_active: true }); delete o.id; return o; });
+    const change = diffRows(current.filter(r => r.is_active !== false), rows);
     const done = await replaceRules(group, rows);
     if (j.doc) docs[group] = j.doc; else delete docs[group];
     await writeJson(DOCS_PATH, docs);
+    await logChange(group, { carrier_name: rows[0].carrier_name, version: j.version_no || '', date: j.effective_date || '', count: rows.length,
+      applied_at: new Date().toISOString(), by: me.id, remark: '이전 판으로 되돌림', added: change.added, removed: change.removed, changed: change.changed });
     return { carrier_group: group, inserted: done.inserted, removed: done.removed, backup: saved, version_no: j.version_no };
   }
 };
@@ -455,6 +476,11 @@ async function handler(req, res) {
         const out = {};
         Object.keys(docs).forEach(k => { out[k] = { url: docs[k].url, label: docs[k].label }; });
         return res.status(200).json({ ok: true, docs: out });
+      }
+      if (action === 'changes') {                               // 선사별 변경 이력 (업데이트 기능으로 적용한 내역)
+        const all = (await readJson(CHANGES_PATH)) || {};
+        Object.keys(all).forEach(k => { all[k] = (all[k] || []).map(e => { const o = Object.assign({}, e); delete o.by; return o; }); });
+        return res.status(200).json({ ok: true, changes: all });
       }
       if (action === 'pdf') {                                   // 업로드된 원본 PDF
         const group = str(req.query.g).toUpperCase();

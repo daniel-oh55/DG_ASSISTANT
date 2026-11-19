@@ -399,7 +399,10 @@
         <header class="carrier-header">
             <h1>선사별/포트별 선적가부 조회 <span>Carrier &amp; Port DG Restriction</span></h1>
             <p class="subtitle">UNNO 기준 선사별 선적 가능 여부 + 선적지/양하지/환적지 포트별 제한 확인</p>
-            <button class="btn skr-hist-btn" id="skrHistBtn" type="button">📜 SKR/HAS 규정 변경 이력</button>
+            <div class="carrier-tools" id="carrierTools">
+                <button class="carrier-tool-btn" id="skrHistBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>SKR/HAS 규정 변경 이력</button>
+                <button class="carrier-tool-btn" id="cuHistBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>타사 규정 변경 이력</button>
+            </div>
         </header>
 
         <div class="search-area">

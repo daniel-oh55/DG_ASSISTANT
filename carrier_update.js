@@ -38,15 +38,17 @@
 
   // ── 버튼 표시 (관리자만) ─────────────────────────────────────────
   function applyAccess() {
-    const header = document.querySelector('#tab-carrier-check .carrier-header');
-    if (!header) return;
+    const tools = $('carrierTools') || document.querySelector('#tab-carrier-check .carrier-header');
+    if (!tools) return;
+    const histBtn = $('cuHistBtn');
+    if (histBtn && !histBtn.dataset.bound) { histBtn.dataset.bound = '1'; histBtn.addEventListener('click', openHistModal); }
     let btn = $('cuOpenBtn');
     if (!btn) {
       btn = document.createElement('button');
-      btn.id = 'cuOpenBtn'; btn.type = 'button'; btn.className = 'btn cu-open-btn';
-      btn.textContent = '⚙ 선사 규정 업데이트';
+      btn.id = 'cuOpenBtn'; btn.type = 'button'; btn.className = 'carrier-tool-btn is-admin';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>선사 규정 업데이트';
       btn.addEventListener('click', openModal);
-      header.appendChild(btn);
+      tools.appendChild(btn);
     }
     btn.style.display = isAdmin() ? '' : 'none';
     if (!isAdmin()) closeModal();
@@ -373,6 +375,115 @@
       $('cuPreview').innerHTML = `<div class="cu-done">↩ <b>${esc(c.carrier_name || S.group)}</b> 규정을 <b>${esc(r.version_no || '이전')}</b> 판으로 되돌렸습니다 (${r.inserted}행).</div>`;
       msg('');
     } catch (e) { msg(e.message, 'err'); } finally { setBusy(false); }
+  }
+
+  // ── 타사 규정 변경 이력 (로그인한 회원 누구나) ───────────────────
+  //   기준 자료: carriers/carrier_versions.json (예전 규정 파일 비교본) + 업데이트 기능이 적용할 때마다 남기는 기록
+  const H = { data: null, group: '' };
+
+  async function loadHistData() {
+    const out = {};
+    try {
+      const r = await fetch('/carriers/carrier_versions.json', { cache: 'no-store' });
+      if (r.ok) {
+        const j = await r.json();
+        Object.keys(j.carriers || {}).forEach(g => { out[g] = { name: j.carriers[g].name || g, versions: (j.carriers[g].versions || []).slice() }; });
+      }
+    } catch (e) { /* 기준 자료가 없어도 적용 기록만으로 표시 */ }
+    try {
+      const r = await fetch(API + '?action=changes');
+      const j = await r.json();
+      if (j && j.ok) {
+        Object.keys(j.changes || {}).forEach(g => {
+          const list = j.changes[g] || [];
+          if (!out[g]) out[g] = { name: (list[0] && list[0].carrier_name) || g, versions: [] };
+          list.forEach(e => out[g].versions.push({
+            version: e.version, date: e.date, count: e.count, added: e.added || [], removed: e.removed || [], changed: e.changed || [],
+            applied_at: e.applied_at, totals: [e.added_total, e.removed_total, e.changed_total],
+            remark: (e.remark ? e.remark + ' · ' : '') + '추가 ' + (e.added_total || 0) + ' · 삭제 ' + (e.removed_total || 0) + ' · 변경 ' + (e.changed_total || 0)
+          }));
+        });
+      }
+    } catch (e) { /* 무시 */ }
+    if (typeof CARRIER_DOCS === 'object') {                     // 이력이 아직 없는 선사도 목록에는 보이게
+      const NAMES = { NSS_DYS: 'NSS & DYS', TSL: 'TSL', SITC: 'SITC' };
+      Object.keys(CARRIER_DOCS).forEach(g => { if (!out[g]) out[g] = { name: NAMES[g] || g, versions: [] }; });
+    }
+    delete out.SKR_HAL;                                         // 자사 이력은 왼쪽 버튼(SKR/HAS 규정 변경 이력)
+    return out;
+  }
+
+  function ensureHistModal() {
+    let m = $('cuHistModal');
+    if (m) return m;
+    m = document.createElement('div');
+    m.id = 'cuHistModal'; m.className = 'skr-modal'; m.hidden = true;
+    m.innerHTML = `
+      <div class="skr-modal-box" role="dialog" aria-modal="true" aria-label="타사 규정 변경 이력">
+        <div class="skr-modal-head"><span>타사 규정 변경 이력</span>
+          <button type="button" class="skr-modal-close" id="cuHistClose" aria-label="닫기">✕</button></div>
+        <div class="skr-modal-body">
+          <div class="skr-hist-list"><select id="cuHistCarrier" class="cu-hist-carrier" aria-label="선사 선택"></select><div id="cuHistVers"></div></div>
+          <div class="cu-hist-detail" id="cuHistDetail"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    $('cuHistClose').addEventListener('click', () => { m.hidden = true; });
+    m.addEventListener('mousedown', e => { if (e.target === m) m.hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !m.hidden) m.hidden = true; });
+    $('cuHistCarrier').addEventListener('change', () => { H.group = $('cuHistCarrier').value; renderHistList(); });
+    return m;
+  }
+
+  async function openHistModal() {
+    const m = ensureHistModal();
+    m.hidden = false;
+    $('cuHistVers').innerHTML = '<div class="skr-hist-title">이력을 불러오는 중…</div>';
+    $('cuHistDetail').innerHTML = '';
+    H.data = await loadHistData();
+    const groups = Object.keys(H.data).sort((a, b) => (H.data[b].versions.length ? 1 : 0) - (H.data[a].versions.length ? 1 : 0) || String(H.data[a].name).localeCompare(String(H.data[b].name)));
+    if (!groups.length) { $('cuHistVers').innerHTML = '<div class="skr-hist-title">표시할 이력이 없습니다.</div>'; return; }
+    if (!H.group || !H.data[H.group]) H.group = groups[0];
+    $('cuHistCarrier').innerHTML = groups.map(g => `<option value="${esc(g)}">${esc(H.data[g].name)}${H.data[g].versions.length ? ' (' + H.data[g].versions.length + '개 판)' : ' (이력 없음)'}</option>`).join('');
+    $('cuHistCarrier').value = H.group;
+    renderHistList();
+  }
+
+  function renderHistList() {
+    const c = H.data[H.group], box = $('cuHistVers');
+    if (!c || !c.versions.length) {
+      box.innerHTML = '<div class="skr-hist-title">기록된 변경 이력이 없습니다.</div>';
+      $('cuHistDetail').innerHTML = '<p class="cu-none" style="padding:0">이 선사는 아직 판별 비교 자료가 없습니다. 선사 규정 업데이트 기능으로 새 판을 적용하면 그때부터 변경 내용이 자동으로 기록됩니다.</p>';
+      return;
+    }
+    box.innerHTML = '<div class="skr-hist-title">판 목록 (최신순)</div>' + c.versions.map((v, i) => i).reverse().map(i => {
+      const v = c.versions[i];
+      return `<div class="skr-ver" data-vi="${i}"><div class="skr-ver-head"><b>${esc(v.version || '-')}</b> <span class="skr-ver-date">${esc(v.date || '')}</span> <span class="skr-ver-cnt">${v.count != null ? v.count + '행' : ''}</span></div>
+        <div class="skr-ver-remark">${esc(v.remark || '')}</div></div>`;
+    }).join('');
+    box.querySelectorAll('.skr-ver').forEach(el => el.addEventListener('click', () => showHistVersion(+el.dataset.vi)));
+    showHistVersion(c.versions.length - 1);
+  }
+
+  function showHistVersion(i) {
+    const c = H.data[H.group], v = c && c.versions[i];
+    if (!v) return;
+    $('cuHistVers').querySelectorAll('.skr-ver').forEach(el => el.classList.toggle('active', +el.dataset.vi === i));
+    const added = v.added || [], removed = v.removed || [], changed = v.changed || [];
+    const t = v.totals || [added.length, removed.length, changed.length];
+    const when = v.applied_at ? ' · ' + new Date(v.applied_at).toLocaleDateString('ko-KR') + ' 적용' : '';
+    let html = `<h3>${esc(c.name)} · ${esc(v.version || '-')}</h3><div class="cu-hist-sub">시행일 ${esc(v.date || '-')} · ${v.count != null ? v.count + '행' : ''}${when}</div>`;
+    if (!added.length && !removed.length && !changed.length) {
+      html += `<p class="cu-none" style="padding:0">${esc(v.remark || '이전 판 대비 변경 없음')}</p>`;
+    } else {
+      const ch = changed.map(x => `<li class="cu-chg"><b>${esc(x.after[0].unno)}</b> · Class ${esc(x.after[0].class_no)} · ${esc(x.after[0].psn)}
+          <div class="cu-ba"><span>이전</span> ${x.before.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div>
+          <div class="cu-ba"><span>변경</span> ${x.after.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div></li>`).join('');
+      const more = (t[0] > added.length || t[1] > removed.length || t[2] > changed.length) ? '<p class="cu-none" style="padding:6px 0 0">건수가 많아 일부만 표시합니다.</p>' : '';
+      html += `<div class="skr-change-title">이전 판 대비 변경 내용 — 추가 ${t[0]} · 삭제 ${t[1]} · 변경 ${t[2]}</div>
+        <ul class="cu-difflist">${briefList(added, 'cu-addli')}${briefList(removed, 'cu-remli')}${ch}</ul>${more}`;
+    }
+    $('cuHistDetail').innerHTML = html;
   }
 
   // ── 초기화 ───────────────────────────────────────────────────────
