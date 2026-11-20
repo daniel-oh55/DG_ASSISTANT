@@ -114,7 +114,12 @@ function cleanRows(input) {
   return { rows, errors };
 }
 
-const ruleKey = r => str(r.unno).toUpperCase() + '|' + normClass(r.class_no);
+// 비교할 때 짝 맞추는 기준.
+//   UN번호가 있는 행은 UN번호만으로 맞춘다 — Class 칸을 다르게 읽어도 같은 품목이므로 '삭제 + 추가'가 아니라 '변경'으로 보여야 한다.
+//   UN번호가 없는 행(ALL = Class 전체, COMMON = 공통 규칙)은 Class 까지 묶어서 맞춘다.
+const isUn = r => /^\d{4}$/.test(str(r.unno));
+const ruleKey = r => (isUn(r) ? str(r.unno) : str(r.unno).toUpperCase() + '|' + normClass(r.class_no));
+const flat = v => str(v).toLowerCase().replace(/[^a-z0-9가-힣]+/g, '');      // 띄어쓰기·문장부호 차이는 변경으로 치지 않는다
 
 function diffRows(current, next) {
   const group = list => {
@@ -122,7 +127,8 @@ function diffRows(current, next) {
     list.forEach(r => { const k = ruleKey(r); if (!m.has(k)) m.set(k, []); m.get(k).push(r); });
     return m;
   };
-  const sig = list => list.map(r => r.status + '::' + str(r.remark_text).toLowerCase()).sort().join('||');
+  // 같은 짝 안에서 '달라졌다'고 볼 내용: Class · 금지/제한 · 조건. 공통 규칙(COMMON)은 품명 칸이 곧 규칙이라 품명도 본다.
+  const sig = list => list.map(r => [normClass(r.class_no), r.status, flat(r.remark_text), str(r.unno).toUpperCase() === 'COMMON' ? flat(r.psn) : ''].join('::')).sort().join('||');
   const brief = r => ({ class_no: r.class_no, unno: r.unno, psn: r.psn, status: r.status, remark_text: r.remark_text || null });
   const a = group(current), b = group(next);
   const added = [], removed = [], changed = [];
@@ -366,25 +372,29 @@ const actions = {
     const group = checkGroup(b.carrier_group);
     const { rows, errors } = cleanRows(b.rows);
     const current = await groupRows(group);
-    const diff = diffRows(current.filter(r => r.is_active !== false), rows);
     const warnings = [];
     const known = await knownUnnos(rows.map(r => r.unno).concat((Array.isArray(b.pdf_unnos) ? b.pdf_unnos : []).map(normUnno)));
     const unknown = [...new Set(rows.filter(r => /^\d{4}$/.test(r.unno) && !known.has(r.unno)).map(r => r.unno))];
     if (unknown.length) warnings.push({ type: 'unknown_un', message: 'IMDG 표에 없는 UN번호입니다. 숫자를 잘못 읽었을 수 있습니다.', items: unknown });
     // Class 바로잡기 — 표의 Class 칸은 여러 줄이 합쳐져 있어 AI 가 옆 묶음의 Class 로 잘못 읽는 일이 있다.
-    // UN번호의 IMDG Class 와 앞자리(대분류)가 다르면 IMDG 표의 Class 로 고친다. (1 ↔ 1.4S, 2 ↔ 2.1 처럼 대분류가 같으면 그대로 둔다)
+    // UN번호의 IMDG Class 와 다르면 IMDG 표의 Class 로 고친다 (3 → 4.1, 4.1 → 4.2 모두).
+    // 한쪽이 대분류만 적은 경우(1 ↔ 1.4S, 2 ↔ 2.1)는 틀린 것이 아니므로 그대로 둔다.
     const fixed = [];
+    const bare = c => String(c).replace(/[A-Z]$/, '');
     rows.forEach(r => {
       if (!/^\d{4}$/.test(r.unno)) return;
-      const cls = known.get(r.unno);
-      if (!cls || !cls.size) return;
-      const main = String(r.class_no).split('.')[0].replace(/\D/g, '');
-      if ([...cls].some(c => c.split('.')[0].replace(/\D/g, '') === main)) return;
-      const to = [...cls][0].replace(/[A-Z]$/, '');
+      const cls = [...(known.get(r.unno) || [])].map(bare);
+      if (!cls.length) return;
+      const mine = bare(r.class_no), main = mine.split('.')[0];
+      if (cls.includes(mine) || cls.includes(main)) return;
+      if (mine.indexOf('.') < 0 && cls.some(c => c.split('.')[0] === main)) return;
+      const to = cls.find(c => c.split('.')[0] === main) || cls[0];
       fixed.push('UN' + r.unno + ': ' + r.class_no + ' → ' + to);
       r.class_no = to;
     });
     if (fixed.length) warnings.push({ type: 'class_fixed', message: 'Class 를 IMDG 표 기준으로 바로잡았습니다. 원본 PDF 와 맞는지 확인해 주세요.', items: fixed });
+    // 비교는 Class 를 바로잡은 뒤에 한다 (먼저 비교하면 잘못 읽은 Class 때문에 같은 품목이 삭제·추가로 잡힌다)
+    const diff = diffRows(current.filter(r => r.is_active !== false), rows);
     // PDF 글자에는 있는데 판독 결과에 없는 UN번호 (누락 의심)
     if (Array.isArray(b.pdf_unnos)) {
       const got = new Set(rows.map(r => r.unno));

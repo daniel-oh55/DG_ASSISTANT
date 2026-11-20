@@ -71,6 +71,8 @@
               <label class="cu-field cu-grow"><span>새 규정 PDF (3MB 이하)</span><input type="file" id="cuFile" accept="application/pdf,.pdf"></label>
               <button type="button" class="btn accent2 cu-btn" id="cuParseBtn">AI 판독 시작</button>
             </div>
+            <div class="cu-alt"><span>AI 판독 대신 <b>미리 검수한 규정 데이터 파일</b>로 올릴 수도 있습니다. AI 가 다시 읽지 않고 파일 내용 그대로 비교·적용합니다.</span>
+              <label class="cu-altbtn" for="cuData">데이터 파일(.json) 선택</label><input type="file" id="cuData" accept="application/json,.json" hidden></div>
             <div class="cu-now" id="cuNow"></div>
             <div class="cu-msg" id="cuMsg"></div>
           </div>
@@ -88,6 +90,7 @@
     $('cuCarrier').addEventListener('change', onCarrierChange);
     $('cuFile').addEventListener('change', () => { S.rows = []; S.preview = null; $('cuPreview').innerHTML = ''; msg(''); });
     $('cuParseBtn').addEventListener('click', startParse);
+    $('cuData').addEventListener('change', startData);
     $('cuHistoryBox').addEventListener('toggle', () => { if ($('cuHistoryBox').open) loadHistory(); });
     return m;
   }
@@ -198,6 +201,43 @@
       const doc = results.map(r => r.doc).find(d => d && (d.version_no || d.effective_date || d.title)) || {};
       if (!S.rows.length) throw new Error('규정 행을 하나도 찾지 못했습니다. 금지·제한 목록 PDF 가 맞는지 확인해 주세요.');
       S.meta = buildMeta(doc);
+      S.source = 'ai';
+      await runPreview(true);
+    } catch (e) {
+      msg(e.message, 'err');
+    } finally { setBusy(false); }
+  }
+
+  // ── 데이터 파일로 올리기 — AI 판독 없이, 미리 검수한 규정 데이터를 그대로 미리보기·적용에 넘긴다 ──
+  //   형식: {"carrier_group":"CKL_PARTNER","doc":{"title":"","version_no":"","effective_date":"YYYY-MM-DD"},
+  //          "rows":[{"class_no":"","unno":"","psn":"","status":"PROHIBITED|RESTRICTED","remark_code":"","remark_text":""}]}
+  //   원본 PDF 도 함께 고른다 (원본 규정 보기 링크 · 누락 점검에 쓰임). 검증·비교·적용은 AI 판독 때와 같은 길을 탄다.
+  async function startData() {
+    const input = $('cuData'), dataFile = input.files[0];
+    input.value = '';                                       // 같은 파일을 다시 골라도 동작하도록
+    if (S.busy || !dataFile) return;
+    const pdf = $('cuFile').files[0];
+    if (!S.group) return msg('선사를 먼저 선택해 주세요.', 'err');
+    if (!pdf) return msg('원본 규정 PDF 를 먼저 선택한 뒤 데이터 파일을 골라 주세요. (PDF 는 "원본 규정 보기"에 연결됩니다)', 'err');
+    if (!/\.pdf$/i.test(pdf.name) && pdf.type !== 'application/pdf') return msg('PDF 파일만 올릴 수 있습니다.', 'err');
+    if (pdf.size > S.maxPdf) return msg('파일이 ' + (pdf.size / 1048576).toFixed(1) + 'MB 입니다. 3MB 이하로 줄여서 올려 주세요.', 'err');
+    setBusy(true);
+    $('cuPreview').innerHTML = '';
+    try {
+      let j = null;
+      try { j = JSON.parse((await dataFile.text()).replace(/^﻿/, '')); } catch (e) { throw new Error('데이터 파일을 읽을 수 없습니다. 규정 데이터 파일(.json)이 맞는지 확인해 주세요.'); }
+      const rows = j && Array.isArray(j.rows) ? j.rows.filter(r => r && typeof r === 'object') : [];
+      if (!rows.length) throw new Error('데이터 파일에 규정 행이 없습니다.');
+      if (j.carrier_group && String(j.carrier_group).toUpperCase() !== S.group) {
+        throw new Error('이 데이터 파일은 ' + j.carrier_group + ' 용입니다. 선택한 선사(' + S.group + ')와 다릅니다.');
+      }
+      msg('PDF 를 읽는 중…');
+      const bytes = new Uint8Array(await pdf.arrayBuffer());
+      const info = await inspectPdf(bytes);
+      S.file = pdf; S.b64 = toBase64(bytes); S.pdfUnnos = info.unnos;
+      S.rows = rows.map(r => ({ class_no: r.class_no, unno: r.unno, psn: r.psn, status: r.status, remark_code: r.remark_code || null, remark_text: r.remark_text || null }));
+      S.meta = buildMeta(j.doc || {});
+      S.source = 'data';
       await runPreview(true);
     } catch (e) {
       msg(e.message, 'err');
@@ -234,7 +274,21 @@
     const p = await api('preview', { carrier_group: S.group, rows: S.rows, pdf_unnos: S.pdfUnnos || undefined });
     S.preview = p; S.rows = p.rows;
     renderPreview();
-    msg(p.errors.length ? '고쳐야 할 줄이 ' + p.errors.length + '개 있습니다. 아래 안내를 확인해 주세요.' : '판독이 끝났습니다. 아래 내용을 확인한 뒤 [적용]을 눌러 주세요.', p.errors.length ? 'err' : 'ok');
+    msg(p.errors.length ? '고쳐야 할 줄이 ' + p.errors.length + '개 있습니다. 아래 안내를 확인해 주세요.'
+      : (S.source === 'data' ? '데이터 파일을 불러왔습니다 (AI 판독 없음).' : '판독이 끝났습니다.') + ' 아래 내용을 확인한 뒤 [적용]을 눌러 주세요.', p.errors.length ? 'err' : 'ok');
+  }
+
+  // '변경' 목록 — Class 가 바뀐 품목은 이전/이후 Class 를, 공통 규칙은 문구를 함께 보여 준다
+  function changedList(list) {
+    const clsOf = l => [...new Set(l.map(b => String(b.class_no)))].sort().join(',');
+    return list.map(c => {
+      const a0 = c.after[0], common = String(a0.unno).toUpperCase() === 'COMMON';
+      const showCls = !common && clsOf(c.before) !== clsOf(c.after);
+      const line = l => l.map(b => (showCls ? 'Class ' + esc(b.class_no) + ' · ' : '') + statusKo(b.status) + (common ? ' · ' + esc(b.psn) : '') + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ');
+      return `<li class="cu-chg"><b>${esc(a0.unno)}</b> · Class ${esc(a0.class_no)}${common ? '' : ' · ' + esc(a0.psn)}
+        <div class="cu-ba"><span>이전</span> ${line(c.before)}</div>
+        <div class="cu-ba"><span>변경</span> ${line(c.after)}</div></li>`;
+    }).join('');
   }
 
   const keyOf = r => String(r.unno).toUpperCase() + '|' + r.class_no;
@@ -250,9 +304,7 @@
     const changedKeys = new Set([].concat(...d.changed.map(c => c.after.map(keyOf))));
     const warn = p.warnings.map(w => `<div class="cu-warn"><b>⚠ ${esc(w.message)}</b>${w.items && w.items.length ? '<div class="cu-chips">' + w.items.map(u => '<span>' + esc(u) + '</span>').join('') + '</div>' : ''}</div>`).join('');
     const errs = p.errors.length ? `<div class="cu-errbox"><b>고쳐야 적용할 수 있는 줄</b><ul>${p.errors.slice(0, 20).map(e => '<li>' + esc(e) + '</li>').join('')}</ul></div>` : '';
-    const changed = d.changed.map(c => `<li class="cu-chg"><b>${esc(c.after[0].unno)}</b> · Class ${esc(c.after[0].class_no)} · ${esc(c.after[0].psn)}
-        <div class="cu-ba"><span>이전</span> ${c.before.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div>
-        <div class="cu-ba"><span>변경</span> ${c.after.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div></li>`).join('');
+    const changed = changedList(d.changed);
     const rows = S.rows.map(r => {
       const k = keyOf(r), cls = addedKeys.has(k) ? 'cu-tr-add' : (changedKeys.has(k) ? 'cu-tr-chg' : '');
       return `<tr class="${cls}" data-rc="${esc(r.remark_code || '')}">
@@ -336,13 +388,13 @@
       const r = await api('apply', { carrier_group: S.group, rows: S.rows, version_no: m.version_no, effective_date: m.effective_date,
         label: m.label, file_name: S.file ? S.file.name : '', file_base64: S.b64, confirm_shrink: !!p.shrink });
       if (r.doc && typeof CARRIER_DOCS === 'object') CARRIER_DOCS[S.group] = { url: r.doc.url, label: r.doc.label };
-      $('cuPreview').innerHTML = `<div class="cu-done">✅ <b>${esc(c.carrier_name || S.group)}</b> 규정을 <b>${esc(m.version_no)}</b> 판으로 바꿨습니다 (${r.inserted}행 등록, 이전 ${r.removed}행 교체). 선적가부 조회에 바로 반영됩니다.</div>`;
       $('cuFile').value = '';
       S.rows = []; S.preview = null; S.b64 = '';
       msg('');
-      const list = await api('carriers');
-      S.carriers = list.carriers || S.carriers;
+      try { const list = await api('carriers'); S.carriers = list.carriers || S.carriers; } catch (e) { /* 목록 새로고침 실패는 적용 결과와 무관 */ }
       const keep = S.group; onCarrierChange(); S.group = keep;
+      // 완료 안내는 화면을 비우는 onCarrierChange() 뒤에 넣는다 (앞에 넣으면 바로 지워져 적용됐는지 알 수 없다)
+      $('cuPreview').innerHTML = `<div class="cu-done">✅ <b>${esc(c.carrier_name || S.group)}</b> 규정을 <b>${esc(m.version_no)}</b> 판으로 바꿨습니다 (${r.inserted}행 등록, 이전 ${r.removed}행 교체). 선적가부 조회에 바로 반영됩니다.</div>`;
     } catch (e) { msg(e.message, 'err'); } finally { setBusy(false); }
   }
 
@@ -478,9 +530,7 @@
     if (!added.length && !removed.length && !changed.length) {
       html += `<p class="cu-none" style="padding:0">${esc(v.remark || '이전 판 대비 변경 없음')}</p>`;
     } else {
-      const ch = changed.map(x => `<li class="cu-chg"><b>${esc(x.after[0].unno)}</b> · Class ${esc(x.after[0].class_no)} · ${esc(x.after[0].psn)}
-          <div class="cu-ba"><span>이전</span> ${x.before.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div>
-          <div class="cu-ba"><span>변경</span> ${x.after.map(b => statusKo(b.status) + (b.remark_text ? ' — ' + esc(b.remark_text) : '')).join(' / ')}</div></li>`).join('');
+      const ch = changedList(changed);
       const more = (t[0] > added.length || t[1] > removed.length || t[2] > changed.length) ? '<p class="cu-none" style="padding:6px 0 0">건수가 많아 일부만 표시합니다.</p>' : '';
       html += `<div class="skr-change-title">이전 판 대비 변경 내용 — 추가 ${t[0]} · 삭제 ${t[1]} · 변경 ${t[2]}</div>
         <ul class="cu-difflist">${briefList(added, 'cu-addli')}${briefList(removed, 'cu-remli')}${ch}</ul>${more}`;
